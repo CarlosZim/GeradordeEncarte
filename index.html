@@ -47,6 +47,21 @@
     </style>
 </head>
 <body class="bg-gray-200 dark:bg-gray-900 text-gray-800 dark:text-gray-200"><div class="relative h-screen w-screen flex">
+
+<div id="password-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-95 z-50 flex items-center justify-center">
+    <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm text-center">
+        <h2 class="text-2xl font-bold text-white mb-4">Acesso Restrito</h2>
+        <p class="text-gray-400 mb-6">Por favor, insira a senha para continuar.</p>
+        <input type="password" id="password-input" class="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="********">
+        <button id="password-submit" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">
+            Entrar
+        </button>
+        <p id="password-error" class="text-red-500 text-sm mt-3 h-4"></p>
+    </div>
+</div>
+
+
+
 <div class="relative z-30 flex-shrink-0 flex items-center h-full">
 <nav class="bg-gray-800 dark:bg-gray-900 text-white flex flex-col items-center p-1 space-y-1 shadow-lg rounded-r-2xl h-full overflow-y-auto">
 <h2 class="text-lg font-bold text-white mb-1">Encartes</h2>
@@ -1925,16 +1940,11 @@ Produto B, 5.50" rows="5"></textarea>
 </div>
 </div>
 <script type="module">
-        // Firebase Imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
         
 		
 		
 		
-
-
 
 
 
@@ -9039,6 +9049,50 @@ copyOutputBtn.addEventListener('click', () => {
 
 // ▲▲▲ FIM DO BLOCO PARA COPIAR ▲▲▲
 
+
+// ▼▼▼ COLE O BLOCO DE LÓGICA DA SENHA AQUI ▼▼▼
+
+// --- LÓGICA DE PROTEÇÃO POR SENHA ---
+
+// 1. DEFINA SUA SENHA AQUI
+const SENHA_CORRETA = "Arte.com13061994*"; // Troque para uma senha de sua preferência
+
+const passwordOverlay = document.getElementById('password-overlay');
+const passwordInput = document.getElementById('password-input');
+const passwordSubmit = document.getElementById('password-submit');
+const passwordError = document.getElementById('password-error');
+
+// Função para verificar a senha
+function verificarSenha() {
+    if (passwordInput.value === SENHA_CORRETA) {
+        // Se a senha estiver correta, salva um indicador na sessão do navegador
+        sessionStorage.setItem('autenticado', 'true');
+        // Esconde a tela de senha
+        passwordOverlay.style.display = 'none';
+    } else {
+        // Se a senha estiver errada, mostra uma mensagem de erro
+        passwordError.textContent = 'Senha incorreta. Tente novamente.';
+        passwordInput.value = '';
+    }
+}
+
+// Adiciona o evento de clique ao botão
+passwordSubmit.addEventListener('click', verificarSenha);
+
+// Permite que o usuário pressione "Enter" para tentar logar
+passwordInput.addEventListener('keyup', (event) => {
+    if (event.key === 'Enter') {
+        verificarSenha();
+    }
+});
+
+// Verifica se o usuário JÁ está autenticado nesta sessão
+// Isso evita que ele precise digitar a senha toda vez que recarregar a página (F5)
+if (sessionStorage.getItem('autenticado') === 'true') {
+    passwordOverlay.style.display = 'none';
+}
+
+// ▲▲▲ FIM DO BLOCO DE LÓGICA DA SENHA ▲▲▲
 
 
 window.onload = initialize;
