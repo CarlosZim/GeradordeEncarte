@@ -9421,13 +9421,14 @@ const deleteAllStockBtn = document.getElementById('deleteAllStockBtn');
 // Função para Sincronizar (Salvar) o banco de dados
 // ▼▼▼ SUBSTITUA PELA VERSÃO CORRIGIDA E ROBUSTA ▼▼▼
 // ▼▼▼ SUBSTITUA A FUNÇÃO 'syncProductDatabase' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO "syncProductDatabase" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 async function syncProductDatabase() {
     try {
-        // Tenta salvar localmente PRIMEIRO, para garantir a persistência.
+        // ETAPA 1: Salva localmente PRIMEIRO, garantindo que os dados nunca se percam.
         localStorage.setItem('localProductDb', JSON.stringify(productDatabase));
         console.log("Banco de dados salvo localmente com sucesso.");
 
-        // Se houver conexão com a nuvem, tenta sincronizar.
+        // ETAPA 2: Se houver um usuário conectado, tenta sincronizar com a nuvem.
         if (userId) {
             console.log("Tentando sincronizar com a nuvem...");
             const dbRef = doc(db, 'product_database', userId);
@@ -9436,9 +9437,10 @@ async function syncProductDatabase() {
         }
     } catch (e) {
         // Se a sincronização com a nuvem falhar, não há problema, pois os dados já estão salvos localmente.
-        console.warn("Falha ao sincronizar com a nuvem. Os dados estão salvos localmente.", e);
+        console.warn("Falha ao sincronizar com a nuvem. Os dados estão seguros localmente.", e);
     }
 }
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 
