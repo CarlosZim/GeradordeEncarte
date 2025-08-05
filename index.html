@@ -5030,6 +5030,9 @@ function drawHeaderValidity(ctx, settingsObj) {
 /**
  * Desenha o rodapé do encarte com base nas configurações.
  */
+/**
+ * Desenha o rodapé do encarte com base nas configurações, respeitando quebras de linha manuais.
+ */
 function drawFooter(ctx, footerSettings) {
     if (!footerSettings || !footerSettings.textEnabled) {
         return;
@@ -5041,73 +5044,73 @@ function drawFooter(ctx, footerSettings) {
     const canvasHeight = ctx.canvas.height;
     const lateralMargin = flyerData.pages[flyerData.currentPageIndex].settings.margins.lateral;
 
-    // Calcula a largura e a posição X do rodapé
     const footerX = lateralMargin;
     const footerWidth = canvasWidth - (2 * lateralMargin);
 
-    // Calcula a altura e a posição Y do texto e do fundo
-    const mainTextLines = getWrappedLines(ctx, footerSettings.text.toUpperCase(), footerWidth * 0.95).lines;
-    const subtextLines = getWrappedLines(ctx, footerSettings.footerSubtext.toUpperCase(), footerWidth * 0.95).lines;
-    
-    const mainTextHeight = mainTextLines.length * (footerSettings.fontSize * 1.2);
-    const subtextHeight = subtextLines.length * (footerSettings.footerSubtextFontSize * 1.2);
-    
-    const totalTextHeight = mainTextHeight + subtextHeight + (mainTextLines.length > 0 && subtextLines.length > 0 ? footerSettings.textSpacing : 0);
+    // --- INÍCIO DA CORREÇÃO ---
+    // 1. Processa o Texto Principal (respeitando "Enter")
+    const manualMainTextLines = footerSettings.text.toUpperCase().split('\n');
+    let finalMainTextLines = [];
+    ctx.font = `bold ${footerSettings.fontSize}px '${footerSettings.fontFamily}'`;
+    manualMainTextLines.forEach(manualLine => {
+        const { lines: wrappedSubLines } = getWrappedLines(ctx, manualLine, footerWidth * 0.95);
+        finalMainTextLines.push(...wrappedSubLines.map(l => l.trim()));
+    });
+
+    // 2. Processa o Subtexto (respeitando "Enter")
+    const manualSubtextLines = footerSettings.footerSubtext.toUpperCase().split('\n');
+    let finalSubtextLines = [];
+    ctx.font = `bold ${footerSettings.footerSubtextFontSize}px '${footerSettings.subtextFontFamily}'`;
+    manualSubtextLines.forEach(manualLine => {
+        const { lines: wrappedSubLines } = getWrappedLines(ctx, manualLine, footerWidth * 0.95);
+        finalSubtextLines.push(...wrappedSubLines.map(l => l.trim()));
+    });
+    // --- FIM DA CORREÇÃO ---
+
+    const mainTextHeight = finalMainTextLines.length * (footerSettings.fontSize * 1.2);
+    const subtextHeight = finalSubtextLines.length * (footerSettings.footerSubtextFontSize * 1.2);
+
+    const totalTextHeight = mainTextHeight + subtextHeight + (finalMainTextLines.length > 0 && finalSubtextLines.length > 0 ? footerSettings.textSpacing : 0);
     const backgroundHeight = totalTextHeight + (footerSettings.paddingY * 2);
 
-    // Define a posição Y do fundo
     let backgroundY;
     if (footerSettings.autoPosition) {
-        // Posição automática no final da página
         backgroundY = canvasHeight - backgroundHeight - flyerData.pages[flyerData.currentPageIndex].settings.margins.footer;
     } else {
-        // Usa a posição manual definida no painel
         backgroundY = footerSettings.positionY;
     }
 
-
-    // 1. Desenha o fundo (se estiver ativado)
     if (footerSettings.backgroundEnabled) {
         ctx.fillStyle = footerSettings.bgColor;
         pathRoundedRect(ctx, footerX, backgroundY, footerWidth, backgroundHeight, footerSettings.borderRadius);
         ctx.fill();
     }
 
-    // 2. Calcula a posição Y inicial do texto com base no alinhamento vertical
     let textStartY;
     switch (footerSettings.textVerticalAlign) {
-        case 'top':
-            textStartY = backgroundY + footerSettings.paddingY;
-            break;
-        case 'bottom':
-            textStartY = backgroundY + backgroundHeight - footerSettings.paddingY - totalTextHeight;
-            break;
-        case 'middle':
-        default:
-            textStartY = backgroundY + (backgroundHeight - totalTextHeight) / 2;
-            break;
+        case 'top': textStartY = backgroundY + footerSettings.paddingY; break;
+        case 'bottom': textStartY = backgroundY + backgroundHeight - footerSettings.paddingY - totalTextHeight; break;
+        default: textStartY = backgroundY + (backgroundHeight - totalTextHeight) / 2; break;
     }
 
     ctx.fillStyle = footerSettings.textColor;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
-    // 3. Desenha o texto principal
     ctx.font = `bold ${footerSettings.fontSize}px '${footerSettings.fontFamily}'`;
     let currentY = textStartY;
-    mainTextLines.forEach(line => {
-        ctx.fillText(line.trim(), footerX + footerWidth / 2, currentY);
+    finalMainTextLines.forEach(line => {
+        ctx.fillText(line, footerX + footerWidth / 2, currentY);
         currentY += footerSettings.fontSize * 1.2;
     });
 
-    // 4. Desenha o subtexto (se houver)
-    if (subtextLines.length > 0 && mainTextLines.length > 0) {
-        currentY += footerSettings.textSpacing; // Adiciona o espaçamento entre os textos
+    if (finalSubtextLines.length > 0 && finalMainTextLines.length > 0) {
+        currentY += footerSettings.textSpacing;
     }
-    
+
     ctx.font = `bold ${footerSettings.footerSubtextFontSize}px '${footerSettings.subtextFontFamily}'`;
-    subtextLines.forEach(line => {
-        ctx.fillText(line.trim(), footerX + footerWidth / 2, currentY);
+    finalSubtextLines.forEach(line => {
+        ctx.fillText(line, footerX + footerWidth / 2, currentY);
         currentY += footerSettings.footerSubtextFontSize * 1.2;
     });
 
@@ -5752,6 +5755,8 @@ ctx.letterSpacing = '8px'; // Ajuste este valor em pixels conforme sua preferên
     // ========================================================
     // ===== FIM DA CORREÇÃO DE ALINHAMENTO =====
     // ========================================================
+	    drawFooter(ctx, settings.footer);
+
 }
 
 // ▲▲▲ FIM DO BLOCO ▲▲▲
