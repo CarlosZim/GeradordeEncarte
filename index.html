@@ -1870,12 +1870,6 @@ Produto B, 5.50" rows="5"></textarea>
         </div>
     </div>
 </div>
-<div class="modal-overlay" id="exportPosterModal"> ```
-
-
-
-
-
 <div class="modal-overlay" id="exportPosterModal">
     <div class="modal-content">
         <h3 class="text-xl font-bold mb-4">Exportar Cartazes de Preço em PDF</h3>
@@ -1928,6 +1922,7 @@ Produto B, 5.50" rows="5"></textarea>
 
 
 </div>
+
 <div class="modal-overlay" id="customModal">
 <div class="modal-content">
 <p class="mb-4" id="modalMessage"></p>
@@ -8750,9 +8745,7 @@ async function generatePosterPDF() {
 // =========================================================
 // ===== LINHA FALTANTE QUE CAUSA O PROBLEMA ADICIONADA AQUI =====
 // =========================================================
-runPosterExportBtn.addEventListener('click', generatePosterPDF);
-
-
+runPosterExportBtn.addEventListener('click', generatePosterPDF); // LINHA ADICIONADA
 
 prevPageBtn.addEventListener('click', goToPrevPage);
 nextPageBtn.addEventListener('click', goToNextPage);
