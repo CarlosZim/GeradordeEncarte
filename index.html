@@ -2221,9 +2221,13 @@ function updateTargetPagesState() {
 /**
  * Aplica as configurações da página de origem nas páginas de destino marcadas.
  */
+/**
+ * Aplica as configurações da página de origem nas páginas de destino marcadas.
+ * VERSÃO CORRIGIDA: Agora também copia a imagem de fundo e os objetos de linha.
+ */
 function applyMasterSettingsToSelectedPages() {
     const sourcePageIndex = parseInt(masterPageSelect.value, 10);
-    const targetCheckboxes = targetPagesContainer.querySelectorAll('input[type="checkbox"]:checked');
+    const targetCheckboxes = document.querySelectorAll('#targetPagesContainer input[type="checkbox"]:checked');
     const targetPageIndexes = Array.from(targetCheckboxes).map(cb => parseInt(cb.value, 10));
 
     if (isNaN(sourcePageIndex) || !flyerData.pages[sourcePageIndex]) {
@@ -2246,11 +2250,21 @@ function applyMasterSettingsToSelectedPages() {
             targetPageIndexes.forEach(targetIndex => {
                 const targetPage = flyerData.pages[targetIndex];
                 if (targetPage) {
+                    // Preserva o layout de produtos original da página de destino
                     const originalManualLayout = JSON.parse(JSON.stringify(targetPage.manualLayout));
                     const originalPredefinedLayout = targetPage.settings.predefinedLayout;
 
+                    // 1. Copia todas as configurações (margens, fontes, cores, etc.)
                     targetPage.settings = JSON.parse(JSON.stringify(settingsTemplate));
 
+                    // 2. NOVO: Copia explicitamente a imagem de fundo e sua referência
+                    targetPage.backgroundImage = sourcePage.backgroundImage;
+                    targetPage.backgroundImageSrc = sourcePage.backgroundImageSrc;
+
+                    // 3. NOVO: Copia os objetos de linha (contém logos de título, etc.)
+                    targetPage.lineObjects = JSON.parse(JSON.stringify(sourcePage.lineObjects));
+
+                    // 4. Restaura o layout de produtos original
                     targetPage.manualLayout = originalManualLayout;
                     targetPage.settings.predefinedLayout = originalPredefinedLayout;
                 }
