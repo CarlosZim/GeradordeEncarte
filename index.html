@@ -2013,37 +2013,17 @@ Produto B, 5.50" rows="5"></textarea>
 
 <script>
         
-      // ▼▼▼ COLE O BLOCO DE CONEXÃO EXATAMENTE AQUI NO INÍCIO ▼▼▼
-// --- INICIALIZAÇÃO DO SUPABASE ---
-// --- INICIALIZAÇÃO DO SUPABASE ---
-const SUPABASE_URL = 'https://dbtclgiiacmabfrinpmh.supabase.co'; // Formato: https://SEU_ID.supabase.co
+// ▼▼▼ COLE TODO ESTE CÓDIGO NO LUGAR DO SEU SCRIPT ANTIGO ▼▼▼
+
+const SUPABASE_URL = 'https://dbtzigjdcmabfinpqmfh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRidHppZ2pkY21hYmZpbnBxbWZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5NDkxNjQsImV4cCI6MjA3MDUyNTE2NH0.zNCJ9A5GH5urXcjmkRqr2g1VufK7qk5O4ye1QFiH8fA';
-
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-// ▲▲▲ FIM DO BLOCO DE CONEXÃO ▲▲▲  
-		
-		
-		
-// ▼▼▼ ADICIONE ESTE BLOCO NO INÍCIO DO SEU SCRIPT ▼▼▼
-
-
-
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-
-// ▼▼▼ COLE ESTE BLOCO DE CÓDIGO CORRETO NO INÍCIO DO SEU SCRIPT ▼▼▼
 
 // =================================================================
-// --- INÍCIO DO BLOCO DE CÓDIGO DO BANCO DE DADOS SUPABASE ---
+// --- BLOCO DE CÓDIGO DO BANCO DE DADOS SUPABASE ---
 // =================================================================
 
-// --- 1. VARIÁVEL GLOBAL PARA O BANCO DE DADOS EM MEMÓRIA ---
 let productDatabase = {};
-
-// --- 2. FUNÇÕES PRINCIPAIS (CARREGAR E SALVAR) ---
 
 async function loadProductDatabase() {
     const productDbLabel = document.getElementById('productDbLabel');
@@ -2107,7 +2087,6 @@ async function syncProductDatabase() {
     }
 }
 
-// --- 3. FUNÇÃO AUXILIAR ---
 function dataUrlToBlob(dataUrl) {
     const arr = dataUrl.split(',');
     const mime = arr[0].match(/:(.*?);/)[1];
@@ -2120,25 +2099,15 @@ function dataUrlToBlob(dataUrl) {
     return new Blob([u8arr], { type: mime });
 }
 
+
 // =================================================================
-// --- FIM DO BLOCO DE CÓDIGO DO BANCO DE DADOS SUPABASE ---
+// --- RESTANTE DO CÓDIGO DA APLICAÇÃO ---
 // =================================================================
 
-// ▲▲▲ FIM DO BLOCO ▲▲▲
-
-
-
-
-
-/**
- * Pega as configurações da página de cartaz atual e aplica a todas as
- * outras páginas que também são cartazes de preço.
- */
 function applyCurrentPosterLayoutToOthers() {
     const currentPageIndex = flyerData.currentPageIndex;
     const templatePage = flyerData.pages[currentPageIndex];
 
-    // 1. Verifica se a página atual é realmente um cartaz de preço
     if (!templatePage.isPricePoster) {
         showAlert("Esta função só pode ser usada a partir de uma página de cartaz de preço.");
         return;
@@ -2146,122 +2115,62 @@ function applyCurrentPosterLayoutToOthers() {
 
     showConfirm("Isso aplicará o layout, fundo e data de validade deste cartaz para TODOS os outros cartazes do projeto. Deseja continuar?", (confirmed) => {
         if (confirmed) {
-            // 2. Pega uma cópia profunda de todas as configurações relevantes
             const settingsTemplate = JSON.parse(JSON.stringify(templatePage.settings));
             const backgroundTemplate = templatePage.backgroundImage;
             const backgroundSrcTemplate = templatePage.backgroundImageSrc;
-
             let updatedCount = 0;
-
-            // 3. Itera sobre TODAS as páginas do projeto
             flyerData.pages.forEach((page, index) => {
-                // Aplica as mudanças apenas se for um cartaz e não for a página atual
                 if (page.isPricePoster && index !== currentPageIndex) {
-                    // Copia as configurações de layout, margens, validades, fontes, etc.
                     page.settings = JSON.parse(JSON.stringify(settingsTemplate));
-                    
-                    // Copia o fundo
                     page.backgroundImage = backgroundTemplate;
                     page.backgroundImageSrc = backgroundSrcTemplate;
-                    
                     updatedCount++;
                 }
             });
-
-            // 4. Redesenha o canvas e avisa o usuário
             redrawCanvas();
             showAlert(`${updatedCount} outros cartazes foram atualizados com sucesso!`);
         }
     });
 }
 
-
-
-
 async function downloadAllPages() {
     showSpinner(true);
     showAlert("Iniciando download de todas as páginas... Aguarde um momento.");
-
-    const originalPageIndex = flyerData.currentPageIndex; // Salva a página que você estava vendo
-
-    // Função auxiliar para criar um pequeno atraso, garantindo que o canvas redesenhe
+    const originalPageIndex = flyerData.currentPageIndex;
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
     for (let i = 0; i < flyerData.pages.length; i++) {
-        // Muda para a página que será baixada
         switchPage(i, true);
-        
-        // Espera um instante para garantir que a página foi totalmente renderizada no canvas
-        await delay(500); 
-
-        // Cria um link temporário para o download
+        await delay(500);
         const link = document.createElement('a');
-        link.download = `encarte-pagina-${i + 1}.png`; // Nome do arquivo será "encarte-pagina-1.png", etc.
+        link.download = `encarte-pagina-${i + 1}.png`;
         link.href = canvas.toDataURL("image/png");
-        
-        // Simula o clique para baixar o arquivo
         link.click();
-
-        // Espera mais um pouco antes de ir para a próxima página para não sobrecarregar o navegador
         await delay(300);
     }
-
-    // Volta para a página original que você estava editando
     switchPage(originalPageIndex, false);
-    
     showSpinner(false);
     showAlert(`Download de ${flyerData.pages.length} páginas concluído!`);
 }
-		
-		
-		
-		// ▼▼▼ COLE ESTA NOVA FUNÇÃO NO SEU SCRIPT ▼▼▼
 
-/**
- * Aplica as configurações de fontes e balões de preço da página atual
- * para todas as páginas subsequentes (da página 2 em diante).
- */
 function applyCurrentFontsToAllOthers() {
     if (flyerData.pages.length < 2) {
         showAlert("Você precisa de pelo menos 2 páginas para usar esta função.");
         return;
     }
-
     showConfirm("Isso aplicará as configurações de fontes e balões da página atual para todas as páginas a partir da segunda. Deseja continuar?", (confirmed) => {
         if (confirmed) {
-            // 1. Pega uma cópia profunda das configurações da página atual
             const currentPageSettings = flyerData.pages[flyerData.currentPageIndex].settings;
             const fontsTemplate = JSON.parse(JSON.stringify(currentPageSettings.fonts));
             const balloonStylesTemplate = JSON.parse(JSON.stringify(currentPageSettings.balloonStyles));
-
-            // 2. Itera sobre as páginas, começando da segunda (índice 1)
             for (let i = 1; i < flyerData.pages.length; i++) {
                 flyerData.pages[i].settings.fonts = JSON.parse(JSON.stringify(fontsTemplate));
                 flyerData.pages[i].settings.balloonStyles = JSON.parse(JSON.stringify(balloonStylesTemplate));
             }
-
-            // 3. Redesenha o canvas para mostrar a alteração e avisa o usuário
             redrawCanvas();
             showAlert("Fontes e estilos de preço aplicados com sucesso a todas as páginas a partir da segunda!");
         }
     });
 }
-
-// ▲▲▲ FIM DA NOVA FUNÇÃO ▲▲▲
-		
-		
-		
-		// ▼▼▼ COLE ESTE BLOCO NOVO NO SEU SCRIPT ▼▼▼
-
-/**
- * Aplica TODAS as configurações da página atual para as páginas subsequentes (da 2 em diante).
- * Isso inclui layout, margens, logos, fontes, balões, rodapé, etc.
- */
-// ▼▼▼ COLE TODO ESTE BLOCO NOVO NO SEU SCRIPT ▼▼▼
-
-// ▼▼▼ COLE ESTE BLOCO NOVO E COMPLETO NO LUGAR DO ANTIGO ▼▼▼
-
-// --- LÓGICA DO PAINEL "APLICAR ESTILO MESTRE" (VERSÃO COM CHECKBOX) ---
 
 const masterPageSelect = document.getElementById('masterPageSelect');
 const targetPagesContainer = document.getElementById('targetPagesContainer');
@@ -2269,32 +2178,22 @@ const applyMasterSettingsBtn = document.getElementById('applyMasterSettingsBtn')
 const selectAllTargetsBtn = document.getElementById('selectAllTargetsBtn');
 const deselectAllTargetsBtn = document.getElementById('deselectAllTargetsBtn');
 
-/**
- * Preenche tanto o seletor de página de origem quanto a lista de páginas de destino.
- */
 function populateMasterPageControls() {
     if (!masterPageSelect || !targetPagesContainer) return;
-
     const currentSourceSelection = masterPageSelect.value;
     masterPageSelect.innerHTML = '';
     targetPagesContainer.innerHTML = '';
-
     if (flyerData.pages.length < 2) {
         targetPagesContainer.innerHTML = '<p class="text-xs text-center text-gray-500 p-2">Você precisa de pelo menos 2 páginas.</p>';
         applyMasterSettingsBtn.disabled = true;
         return;
     }
-
     applyMasterSettingsBtn.disabled = false;
-
     flyerData.pages.forEach((page, index) => {
-        // Preenche o seletor da página de ORIGEM
         const sourceOption = document.createElement('option');
         sourceOption.value = index;
         sourceOption.textContent = `Página ${index + 1}`;
         masterPageSelect.appendChild(sourceOption);
-
-        // Preenche a lista de checkboxes das páginas de DESTINO
         const itemDiv = document.createElement('div');
         itemDiv.className = 'flex items-center gap-2 p-1 rounded';
         const checkbox = document.createElement('input');
@@ -2310,15 +2209,10 @@ function populateMasterPageControls() {
         itemDiv.appendChild(label);
         targetPagesContainer.appendChild(itemDiv);
     });
-
-    // Tenta manter a seleção anterior ou padrão
     masterPageSelect.value = currentSourceSelection || flyerData.currentPageIndex;
-    updateTargetPagesState(); // Desabilita o checkbox da página de origem
+    updateTargetPagesState();
 }
 
-/**
- * Desabilita o checkbox da página de origem para evitar que ela seja aplicada a si mesma.
- */
 function updateTargetPagesState() {
     const sourcePageIndex = masterPageSelect.value;
     const allCheckboxes = targetPagesContainer.querySelectorAll('input[type="checkbox"]');
@@ -2334,14 +2228,10 @@ function updateTargetPagesState() {
     });
 }
 
-/**
- * Aplica as configurações da página de origem nas páginas de destino marcadas.
- */
 function applyMasterSettingsToSelectedPages() {
     const sourcePageIndex = parseInt(masterPageSelect.value, 10);
     const targetCheckboxes = targetPagesContainer.querySelectorAll('input[type="checkbox"]:checked');
     const targetPageIndexes = Array.from(targetCheckboxes).map(cb => parseInt(cb.value, 10));
-
     if (isNaN(sourcePageIndex) || !flyerData.pages[sourcePageIndex]) {
         showAlert("Página de origem inválida.");
         return;
@@ -2350,28 +2240,22 @@ function applyMasterSettingsToSelectedPages() {
         showAlert("Por favor, marque pelo menos uma página de destino para aplicar o estilo.");
         return;
     }
-
     const sourcePage = flyerData.pages[sourcePageIndex];
     const confirmationMessage = `Isso aplicará o estilo da Página ${sourcePageIndex + 1} para as ${targetPageIndexes.length} página(s) marcadas. Deseja continuar?`;
-
     showConfirm(confirmationMessage, (confirmed) => {
         if (confirmed) {
             showSpinner(true);
             const settingsTemplate = JSON.parse(JSON.stringify(sourcePage.settings));
-
             targetPageIndexes.forEach(targetIndex => {
                 const targetPage = flyerData.pages[targetIndex];
                 if (targetPage) {
                     const originalManualLayout = JSON.parse(JSON.stringify(targetPage.manualLayout));
                     const originalPredefinedLayout = targetPage.settings.predefinedLayout;
-
                     targetPage.settings = JSON.parse(JSON.stringify(settingsTemplate));
-
                     targetPage.manualLayout = originalManualLayout;
                     targetPage.settings.predefinedLayout = originalPredefinedLayout;
                 }
             });
-
             applyPageSettingsToUI(flyerData.pages[flyerData.currentPageIndex]);
             redrawCanvas();
             showSpinner(false);
@@ -2380,71 +2264,19 @@ function applyMasterSettingsToSelectedPages() {
     });
 }
 
-// --- Conexão dos Eventos ---
-if (applyMasterSettingsBtn) {
-    applyMasterSettingsBtn.addEventListener('click', applyMasterSettingsToSelectedPages);
-}
-if (masterPageSelect) {
-    masterPageSelect.addEventListener('change', updateTargetPagesState);
-}
-selectAllTargetsBtn.addEventListener('click', () => {
-    targetPagesContainer.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb => cb.checked = true);
-});
-deselectAllTargetsBtn.addEventListener('click', () => {
-    targetPagesContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-});
-
-// Atualiza os controles sempre que o painel de páginas for aberto
-const pagesPanelButton = document.querySelector('a[data-panel="panel-pages"]');
-if (pagesPanelButton) {
-    pagesPanelButton.addEventListener('click', populateMasterPageControls);
-}
-
-// ▲▲▲ FIM DO BLOCO NOVO ▲▲▲
-
-// Adiciona o "ouvinte" de clique para o novo botão
-const applyAllSettingsBtn = document.getElementById('applyAllSettingsToOthersBtn');
-if (applyAllSettingsBtn) {
-    applyAllSettingsBtn.addEventListener('click', applyAllSettingsToAllOthers);
-}
-
-// ▲▲▲ FIM DO BLOCO NOVO ▲▲▲
-		
-		
-		
-		// ▼▼▼ ADICIONE ESTA NOVA FUNÇÃO NO SEU SCRIPT ▼▼▼
-
-/**
- * Cria um layout de grade automático com base no número de produtos.
- * @param {number} productCount - O número de produtos na página.
- * @returns {Array} Um array de configuração para o manualLayout.
- */
 function generateAutoLayout(productCount) {
     if (productCount <= 0) return [];
-    
     let layout = [];
-
-    // Regras para números comuns de produtos, para criar grades bonitas
-    if (productCount <= 4) {
-        layout = [{ products: productCount }];
-    } else if (productCount === 5) {
-        layout = [{ products: 3 }, { products: 2 }];
-    } else if (productCount === 6) {
-        layout = [{ products: 3 }, { products: 3 }];
-    } else if (productCount === 7) {
-        layout = [{ products: 4 }, { products: 3 }];
-    } else if (productCount === 8) {
-        layout = [{ products: 4 }, { products: 4 }];
-    } else if (productCount === 9) {
-        layout = [{ products: 3 }, { products: 3 }, { products: 3 }];
-    } else if (productCount === 10) {
-        layout = [{ products: 4 }, { products: 3 }, { products: 3 }];
-    } else if (productCount === 11) {
-        layout = [{ products: 4 }, { products: 4 }, { products: 3 }];
-    } else if (productCount === 12) {
-        layout = [{ products: 4 }, { products: 4 }, { products: 4 }];
-    } else {
-        // Lógica genérica para números maiores: preenche com linhas de 4
+    if (productCount <= 4) layout = [{ products: productCount }];
+    else if (productCount === 5) layout = [{ products: 3 }, { products: 2 }];
+    else if (productCount === 6) layout = [{ products: 3 }, { products: 3 }];
+    else if (productCount === 7) layout = [{ products: 4 }, { products: 3 }];
+    else if (productCount === 8) layout = [{ products: 4 }, { products: 4 }];
+    else if (productCount === 9) layout = [{ products: 3 }, { products: 3 }, { products: 3 }];
+    else if (productCount === 10) layout = [{ products: 4 }, { products: 3 }, { products: 3 }];
+    else if (productCount === 11) layout = [{ products: 4 }, { products: 4 }, { products: 3 }];
+    else if (productCount === 12) layout = [{ products: 4 }, { products: 4 }, { products: 4 }];
+    else {
         let count = productCount;
         while (count > 0) {
             const productsInRow = Math.min(count, 4);
@@ -2452,12 +2284,9 @@ function generateAutoLayout(productCount) {
             count -= productsInRow;
         }
     }
-
-    // Adiciona um espaçamento padrão entre as linhas (exceto a última)
     layout.forEach((line, index) => {
         line.rowSpacing = (index === layout.length - 1) ? 0 : 0;
     });
-
     return layout;
 }
 		
@@ -8288,7 +8117,7 @@ async function initialize() {
     showSpinner(true);
 
     // ETAPA 1: Carregar todos os recursos locais primeiro, garantindo o modo offline.
-    await loadProductDatabase(); // <-- PONTO CRÍTICO: Espera os produtos carregarem.
+    await loadProductDatabase();
     loadCustomFontsFromStorage();
     loadCustomBalloons();
     populateTemplatePreviews();
@@ -8313,20 +8142,19 @@ async function initialize() {
         } else {
             await signInAnonymously(auth);
         }
+userId = null; // Forçando modo offline para projetos por enquanto
+        await populateSavedProjectsList();
     } catch (e) {
-        console.warn("Falha na inicialização do Firebase, operando em modo offline:", e.message);
+        console.warn("Firebase não inicializado (opcional). Operando em modo offline para projetos.");
         userId = null;
         await populateSavedProjectsList();
     }
 
-    // ETAPA 3: Finalizar a inicialização da interface do usuário.
     if (flyerData.pages.length === 0) {
         flyerData.pages.push(createDefaultPage());
     }
     
-    // Agora que os dados estão carregados, a página inicial pode ser desenhada.
     switchPage(0, false);
-    
     showSpinner(false);
 }
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
