@@ -6,6 +6,8 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Gerador de Encartes Profissional (Corrigido)</title>
 <script src="https://cdn.tailwindcss.com"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -1648,6 +1650,23 @@ Produto B, 5.50" rows="5"></textarea>
 <button class="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-2 px-4 rounded-lg" id="deleteAllStockBtn">
                 Deletar TODO o Estoque de Produtos
             </button>
+			
+			
+			<div class="pt-4 mt-4 border-t space-y-3">
+    <h4 class="text-lg font-semibold text-center text-teal-400">Backup e Transferência</h4>
+    <p class="text-xs text-center text-gray-500 -mt-2 mb-2">
+        Salve seu banco de dados em um arquivo para segurança ou para movê-lo para outro computador.
+    </p>
+    <button class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg" id="exportDbBtn">
+        Exportar Banco de Dados (Salvar Arquivo)
+    </button>
+    <button class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg" id="importDbBtn">
+        Importar Banco de Dados (Carregar Arquivo)
+    </button>
+    <input type="file" id="importDbInput" class="hidden" accept=".json">
+</div>
+			
+			
 </div>
 </div>
 </div>
@@ -1987,12 +2006,26 @@ Produto B, 5.50" rows="5"></textarea>
 </div>
 </div>
 </div>
-<script type="module">
+
+
+
+
+
+<script>
         
-        
+      // ▼▼▼ COLE O BLOCO DE CONEXÃO EXATAMENTE AQUI NO INÍCIO ▼▼▼
+// --- INICIALIZAÇÃO DO SUPABASE ---
+// --- INICIALIZAÇÃO DO SUPABASE ---
+const SUPABASE_URL = 'https://dbtclgiiacmabfrinpmh.supabase.co'; // Formato: https://SEU_ID.supabase.co
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRidHppZ2pkY21hYmZpbnBxbWZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5NDkxNjQsImV4cCI6MjA3MDUyNTE2NH0.zNCJ9A5GH5urXcjmkRqr2g1VufK7qk5O4ye1QFiH8fA';
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ▲▲▲ FIM DO BLOCO DE CONEXÃO ▲▲▲  
 		
 		
 		
+// ▼▼▼ ADICIONE ESTE BLOCO NO INÍCIO DO SEU SCRIPT ▼▼▼
+
 
 
 
@@ -2000,15 +2033,98 @@ Produto B, 5.50" rows="5"></textarea>
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDyzqbHdaktGImfxrl-LcC1Zu-Bc9wGRtM",
-  authDomain: "gerador-de-encartes-online.firebaseapp.com",
-  projectId: "gerador-de-encartes-online",
-  storageBucket: "gerador-de-encartes-online.firebasestorage.app",
-  messagingSenderId: "332334632631",
-  appId: "1:332334632631:web:cb0a86502e6e5ef0124732"
-};
 
+// ▼▼▼ COLE ESTE BLOCO DE CÓDIGO CORRETO NO INÍCIO DO SEU SCRIPT ▼▼▼
+
+// =================================================================
+// --- INÍCIO DO BLOCO DE CÓDIGO DO BANCO DE DADOS SUPABASE ---
+// =================================================================
+
+// --- 1. VARIÁVEL GLOBAL PARA O BANCO DE DADOS EM MEMÓRIA ---
+let productDatabase = {};
+
+// --- 2. FUNÇÕES PRINCIPAIS (CARREGAR E SALVAR) ---
+
+async function loadProductDatabase() {
+    const productDbLabel = document.getElementById('productDbLabel');
+    if(productDbLabel) productDbLabel.innerHTML = 'Carregando Banco de Dados (Nuvem) ☁️...';
+    try {
+        const { data, error } = await supabaseClient.from('products').select('*');
+        if (error) throw error;
+
+        productDatabase = {};
+        if (data && data.length > 0) {
+            productDatabase = Object.fromEntries(data.map(p => [p.name, { name: p.name, price: p.price, src: p.image_url }]));
+        }
+        if(productDbLabel) productDbLabel.innerHTML = 'Busca Inteligente (Nuvem) ☁️';
+        populateStockList();
+    } catch (e) {
+        console.error("Erro ao carregar do Supabase:", e);
+        productDatabase = {};
+        if(productDbLabel) productDbLabel.innerHTML = '<span class="text-red-400">Falha ao conectar à Nuvem</span>';
+    }
+}
+
+async function syncProductDatabase() {
+    try {
+        const productsArray = Object.values(productDatabase);
+        showSpinner(true);
+        showAlert("Sincronizando com a nuvem... Isso pode demorar.");
+
+        for (const product of productsArray) {
+            if (product.src && product.src.startsWith('data:image')) {
+                const blob = dataUrlToBlob(product.src);
+                const fileName = `${Date.now()}-${product.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                
+                const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(fileName, blob, { upsert: true });
+                if (uploadError) throw uploadError;
+
+                const { data: publicUrlData } = supabaseClient.storage.from('product-images').getPublicUrl(fileName);
+                product.src = publicUrlData.publicUrl;
+            }
+        }
+
+        const productsToStore = productsArray.map(p => ({
+            name: p.name,
+            price: p.price,
+            image_url: p.src
+        }));
+
+        await supabaseClient.from('products').delete().neq('name', 'dummy_value_to_prevent_error');
+        
+        if (productsToStore.length > 0) {
+            const { error: upsertError } = await supabaseClient.from('products').upsert(productsToStore, { onConflict: 'name' });
+            if (upsertError) throw upsertError;
+        }
+
+        showAlert("Banco de dados salvo na nuvem com sucesso!");
+    } catch (e) {
+        console.error("Falha grave ao salvar no Supabase:", e);
+        showAlert(`Ocorreu um erro ao salvar na nuvem: ${e.message}`);
+    } finally {
+        showSpinner(false);
+        populateStockList();
+    }
+}
+
+// --- 3. FUNÇÃO AUXILIAR ---
+function dataUrlToBlob(dataUrl) {
+    const arr = dataUrl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+}
+
+// =================================================================
+// --- FIM DO BLOCO DE CÓDIGO DO BANCO DE DADOS SUPABASE ---
+// =================================================================
+
+// ▲▲▲ FIM DO BLOCO ▲▲▲
 
 
 
@@ -2221,13 +2337,9 @@ function updateTargetPagesState() {
 /**
  * Aplica as configurações da página de origem nas páginas de destino marcadas.
  */
-/**
- * Aplica as configurações da página de origem nas páginas de destino marcadas.
- * VERSÃO CORRIGIDA: Agora também copia a imagem de fundo e os objetos de linha.
- */
 function applyMasterSettingsToSelectedPages() {
     const sourcePageIndex = parseInt(masterPageSelect.value, 10);
-    const targetCheckboxes = document.querySelectorAll('#targetPagesContainer input[type="checkbox"]:checked');
+    const targetCheckboxes = targetPagesContainer.querySelectorAll('input[type="checkbox"]:checked');
     const targetPageIndexes = Array.from(targetCheckboxes).map(cb => parseInt(cb.value, 10));
 
     if (isNaN(sourcePageIndex) || !flyerData.pages[sourcePageIndex]) {
@@ -2250,21 +2362,11 @@ function applyMasterSettingsToSelectedPages() {
             targetPageIndexes.forEach(targetIndex => {
                 const targetPage = flyerData.pages[targetIndex];
                 if (targetPage) {
-                    // Preserva o layout de produtos original da página de destino
                     const originalManualLayout = JSON.parse(JSON.stringify(targetPage.manualLayout));
                     const originalPredefinedLayout = targetPage.settings.predefinedLayout;
 
-                    // 1. Copia todas as configurações (margens, fontes, cores, etc.)
                     targetPage.settings = JSON.parse(JSON.stringify(settingsTemplate));
 
-                    // 2. NOVO: Copia explicitamente a imagem de fundo e sua referência
-                    targetPage.backgroundImage = sourcePage.backgroundImage;
-                    targetPage.backgroundImageSrc = sourcePage.backgroundImageSrc;
-
-                    // 3. NOVO: Copia os objetos de linha (contém logos de título, etc.)
-                    targetPage.lineObjects = JSON.parse(JSON.stringify(sourcePage.lineObjects));
-
-                    // 4. Restaura o layout de produtos original
                     targetPage.manualLayout = originalManualLayout;
                     targetPage.settings.predefinedLayout = originalPredefinedLayout;
                 }
@@ -6343,27 +6445,15 @@ canvas.addEventListener('mouseout', (e) => {
         
 		// ▼▼▼ SUBSTITUA SUA FUNÇÃO addProductWithDefaults POR ESTA ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'addProductWithDefaults' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'addProductWithDefaults' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA ANTIGA FUNÇÃO 'addProductWithDefaults' POR ESTA ▼▼▼
 function addProductWithDefaults(productData) {
+    // Chama nossa nova função para obter os padrões ideais para a imagem
+    const smartDefaults = calculateSmartImageDefaults(productData.image);
+
     flyerData.pages[flyerData.currentPageIndex].products.push({
         ...productData,
-        imageFit: 'contain',
-        imageRepetitions: 1,
-        imageRepetitionDirection: 'horizontal',
-
-        // --- INÍCIO DA CORREÇÃO ---
-        // Define a posição horizontal como 50% (centro)
-        imagePositionX: 50,
-
-        // Define a posição vertical como 0% (topo)
-        imagePositionY: 10,
-
-        // Define a largura da imagem como 75% da área
-        imageWidthPercent: 75,
-
-        // Define a altura da imagem como 75% da área
-        imageHeightPercent: 70,
-        // --- FIM DA CORREÇÃO ---
-
+        ...smartDefaults, // Aplica os padrões calculados (repetições, tamanho, posição)
         backgroundColor: null,
         descScaleX: 100,
         descScaleY: 100,
@@ -6371,6 +6461,8 @@ function addProductWithDefaults(productData) {
         priceScaleY: 100
     });
 }
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 		
         addProductBtn.addEventListener('click', () => { if (productNameInput.value && priceInput.value && newProductImage) { addProductWithDefaults({ name: productNameInput.value, price: parseFloat(priceInput.value).toFixed(2), image: newProductImage, src: newProductImage.src }); productNameInput.value = ''; priceInput.value = ''; productImageInput.value = ''; newProductImage = null; updateProductListUI(); redrawCanvas() } else { showAlert('Por favor, preencha nome, preço e imagem do produto.'); } });
@@ -6538,7 +6630,9 @@ bulkAddBtn.addEventListener('click', (e) => {
                         }
                     }
                     
-                    newPage.products = productsForThisPage.map(p => ({ ...p, imageFit: 'contain', imageRepetitions: 1, imageRepetitionDirection: 'horizontal', imagePositionX: 50, imagePositionY: 50, imageWidthPercent: 100, imageHeightPercent: 100 }));
+                    newPage.products = productsForThisPage.map(p => ({ ...p, ...calculateSmartImageDefaults(p.image) }));
+
+
                     
                     newPage.settings.predefinedLayout = 'manual';
                     newPage.manualLayout = generateAutoLayout(newPage.products.length);
@@ -8187,14 +8281,23 @@ function updateNavButtonStates() {
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO "initialize" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO "initialize" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 async function initialize() {
     showSpinner(true);
 
+    // ETAPA 1: Carregar todos os recursos locais primeiro, garantindo o modo offline.
+    await loadProductDatabase(); // <-- PONTO CRÍTICO: Espera os produtos carregarem.
+    loadCustomFontsFromStorage();
+    loadCustomBalloons();
+    populateTemplatePreviews();
+
+    // ETAPA 2: Tenta conectar ao Firebase para recursos online (projetos na nuvem).
     try {
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        if (!firebaseConfig) {
-            throw new Error("Configuração do Firebase não encontrada. Usando modo local.");
-        }
+        if (!firebaseConfig) throw new Error("Configuração do Firebase não encontrada.");
+
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
@@ -8202,37 +8305,33 @@ async function initialize() {
         onAuthStateChanged(auth, async user => {
             userId = user ? user.uid : null;
             await populateSavedProjectsList();
-            await loadProductDatabase(); // Carrega o BD (nuvem ou local, dependendo do userId)
-            showSpinner(false); // Esconde o spinner após tudo carregar
         });
 
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
+        const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        if (authToken) {
+            await signInWithCustomToken(auth, authToken);
         } else {
             await signInAnonymously(auth);
         }
     } catch (e) {
-        console.warn("Falha na inicialização do Firebase:", e.message);
+        console.warn("Falha na inicialização do Firebase, operando em modo offline:", e.message);
         userId = null;
-
-        // --- INÍCIO DA CORREÇÃO ---
-        // Se a conexão com a nuvem falhar, o código agora irá explicitamente
-        // carregar o banco de dados local e a lista de projetos locais.
-        await loadProductDatabase();
         await populateSavedProjectsList();
-        showSpinner(false); // Garante que o spinner suma mesmo em caso de erro.
-        // --- FIM DA CORREÇÃO ---
     }
 
+    // ETAPA 3: Finalizar a inicialização da interface do usuário.
     if (flyerData.pages.length === 0) {
         flyerData.pages.push(createDefaultPage());
     }
-    loadCustomBalloons();
-
+    
+    // Agora que os dados estão carregados, a página inicial pode ser desenhada.
     switchPage(0, false);
-    loadCustomFontsFromStorage();
-    populateTemplatePreviews();
+    
+    showSpinner(false);
 }
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 
 
@@ -8982,6 +9081,63 @@ function drawCustomImageBalloon(ctx, x, y, w, h, details, balloonName, globalOff
 
 
 
+// ▼▼▼ ADICIONE ESTA NOVA FUNÇÃO AO SEU CÓDIGO ▼▼▼
+/**
+ * Calcula os padrões de repetição e tamanho da imagem com base em suas proporções.
+ * @param {Image} image - O objeto da imagem do produto.
+ * @returns {object} Um objeto com os padrões calculados.
+ */
+function calculateSmartImageDefaults(image) {
+    // Padrões que definimos anteriormente
+    let defaults = {
+        imageRepetitions: 1,
+        imageWidthPercent: 75,
+        imageHeightPercent: 70,
+        imagePositionY: 20,
+        imagePositionX: 50,
+        imageFit: 'contain',
+        imageRepetitionDirection: 'horizontal'
+    };
+
+    // Se não houver imagem, retorna os padrões básicos
+    if (!image || image.height === 0) return defaults;
+
+    const aspectRatio = image.width / image.height;
+    
+    // --- LÓGICA DE AUTO-REPETIÇÃO REFINADA ---
+    const NARROW_THRESHOLD = 0.8; 
+    const VERY_NARROW_THRESHOLD = 0.5; 
+    // NOVA CONDIÇÃO: A largura real da imagem em pixels.
+    // Imagens com largura menor que este valor serão candidatas à repetição.
+    const PIXEL_WIDTH_THRESHOLD = 450; // <-- AJUSTE ESTE VALOR SE NECESSÁRIO
+    const TARGET_WIDTH_PERCENT = 95;
+
+    // CONDIÇÃO 1: A imagem é proporcionalmente estreita (mais alta que larga)?
+    if (aspectRatio < NARROW_THRESHOLD) {
+        
+        // CONDIÇÃO 2: A imagem também é fisicamente fina (tem menos de 450px de largura)?
+        if (image.width < PIXEL_WIDTH_THRESHOLD) { 
+        
+            // SÓ SE AMBAS as condições forem verdadeiras, a imagem será repetida.
+            if (aspectRatio < VERY_NARROW_THRESHOLD) {
+                defaults.imageRepetitions = 3; // Triplica se for muito fina
+            } else {
+                defaults.imageRepetitions = 2; // Duplica se for apenas fina
+            }
+            // Ajusta a largura para ocupar o espaço alvo
+            defaults.imageWidthPercent = TARGET_WIDTH_PERCENT;
+        }
+    }
+    
+    return defaults;
+}
+// ▲▲▲ FIM DA NOVA FUNÇÃO ▲▲▲
+
+
+
+
+
+
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawDescLeftCustomBalloon' PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ PASSO 1: SUBSTITUA ESTA FUNÇÃO ▼▼▼
 /**
@@ -9275,58 +9431,97 @@ deselectAllDeleteBtn.addEventListener('click', () => {
 
 
 
+// ▼▼▼ COLE TODO ESTE BLOCO NO FINAL DO SEU SCRIPT ▼▼▼
+
+// --- LÓGICA DE EXPORTAÇÃO E IMPORTAÇÃO DO BANCO DE DADOS DE ESTOQUE ---
+
+// 1. Pega os novos botões que criamos no HTML
+const exportDbBtn = document.getElementById('exportDbBtn');
+const importDbBtn = document.getElementById('importDbBtn');
+const importDbInput = document.getElementById('importDbInput');
+
+// 2. Lógica do botão "Exportar"
+exportDbBtn.addEventListener('click', () => {
+    if (Object.keys(productDatabase).length === 0) {
+        showAlert("Seu banco de dados de produtos está vazio. Não há nada para exportar.");
+        return;
+    }
+
+    // Converte o objeto do banco de dados para um texto no formato JSON
+    const dbJson = JSON.stringify(productDatabase, null, 2);
+    // Cria um arquivo virtual na memória
+    const blob = new Blob([dbJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // Cria um link temporário para fazer o download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_produtos_encarte.json`; // Nome do arquivo de backup
+    a.click(); // Simula o clique para baixar
+
+    // Limpa o link da memória
+    URL.revokeObjectURL(url);
+    showAlert("Arquivo de backup gerado com sucesso! Salve-o em um lugar seguro.");
+});
+
+// 3. O botão "Importar" apenas aciona o clique no seletor de arquivo escondido
+importDbBtn.addEventListener('click', () => {
+    importDbInput.click();
+});
+
+// 4. Lógica que executa quando um arquivo de backup é selecionado
+importDbInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const importedDb = JSON.parse(e.target.result);
+
+            showConfirm("Deseja substituir seu banco de dados atual pelo do arquivo ou juntar os dois? (Juntar manterá os produtos atuais e apenas adicionará/atualizará os do arquivo).", (confirmed) => {
+                if (confirmed === null) return; // Ação cancelada pelo usuário
+
+                if (confirmed) { // Opção: JUNTAR
+                    productDatabase = { ...productDatabase, ...importedDb };
+                } else { // Opção: SUBSTITUIR
+                    productDatabase = importedDb;
+                }
+
+                // Salva o banco de dados atualizado e atualiza a tela
+                syncProductDatabase();
+                populateStockList();
+                showAlert("Banco de dados importado e atualizado com sucesso!");
+            }, "Juntar", "Substituir"); // Textos customizados para os botões de confirmação
+
+        } catch (error) {
+            showAlert("Erro ao importar. O arquivo parece não ser um backup válido.");
+            console.error(error);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Limpa o input para poder importar o mesmo arquivo novamente
+});
+
+// ▲▲▲ FIM DO BLOCO ▲▲▲
 
 
 window.onload = initialize;
 
 
 
-// =================================================================
-// --- LÓGICA DO BANCO DE DADOS DE PRODUTOS HÍBRIDO (LOCAL E NUVEM) ---
-// =================================================================
 
-// Variável para manter o banco de dados de produtos em memória
-let productDatabase = {};
 
-// Pega os novos elementos da interface
-const saveProductsToDbBtn = document.getElementById('saveProductsToDbBtn');
-const productDbLabel = document.getElementById('productDbLabel');
-const productSearchTextarea = document.getElementById('productSearchTextarea');
-const searchDbBtn = document.getElementById('searchDbBtn');
 
-// Função "inteligente" para carregar o banco de dados (da nuvem ou local)
-// ▼▼▼ SUBSTITUA A SUA FUNÇÃO "loadProductDatabase" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
-async function loadProductDatabase() {
-    productDbLabel.textContent = 'Carregando Banco de Dados...';
 
-    // --- INÍCIO DA CORREÇÃO ---
-    // A lógica agora é mais robusta para lidar com falhas de conexão.
 
-    if (userId) { // Tenta carregar da nuvem se o usuário estiver autenticado
-        try {
-            const dbRef = doc(db, 'product_database', userId);
-            const docSnap = await getDoc(dbRef);
-            if (docSnap.exists()) {
-                productDatabase = docSnap.data();
-            } else {
-                // Se não há nada na nuvem, verifica se há algo local para sincronizar
-                const localDb = JSON.parse(localStorage.getItem('localProductDb') || '{}');
-                productDatabase = localDb;
-            }
-            productDbLabel.innerHTML = 'Busca Inteligente (Nuvem) ☁️';
-        } catch (e) {
-            // Se a busca na nuvem falhar, carrega o banco de dados local como fallback
-            console.error("Erro ao carregar da nuvem, carregando BD local:", e);
-            productDatabase = JSON.parse(localStorage.getItem('localProductDb') || '{}');
-            productDbLabel.textContent = 'Busca Inteligente (Local - Offline)';
-        }
-    } else { 
-        // Se não houver autenticação, carrega diretamente do armazenamento local
-        productDatabase = JSON.parse(localStorage.getItem('localProductDb') || '{}');
-        productDbLabel.textContent = 'Busca Inteligente (Local)';
-    }
-    // --- FIM DA CORREÇÃO ---
-}
+
+
+
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 
 // Ação do botão "Salvar Produtos no Banco de Dados"
@@ -9658,24 +9853,13 @@ const deleteAllStockBtn = document.getElementById('deleteAllStockBtn');
 // ▼▼▼ SUBSTITUA PELA VERSÃO CORRIGIDA E ROBUSTA ▼▼▼
 // ▼▼▼ SUBSTITUA A FUNÇÃO 'syncProductDatabase' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO "syncProductDatabase" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
-async function syncProductDatabase() {
-    try {
-        // ETAPA 1: Salva localmente PRIMEIRO, garantindo que os dados nunca se percam.
-        localStorage.setItem('localProductDb', JSON.stringify(productDatabase));
-        console.log("Banco de dados salvo localmente com sucesso.");
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'syncProductDatabase' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'syncProductDatabase' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'syncProductDatabase' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 
-        // ETAPA 2: Se houver um usuário conectado, tenta sincronizar com a nuvem.
-        if (userId) {
-            console.log("Tentando sincronizar com a nuvem...");
-            const dbRef = doc(db, 'product_database', userId);
-            await setDoc(dbRef, productDatabase);
-            console.log("Banco de dados sincronizado com a nuvem.");
-        }
-    } catch (e) {
-        // Se a sincronização com a nuvem falhar, não há problema, pois os dados já estão salvos localmente.
-        console.warn("Falha ao sincronizar com a nuvem. Os dados estão seguros localmente.", e);
-    }
-}
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
@@ -10135,11 +10319,18 @@ async function syncFlyerWithList() {
                 const dbProduct = productDatabase[dbMatchName];
                 const img = new Image();
                 img.onload = () => resolve({
-                    name: item.name, price: item.price, src: dbProduct.src, image: img, originalOrder: item.originalOrder,
-                    imageFit: 'contain', imageRepetitions: 1, imageRepetitionDirection: 'horizontal',
-                    imagePositionX: 50, imagePositionY: 50, imageWidthPercent: 100, imageHeightPercent: 100,
-                    backgroundColor: null, descScaleX: 100, descScaleY: 100, priceScaleX: 100, priceScaleY: 100
-                });
+    name: item.name, 
+    price: item.price, 
+    src: dbProduct.src, 
+    image: img, 
+    originalOrder: item.originalOrder,
+    ...calculateSmartImageDefaults(img), // Aplica os padrões calculados
+    backgroundColor: null, 
+    descScaleX: 100, 
+    descScaleY: 100, 
+    priceScaleX: 100, 
+    priceScaleY: 100
+});
                 img.onerror = () => resolve(null);
                 img.src = dbProduct.src;
             } else {
@@ -10276,6 +10467,16 @@ function formatarLista() {
 
 // ▲▲▲ FIM DO BLOCO PARA COLAR ▲▲▲
 		
+		
+		
+		// ▼▼▼ ADICIONE ESTA NOVA FUNÇÃO AUXILIAR AO SEU SCRIPT ▼▼▼
+/**
+ * Converte uma string de imagem base64 (Data URL) em um objeto Blob.
+ * @param {string} dataUrl - A string da imagem no formato base64.
+ * @returns {Blob} O objeto Blob da imagem.
+ */
+
+// ▲▲▲ FIM DO BLOCO ▲▲▲
 		
 		
     </script>
