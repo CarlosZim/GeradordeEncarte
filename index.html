@@ -2045,18 +2045,20 @@ async function loadProductDatabase() {
     }
 }
 
+// ▼▼▼ COLE ESTA NOVA VERSÃO DA FUNÇÃO ▼▼▼
 async function syncProductDatabase() {
     try {
         const productsArray = Object.values(productDatabase);
         showSpinner(true);
         showAlert("Sincronizando com a nuvem... Isso pode demorar.");
 
+        // ETAPA 1: Fazer upload apenas das imagens novas (que estão em base64)
         for (const product of productsArray) {
             if (product.src && product.src.startsWith('data:image')) {
                 const blob = dataUrlToBlob(product.src);
                 const fileName = `${Date.now()}-${product.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-                
-                const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(fileName, blob, { upsert: true });
+
+                const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(fileName, blob);
                 if (uploadError) throw uploadError;
 
                 const { data: publicUrlData } = supabaseClient.storage.from('product-images').getPublicUrl(fileName);
@@ -2064,23 +2066,25 @@ async function syncProductDatabase() {
             }
         }
 
+        // ETAPA 2: Preparar os dados para o banco de dados
         const productsToStore = productsArray.map(p => ({
             name: p.name,
             price: p.price,
             image_url: p.src
         }));
 
-        await supabaseClient.from('products').delete().neq('name', 'dummy_value_to_prevent_error');
-        
+        // ETAPA 3: Salvar/Atualizar os produtos no banco de dados (sem deletar antes)
         if (productsToStore.length > 0) {
             const { error: upsertError } = await supabaseClient.from('products').upsert(productsToStore, { onConflict: 'name' });
             if (upsertError) throw upsertError;
         }
 
         showAlert("Banco de dados salvo na nuvem com sucesso!");
+        return true; // Retorna sucesso
     } catch (e) {
         console.error("Falha grave ao salvar no Supabase:", e);
         showAlert(`Ocorreu um erro ao salvar na nuvem: ${e.message}`);
+        return false; // Retorna falha
     } finally {
         showSpinner(false);
         populateStockList();
@@ -9628,6 +9632,7 @@ refreshStockListBtn.addEventListener('click', populateStockList);
 
 // Processa a pasta selecionada pelo usuário
 // ▼▼▼ SUBSTITUA PELA VERSÃO SIMPLIFICADA ▼▼▼
+// ▼▼▼ COLE ESTA NOVA VERSÃO DO EVENTO ▼▼▼
 folderInput.addEventListener('change', async (event) => {
     const files = event.target.files;
     if (!files.length) return;
@@ -9641,10 +9646,13 @@ folderInput.addEventListener('change', async (event) => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const productName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-                newProducts[productName] = {
-                    price: productDatabase[productName]?.price || "0.00",
-                    src: e.target.result
-                };
+                // Adiciona apenas se não existir, para não sobreescrever dados de preço
+                if (!productDatabase[productName]) {
+                    newProducts[productName] = {
+                        price: "0.00",
+                        src: e.target.result
+                    };
+                }
                 resolve();
             };
             reader.onerror = () => resolve();
@@ -9656,15 +9664,19 @@ folderInput.addEventListener('change', async (event) => {
 
     await Promise.all(fileReadPromises);
 
+    // Adiciona os novos produtos ao banco de dados local
     Object.assign(productDatabase, newProducts);
 
-    // Agora, simplesmente chama a função de sincronização corrigida
-    await syncProductDatabase();
+    // Chama a função de sincronia e AGUARDA o resultado
+    const success = await syncProductDatabase();
 
-    showAlert(`${Object.keys(newProducts).length} produtos foram cadastrados/atualizados com sucesso!`);
-    populateStockList();
-    showSpinner(false);
-    folderInput.value = '';
+    if (success) {
+        showAlert(`${Object.keys(newProducts).length} produtos foram cadastrados/atualizados com sucesso!`);
+    } else {
+        showAlert(`Falha ao salvar os produtos. Verifique as permissões e tente novamente.`);
+    }
+
+    folderInput.value = ''; // Limpa o seletor de arquivos
 });
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 		
