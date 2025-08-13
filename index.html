@@ -1677,10 +1677,9 @@ Produto B, 5.50" rows="5"></textarea>
 <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-lg p-2.5" id="projectNameInput" placeholder="Ex: Encarte de Fim de Ano" type="text"/>
 </div>
 <div class="space-y-2">
-<label class="block text-sm font-medium" for="savedProjectsSelect" id="savedProjectsLabel">Projetos Salvos</label>
-<select class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2.5" id="savedProjectsSelect">
-<option value="">Selecione um projeto</option>
-</select>
+    <label class="block text-sm font-medium" id="savedProjectsLabel">Projetos Salvos (Nuvem) ☁️</label>
+    <div class="grid grid-cols-2 gap-4 ..." id="savedProjectsGrid">
+        </div>
 </div>
 <div class="grid grid-cols-2 gap-4 pt-4 border-t">
 <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg" id="saveProjectBtn">Salvar Projeto</button>
@@ -2036,12 +2035,14 @@ async function loadProductDatabase() {
         if (data && data.length > 0) {
             productDatabase = Object.fromEntries(data.map(p => [p.name, { name: p.name, price: p.price, src: p.image_url }]));
         }
-        if(productDbLabel) productDbLabel.innerHTML = 'Busca Inteligente (Nuvem) ☁️';
-        populateStockList();
+        isDatabaseSynced = true; // ALTERAÇÃO AQUI
     } catch (e) {
         console.error("Erro ao carregar do Supabase:", e);
         productDatabase = {};
-        if(productDbLabel) productDbLabel.innerHTML = '<span class="text-red-400">Falha ao conectar à Nuvem</span>';
+        isDatabaseSynced = false; // ALTERAÇÃO AQUI
+    } finally {
+        populateStockList();
+        updateSyncStatusUI(); // ALTERAÇÃO AQUI
     }
 }
 
@@ -2052,42 +2053,40 @@ async function syncProductDatabase() {
         showSpinner(true);
         showAlert("Sincronizando com a nuvem... Isso pode demorar.");
 
-        // ETAPA 1: Fazer upload apenas das imagens novas (que estão em base64)
         for (const product of productsArray) {
             if (product.src && product.src.startsWith('data:image')) {
                 const blob = dataUrlToBlob(product.src);
                 const fileName = `${Date.now()}-${product.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-
                 const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(fileName, blob);
                 if (uploadError) throw uploadError;
-
                 const { data: publicUrlData } = supabaseClient.storage.from('product-images').getPublicUrl(fileName);
                 product.src = publicUrlData.publicUrl;
             }
         }
 
-        // ETAPA 2: Preparar os dados para o banco de dados
         const productsToStore = productsArray.map(p => ({
             name: p.name,
             price: p.price,
             image_url: p.src
         }));
 
-        // ETAPA 3: Salvar/Atualizar os produtos no banco de dados (sem deletar antes)
         if (productsToStore.length > 0) {
             const { error: upsertError } = await supabaseClient.from('products').upsert(productsToStore, { onConflict: 'name' });
             if (upsertError) throw upsertError;
         }
 
         showAlert("Banco de dados salvo na nuvem com sucesso!");
-        return true; // Retorna sucesso
+        isDatabaseSynced = true; // ALTERAÇÃO AQUI
+        return true;
     } catch (e) {
         console.error("Falha grave ao salvar no Supabase:", e);
         showAlert(`Ocorreu um erro ao salvar na nuvem: ${e.message}`);
-        return false; // Retorna falha
+        isDatabaseSynced = false; // ALTERAÇÃO AQUI
+        return false;
     } finally {
         showSpinner(false);
         populateStockList();
+        updateSyncStatusUI(); // ALTERAÇÃO AQUI
     }
 }
 
@@ -2511,6 +2510,9 @@ let validityOffsetX, validityOffsetY;
         let app, auth, db, userId;
 		let selectedProductIndices = new Set();
 		let isPanelLocked = false;
+		let isDatabaseSynced = true; // LINHA ADICIONADA: Assume que está sincronizado ao iniciar
+let selectedProjectName = null; // LINHA ADICIONADA
+
 		
 		
 		// ▼▼▼ COLE ESTE BLOCO DE CONFIGURAÇÕES PADRÃO ▼▼▼
@@ -7879,7 +7881,6 @@ function adaptFlyerForSocialMedia(targetFormat, productsPerPage) {
 
 // Pega os elementos do painel unificado
 const projectNameInput = document.getElementById('projectNameInput');
-const savedProjectsSelect = document.getElementById('savedProjectsSelect');
 const savedProjectsLabel = document.getElementById('savedProjectsLabel');
 const saveProjectBtn = document.getElementById('saveProjectBtn');
 const loadProjectBtn = document.getElementById('loadProjectBtn');
@@ -7892,108 +7893,56 @@ const importProjectInput = document.getElementById('importProjectInput');
 
 
 // Função "inteligente" para listar os projetos de acordo com a conexão
-async function populateSavedProjectsList() {
-    savedProjectsSelect.innerHTML = '<option value="">Carregando...</option>';
+// ▼▼▼ SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 
-    if (userId) { // Se userId existe, a nuvem está conectada
-        savedProjectsLabel.innerHTML = 'Projetos Salvos (Nuvem) ☁️';
-        const projectCollection = collection(db, 'artifacts', 'default-app-id', 'users', userId, 'flyers');
-        try {
-            const querySnapshot = await getDocs(projectCollection);
-            savedProjectsSelect.innerHTML = '<option value="">Selecione um projeto da nuvem</option>';
-            querySnapshot.forEach((doc) => {
-                const option = document.createElement('option');
-                option.value = doc.id;
-                option.textContent = doc.id;
-                savedProjectsSelect.appendChild(option);
-            });
-        } catch (e) {
-            console.error("Erro ao buscar projetos da nuvem:", e);
-            savedProjectsSelect.innerHTML = '<option value="">Erro ao carregar</option>';
-        }
-    } else { // Se não houver conexão, usa o armazenamento local
-        savedProjectsLabel.innerHTML = 'Projetos Salvos (Neste Navegador)';
-        const projects = JSON.parse(localStorage.getItem('localProjects') || '{}');
-        savedProjectsSelect.innerHTML = '<option value="">Selecione um projeto local</option>';
-        for (const name in projects) {
-            const option = document.createElement('option');
-            option.value = name;
-            option.textContent = name;
-            savedProjectsSelect.appendChild(option);
-        }
-    }
-}
-
-// Ao selecionar na lista, o nome vai para o campo de input
-savedProjectsSelect.addEventListener('change', () => {
-    projectNameInput.value = savedProjectsSelect.value;
-});
-
-// Ação do botão "Salvar" unificado
+// ▼▼▼ SUBSTITUA A FUNÇÃO DE SALVAR PROJETO PELA VERSÃO ABAIXO ▼▼▼
 saveProjectBtn.addEventListener('click', async () => {
     const projectName = projectNameInput.value.trim();
     if (!projectName) {
         showAlert('Por favor, insira um nome para o projeto.');
         return;
     }
-
+    const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
     const projectState = getFlyerState();
     const serializableState = JSON.parse(JSON.stringify(projectState, (key, value) => (value instanceof HTMLImageElement ? undefined : value)));
-    
     showSpinner(true);
-    if (userId) { // Salva na nuvem
-        try {
-            const projectDocRef = doc(db, 'artifacts', 'default-app-id', 'users', userId, 'flyers', projectName);
-            await setDoc(projectDocRef, serializableState);
-            await populateSavedProjectsList();
-            savedProjectsSelect.value = projectName;
-            showAlert(`Projeto "${projectName}" salvo com sucesso na nuvem!`);
-        } catch (e) {
-            showAlert('Ocorreu um erro ao salvar na nuvem.');
-            console.error(e);
-        }
-    } else { // Salva localmente
-        try {
-            const projects = JSON.parse(localStorage.getItem('localProjects') || '{}');
-            projects[projectName] = serializableState;
-            localStorage.setItem('localProjects', JSON.stringify(projects));
-            populateSavedProjectsList();
-            savedProjectsSelect.value = projectName;
-            showAlert(`Projeto "${projectName}" salvo com sucesso neste navegador!`);
-        } catch (e) {
-            if (e.name === 'QuotaExceededError') {
-                 showAlert('O projeto é muito grande para ser salvo no navegador. Use o botão "Exportar (Gerar Arquivo)".');
-            } else {
-                 showAlert('Ocorreu um erro desconhecido ao salvar localmente.');
-                 console.error(e);
-            }
-        }
+    try {
+        const { error } = await supabaseClient
+            .from('projects')
+            .upsert({
+                name: projectName,
+                project_data: serializableState,
+                thumbnail: thumbnail
+            }, { onConflict: 'name' });
+        if (error) throw error;
+        await populateSavedProjectsList();
+        showAlert(`Projeto "${projectName}" salvo com sucesso na nuvem!`);
+    } catch (e) {
+        showAlert('Ocorreu um erro ao salvar na nuvem.');
+        console.error(e);
     }
     showSpinner(false);
 });
 
-// Ação do botão "Carregar" unificado
+
+// ▼▼▼ SUBSTITUA A FUNÇÃO DE CARREGAR PROJETO PELA VERSÃO ABAIXO ▼▼▼
 loadProjectBtn.addEventListener('click', async () => {
-    const projectName = savedProjectsSelect.value;
+    const projectName = selectedProjectName;
     if (!projectName) {
         showAlert('Por favor, selecione um projeto da lista para carregar.');
         return;
     }
-
     showSpinner(true);
     try {
-        let projectData;
-        if (userId) { // Carrega da nuvem
-            const projectDocRef = doc(db, 'artifacts', 'default-app-id', 'users', userId, 'flyers', projectName);
-            const docSnap = await getDoc(projectDocRef);
-            projectData = docSnap.exists() ? docSnap.data() : null;
-        } else { // Carrega localmente
-            const projects = JSON.parse(localStorage.getItem('localProjects') || '{}');
-            projectData = projects[projectName];
-        }
-
-        if (projectData) {
-            await applyFlyerState(projectData);
+        const { data, error } = await supabaseClient
+            .from('projects')
+            .select('project_data')
+            .eq('name', projectName)
+            .single();
+        if (error) throw error;
+        if (data && data.project_data) {
+            await applyFlyerState(data.project_data);
             projectNameInput.value = projectName;
             showAlert(`Projeto "${projectName}" carregado com sucesso!`);
         } else {
@@ -8007,35 +7956,84 @@ loadProjectBtn.addEventListener('click', async () => {
     }
 });
 
-// Ação do botão "Deletar" unificado
+// ▼▼▼ SUBSTITUA A FUNÇÃO DE DELETAR PROJETO PELA VERSÃO ABAIXO ▼▼▼
 deleteProjectBtn.addEventListener('click', async () => {
-    const projectName = savedProjectsSelect.value;
+    const projectName = selectedProjectName;
     if (!projectName) {
         showAlert('Por favor, selecione um projeto da lista para deletar.');
         return;
     }
-    
-    showConfirm(`Tem certeza que deseja deletar o projeto "${projectName}"?`, async (confirmed) => {
+    showConfirm(`Tem certeza que deseja deletar o projeto "${projectName}" da nuvem?`, async (confirmed) => {
         if (confirmed) {
             showSpinner(true);
-            if (userId) { // Deleta da nuvem
-                try {
-                    const projectDocRef = doc(db, 'artifacts', 'default-app-id', 'users', userId, 'flyers', projectName);
-                    await deleteDoc(projectDocRef);
-                } catch (e) { showAlert('Erro ao deletar da nuvem.'); console.error(e); showSpinner(false); return; }
-            } else { // Deleta localmente
-                const projects = JSON.parse(localStorage.getItem('localProjects') || '{}');
-                delete projects[projectName];
-                localStorage.setItem('localProjects', JSON.stringify(projects));
+            try {
+                const { error } = await supabaseClient
+                    .from('projects')
+                    .delete()
+                    .eq('name', projectName);
+                if (error) throw error;
+                await populateSavedProjectsList();
+                projectNameInput.value = '';
+                showAlert(`Projeto "${projectName}" deletado da nuvem.`);
+            } catch(e) {
+                showAlert('Erro ao deletar da nuvem.');
+                console.error(e);
+            } finally {
+                showSpinner(false);
             }
-            
-            await populateSavedProjectsList();
-            projectNameInput.value = '';
-            showSpinner(false);
-            showAlert(`Projeto "${projectName}" deletado.`);
         }
     });
 });
+
+// ▼▼▼ SUBSTITUA A FUNÇÃO DE LISTAR PROJETOS PELA VERSÃO ABAIXO ▼▼▼
+async function populateSavedProjectsList() {
+    const projectsGrid = document.getElementById('savedProjectsGrid');
+    const projectsLabel = document.getElementById('savedProjectsLabel');
+    if (!projectsGrid || !projectsLabel) return;
+    projectsGrid.innerHTML = '<p class="col-span-2 text-center text-sm">Carregando...</p>';
+    projectsLabel.innerHTML = 'Projetos Salvos (Nuvem) ☁️';
+    selectedProjectName = null;
+    try {
+        const { data: projects, error } = await supabaseClient
+            .from('projects')
+            .select('name, thumbnail');
+        if (error) throw error;
+        projectsGrid.innerHTML = '';
+        if (!projects || projects.length === 0) {
+            projectsGrid.innerHTML = '<p class="col-span-2 text-center text-sm text-gray-500">Nenhum projeto salvo.</p>';
+            return;
+        }
+        projects.forEach(project => {
+            const card = document.createElement('div');
+            card.className = 'template-preview-card bg-white dark:bg-gray-800 p-2 rounded-lg cursor-pointer shadow-md flex flex-col items-center';
+            card.dataset.projectName = project.name;
+            const img = document.createElement('img');
+            img.src = project.thumbnail || 'https://placehold.co/200x250/e2e8f0/adb5bd?text=Sem+Preview';
+            img.className = 'w-full h-auto object-contain rounded-md mb-2';
+            const nameLabel = document.createElement('span');
+            nameLabel.textContent = project.name;
+            nameLabel.className = 'text-xs text-center font-semibold break-words';
+            card.appendChild(img);
+            card.appendChild(nameLabel);
+            card.addEventListener('click', () => {
+                document.querySelectorAll('#savedProjectsGrid .selected').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedProjectName = project.name;
+                projectNameInput.value = project.name;
+            });
+            projectsGrid.appendChild(card);
+        });
+    } catch (e) {
+        console.error("Erro ao buscar projetos da nuvem:", e);
+        projectsLabel.innerHTML = '<span class="text-red-400">Falha ao carregar projetos</span>';
+        projectsGrid.innerHTML = '<p class="col-span-2 text-center text-sm text-red-400">Erro ao carregar.</p>';
+    }
+}
+
+
+// Ação do botão "Deletar" unificado
+// ▼▼▼ SUBSTITUA O 'addEventListener' INTEIRO PELA VERSÃO ABAIXO ▼▼▼
+
 
 // --- Lógica de import/export de arquivo (Backup / Transferência) ---
 exportProjectBtn.addEventListener('click', () => {
@@ -8105,6 +8103,37 @@ function updateNavButtonStates() {
 
 
 
+// ▼▼▼ COLE ESTE BLOCO DE CÓDIGO NOVO ▼▼▼
+
+// SVG para o ícone de nuvem/upload
+const cloudUploadIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V16a4 4 0 01-4 4H7z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h-4a2 2 0 00-2 2v6" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m-2-3h4" /></svg>`;
+const refreshIconSVG = `<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 4v5h5M20 20v-5h-5M20 4h-5v5M4 20h5v-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+
+/**
+ * Atualiza o indicador visual de status de sincronização no painel de estoque.
+ */
+function updateSyncStatusUI() {
+    if (!stockDbLabel || !refreshStockListBtn) return;
+
+    if (isDatabaseSynced) {
+        stockDbLabel.innerHTML = 'Produtos (Sincronizado ☁️)';
+        stockDbLabel.className = 'text-lg font-semibold text-green-400';
+        refreshStockListBtn.title = 'Atualizar Lista da Nuvem';
+        refreshStockListBtn.innerHTML = refreshIconSVG;
+        refreshStockListBtn.classList.remove('border-yellow-400');
+        refreshStockListBtn.classList.add('border-green-400');
+    } else {
+        stockDbLabel.innerHTML = 'Produtos (Não Sincronizado ⚠️)';
+        stockDbLabel.className = 'text-lg font-semibold text-yellow-400';
+        refreshStockListBtn.title = 'Sincronizar com a Nuvem Agora';
+        refreshStockListBtn.innerHTML = cloudUploadIconSVG;
+        refreshStockListBtn.classList.remove('border-green-400');
+        refreshStockListBtn.classList.add('border-yellow-400');
+    }
+}
+// ▲▲▲ FIM DO BLOCO ▲▲▲
+
+
 
 
 
@@ -8117,42 +8146,41 @@ function updateNavButtonStates() {
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'initialize' INTEIRA PELA VERSÃO FINAL ABAIXO ▼▼▼
 async function initialize() {
     showSpinner(true);
+    
+    try {
+        // ETAPA 1: Tenta recuperar a sessão existente.
+        const { data: { session } } = await supabaseClient.auth.getSession();
 
-    // ETAPA 1: Carregar todos os recursos locais primeiro, garantindo o modo offline.
+        if (session) {
+            // Se encontrou uma sessão, define-a como a sessão ativa no cliente.
+            // ESTA É A CORREÇÃO CRÍTICA QUE ESTAVA FALTANDO.
+            await supabaseClient.auth.setSession({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+            });
+            console.log("Sessão anônima existente recuperada e ATIVADA:", session.user.id);
+        } else {
+            // Se não encontrou nenhuma sessão, cria uma nova.
+            const { data, error } = await supabaseClient.auth.signInAnonymously();
+            if (error) throw error;
+            console.log("Nova sessão anônima criada:", data.user.id);
+        }
+    } catch(e) {
+        console.error("Falha crítica na autenticação com Supabase:", e);
+        showAlert("Não foi possível conectar aos serviços de nuvem. Verifique sua conexão e as configurações do Supabase.");
+    }
+    
+    // ETAPA 2: Carrega o restante da aplicação normalmente.
     await loadProductDatabase();
+    await populateSavedProjectsList();
     loadCustomFontsFromStorage();
     loadCustomBalloons();
     populateTemplatePreviews();
-
-    // ETAPA 2: Tenta conectar ao Firebase para recursos online (projetos na nuvem).
-    try {
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        if (!firebaseConfig) throw new Error("Configuração do Firebase não encontrada.");
-
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
-
-        onAuthStateChanged(auth, async user => {
-            userId = user ? user.uid : null;
-            await populateSavedProjectsList();
-        });
-
-        const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        if (authToken) {
-            await signInWithCustomToken(auth, authToken);
-        } else {
-            await signInAnonymously(auth);
-        }
-userId = null; // Forçando modo offline para projetos por enquanto
-        await populateSavedProjectsList();
-    } catch (e) {
-        console.warn("Firebase não inicializado (opcional). Operando em modo offline para projetos.");
-        userId = null;
-        await populateSavedProjectsList();
-    }
 
     if (flyerData.pages.length === 0) {
         flyerData.pages.push(createDefaultPage());
@@ -9630,7 +9658,16 @@ registerFromFolderBtn.addEventListener('click', () => {
     folderInput.click();
 });
 
-refreshStockListBtn.addEventListener('click', populateStockList);
+// ▼▼▼ SUBSTITUA O ANTIGO 'addEventListener' DESTE BOTÃO POR ESTE NOVO BLOCO ▼▼▼
+refreshStockListBtn.addEventListener('click', () => {
+    // Se não estiver sincronizado, o botão funciona para SALVAR.
+    // Se já estiver sincronizado, ele funciona para RECARREGAR a lista da nuvem.
+    if (!isDatabaseSynced) {
+        syncProductDatabase();
+    } else {
+        loadProductDatabase();
+    }
+});
 
 
 // Processa a pasta selecionada pelo usuário
@@ -9730,12 +9767,13 @@ stockProductList.addEventListener('click', (e) => {
     const productName = targetButton.dataset.productName;
 
     if (targetButton.classList.contains('delete-stock-btn')) {
-        showConfirm(`Deseja realmente deletar "${productName}" do seu estoque?`, async (confirmed) => {
+        showConfirm(`Deseja realmente deletar "${productName}" do seu estoque?`, (confirmed) => {
             if (confirmed) {
                 delete productDatabase[productName];
-                await syncProductDatabase(); // Usa a função corrigida
+                isDatabaseSynced = false; // ALTERAÇÃO AQUI
+                updateSyncStatusUI(); // ALTERAÇÃO AQUI
                 populateStockList();
-                showAlert(`"${productName}" foi deletado.`);
+                showAlert(`"${productName}" deletado. Clique no botão de nuvem para salvar as alterações.`);
             }
         });
     }
@@ -9743,7 +9781,7 @@ stockProductList.addEventListener('click', (e) => {
     if (targetButton.classList.contains('edit-stock-btn')) {
         const product = productDatabase[productName];
         if (!product) return;
-
+        // ... (o código do modal de edição continua o mesmo) ...
         document.getElementById('modalMessage').textContent = `Editando: ${productName}`;
         document.getElementById('modal-edit-form').classList.remove('hidden');
         document.getElementById('originalProductNameInput').value = productName;
@@ -9762,7 +9800,7 @@ stockProductList.addEventListener('click', (e) => {
             const newPrice = parseFloat(document.getElementById('editProductPriceInput').value).toFixed(2);
             const newImageFile = document.getElementById('editProductImageInput').files[0];
             if (!newName || isNaN(newPrice)) { showAlert("Nome e preço são obrigatórios."); return; }
-            showSpinner(true);
+            
             let newSrc = productDatabase[originalName].src;
             if (newImageFile) {
                 newSrc = await new Promise(resolve => {
@@ -9772,14 +9810,13 @@ stockProductList.addEventListener('click', (e) => {
                 });
             }
             if (originalName !== newName) { delete productDatabase[originalName]; }
-            productDatabase[newName] = { name: newName, price: newPrice, src: newSrc };
-
-             await syncProductDatabase(); // Usa a função corrigida
-
+             productDatabase[newName] = { name: newName, price: newPrice, src: newSrc };
+            
+            isDatabaseSynced = false; // ALTERAÇÃO AQUI
+            updateSyncStatusUI();     // ALTERAÇÃO AQUI
+            populateStockList();      // ALTERAÇÃO AQUI
             customModal.classList.remove('visible');
-            populateStockList();
-            showSpinner(false);
-            showAlert("Produto atualizado com sucesso!");
+            showAlert("Produto atualizado. Lembre-se de sincronizar com a nuvem.");
         };
         modalCancelBtn.onclick = () => customModal.classList.remove('visible');
         customModal.classList.add('visible');
