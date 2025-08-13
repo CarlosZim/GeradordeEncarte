@@ -9358,6 +9358,8 @@ window.onload = initialize;
 
 // Ação do botão "Salvar Produtos no Banco de Dados"
 // ▼▼▼ SUBSTITUA PELA VERSÃO SIMPLIFICADA ▼▼▼
+// Ação do botão "Salvar Produtos no Banco de Dados"
+// ▼▼▼ SUBSTITUA PELA VERSÃO SIMPLIFICADA ▼▼▼
 saveProductsToDbBtn.addEventListener('click', async () => {
     const productsToSave = flyerData.pages.flatMap(p => p.products);
     if (productsToSave.length === 0) {
@@ -9372,7 +9374,8 @@ saveProductsToDbBtn.addEventListener('click', async () => {
             newProductsCount++;
         }
         if (p.name && p.src) { // Salva apenas se tiver nome e imagem
-           productDatabase[p.name] = { price: p.price, src: p.src };
+           // CORREÇÃO AQUI: Adicionado "name: p.name"
+           productDatabase[p.name] = { name: p.name, price: p.price, src: p.src };
         }
     });
 
@@ -9647,8 +9650,10 @@ folderInput.addEventListener('change', async (event) => {
             reader.onload = (e) => {
                 const productName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
                 // Adiciona apenas se não existir, para não sobreescrever dados de preço
-                if (!productDatabase[productName]) {
-                    newProducts[productName] = {
+                                if (!productDatabase[productName]) {
+
+                   newProducts[productName] = {
+                        name: productName,
                         price: "0.00",
                         src: e.target.result
                     };
@@ -9767,9 +9772,9 @@ stockProductList.addEventListener('click', (e) => {
                 });
             }
             if (originalName !== newName) { delete productDatabase[originalName]; }
-            productDatabase[newName] = { price: newPrice, src: newSrc };
+            productDatabase[newName] = { name: newName, price: newPrice, src: newSrc };
 
-            await syncProductDatabase(); // Usa a função corrigida
+             await syncProductDatabase(); // Usa a função corrigida
 
             customModal.classList.remove('visible');
             populateStockList();
