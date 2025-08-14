@@ -7752,6 +7752,7 @@ addFontsFromFolderBtn.addEventListener('click', () => {
 // ▼▼▼ COLE ESTE NOVO BLOCO NO LUGAR DO ANTIGO ▼▼▼
 // ▼▼▼ SUBSTITUA A FUNÇÃO DE ADICIONAR FONTES POR PASTA POR ESTE CÓDIGO DE TESTE ▼▼▼
 // ▼▼▼ SUBSTITUA O CÓDIGO DE TESTE POR ESTE BLOCO FUNCIONAL ▼▼▼
+// ▼▼▼ SUBSTITUA O BLOCO ANTIGO POR ESTE CÓDIGO CORRIGIDO ▼▼▼
 fontFolderInput.addEventListener('change', async (event) => {
     const files = event.target.files;
     if (!files || files.length === 0) {
@@ -7759,8 +7760,9 @@ fontFolderInput.addEventListener('change', async (event) => {
     }
 
     showSpinner(true);
-    showAlert(`Carregando ${files.length} arquivos da pasta...`);
+    showAlert(`Iniciando upload de ${files.length} fontes para a nuvem. Aguarde...`);
 
+    // Filtra apenas os arquivos de fonte válidos
     const fontFiles = Array.from(files).filter(file => {
         const extension = file.name.split('.').pop().toLowerCase();
         return ['ttf', 'otf', 'woff', 'woff2'].includes(extension);
@@ -7768,42 +7770,79 @@ fontFolderInput.addEventListener('change', async (event) => {
 
     if (fontFiles.length === 0) {
         showSpinner(false);
-        showAlert('Nenhum arquivo de fonte válido (.ttf, .otf, .woff, .woff2) foi encontrado na pasta selecionada.');
+        showAlert('Nenhum arquivo de fonte válido (.ttf, .otf, .woff, .woff2) foi encontrado na pasta.');
         return;
     }
 
-    const fonts = JSON.parse(localStorage.getItem('customFonts') || '{}');
-    let newFontsAdded = 0;
+    let successCount = 0;
+    let errorCount = 0;
 
-    const fileReadPromises = fontFiles.map(file => new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const fontDataUrl = e.target.result;
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado. Por favor, recarregue a página.");
+
+        // Cria uma promessa de upload para cada arquivo de fonte
+        const uploadPromises = fontFiles.map(async (file) => {
             const fontName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-            
-            if (!fonts[fontName]) {
-                fonts[fontName] = { data: fontDataUrl };
-                newFontsAdded++;
+            const fileExtension = file.name.split('.').pop();
+            const filePath = `${user.id}/${fontName}.${fileExtension}`;
+
+            // 1. Envia o arquivo para o Supabase Storage
+            const { error: uploadError } = await supabaseClient.storage
+                .from('custom-fonts')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            // 2. Obtém a URL pública do arquivo
+            const { data: publicUrlData } = supabaseClient.storage
+                .from('custom-fonts')
+                .getPublicUrl(filePath);
+
+            // 3. Salva as informações no banco de dados Supabase
+            const { error: dbError } = await supabaseClient
+                .from('custom_fonts')
+                .upsert({
+                    name: fontName,
+                    font_url: publicUrlData.publicUrl,
+                    file_path: filePath,
+                    user_id: user.id
+                }, { onConflict: 'name' });
+
+            if (dbError) throw dbError;
+        });
+
+        // Aguarda todas as promessas de upload serem concluídas
+        const results = await Promise.allSettled(uploadPromises);
+
+        results.forEach(result => {
+            if (result.status === 'fulfilled') {
+                successCount++;
+            } else {
+                errorCount++;
+                console.error("Falha no upload de uma fonte:", result.reason);
             }
-            resolve();
-        };
-        reader.onerror = () => resolve(); // Continua mesmo se um arquivo falhar
-        reader.readAsDataURL(file);
-    }));
+        });
 
-    await Promise.all(fileReadPromises);
+        // Após todos os uploads, recarrega a lista de fontes a partir da nuvem
+        await loadCustomFontsFromStorage();
 
-    localStorage.setItem('customFonts', JSON.stringify(fonts));
-    
-    // Recarrega as fontes para que o navegador as reconheça
-    loadCustomFontsFromStorage();
-    // Atualiza a interface (lista e menus de seleção)
-    updateCustomFontUI(); 
-    
-    fontFolderInput.value = ''; // Limpa o seletor de arquivo
-    showSpinner(false);
-    showAlert(`${newFontsAdded} novas fontes foram adicionadas com sucesso!`);
+        // Monta uma mensagem de resumo para o usuário
+        let summary = `${successCount} fontes foram salvas na nuvem com sucesso!`;
+        if (errorCount > 0) {
+            summary += `\n${errorCount} fontes falharam ao enviar. Verifique o console para mais detalhes.`;
+        }
+        showAlert(summary);
+
+    } catch (err) {
+        showAlert(`Ocorreu um erro geral durante o processo: ${err.message}`);
+        console.error(err);
+    } finally {
+        fontFolderInput.value = ''; // Limpa o seletor de arquivo
+        showSpinner(false);
+    }
 });
+// ▲▲▲ FIM DO BLOCO DE SUBSTITUIÇÃO ▲▲▲
 // ▲▲▲ FIM DO BLOCO ▲▲▲
 // ▲▲▲ FIM DO CÓDIGO DE TESTE ▲▲▲
 // ▲▲▲ FIM DO NOVO BLOCO ▲▲▲
@@ -8309,7 +8348,7 @@ async function populateSavedProjectsList() {
             img.className = 'w-full h-auto object-contain rounded-md mb-2';
             const nameLabel = document.createElement('span');
             nameLabel.textContent = project.name;
-            nameLabel.className = 'text-xs text-center font-semibold break-words';
+            nameLabel.className = 'text-[10px] text-center font-semibold break-words';
             card.appendChild(img);
             card.appendChild(nameLabel);
             card.addEventListener('click', () => {
