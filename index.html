@@ -70,6 +70,12 @@
 
         <input type="password" id="password-input" class="w-full bg-gray-700 text-white p-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="********">
 
+        <div class="flex items-center justify-start mt-4">
+            <label for="remember-me" class="flex items-center cursor-pointer">
+                <input id="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800">
+                <span class="ml-2 text-sm text-gray-400">Lembrar de mim</span>
+            </label>
+        </div>
         <button id="password-submit" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">
             Entrar
         </button>
@@ -170,10 +176,7 @@
 </svg>
 <span class="text-xs">Val. Topo</span>
 </a>
-<a class="menu-item p-1 rounded-lg w-full flex flex-col items-center hover:bg-gray-700" data-panel="panel-templates" href="#">
-<svg class="h-4 w-4 mb-1" fill="currentColor" stroke="currentColor" stroke-width="0.5" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-<span class="text-xs">Templates</span>
-</a>
+
 <a class="menu-item p-1 rounded-lg w-full flex flex-col items-center hover:bg-gray-700" data-panel="panel-stock" href="#">
 <svg class="h-4 w-4 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4H5z" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -1118,6 +1121,10 @@
 <div class="hidden pt-4 border-t border-gray-600" id="balloon-settings-gigante-tag">
 <h4 class="text-lg font-semibold mb-2 text-blue-400">Opções do Balão (Gigante)</h4>
 <div class="space-y-4">
+
+
+
+
 <div>
 <label class="block text-sm font-medium mb-1" for="gt_balloonHeight">Altura do Balão (%)</label>
 <input class="w-full" id="gt_balloonHeight" max="200" min="10" type="range" value="100"/>
@@ -1132,6 +1139,21 @@
 </div>
 <div class="pt-4 border-t border-gray-500 mt-4">
 <p class="text-sm font-semibold text-blue-300 mb-2">Ajustes Finos do Texto do Preço</p>
+
+    <div>
+            <label class="block text-sm font-medium" for="gt_priceFont">Fonte do Preço</label>
+            <select class="w-full bg-gray-50 dark:bg-gray-700 border rounded-lg p-2.5" id="gt_priceFont">
+                <optgroup label="Fontes Padrão">
+                    <option value="Anton">Anton</option>
+                    <option value="Oswald">Oswald</option>
+                    <option value="Inter">Inter</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Orbitron">Orbitron</option>
+                </optgroup>
+                <optgroup id="custom-fonts-gt-price" label="Fontes Customizadas"></optgroup>
+            </select>
+        </div>
+
 <div>
 <label class="block text-sm font-medium" for="gt_priceOffsetX">Posição X do Preço (px)</label>
 <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="gt_priceOffsetX" type="number" value="0"/>
@@ -1678,7 +1700,7 @@ Produto B, 5.50" rows="5"></textarea>
 </div>
 <div class="space-y-2">
     <label class="block text-sm font-medium" id="savedProjectsLabel">Projetos Salvos (Nuvem) ☁️</label>
-    <div class="grid grid-cols-2 gap-4 ..." id="savedProjectsGrid">
+    <div class="grid grid-cols-3 gap-2 ..." id="savedProjectsGrid">
         </div>
 </div>
 <div class="grid grid-cols-2 gap-4 pt-4 border-t">
@@ -2090,6 +2112,96 @@ async function syncProductDatabase() {
     }
 }
 
+
+
+// ▼▼▼ ADICIONE ESTE BLOCO DE NOVAS FUNÇÕES ▼▼▼
+
+/**
+ * Deleta um único produto do banco de dados na nuvem e localmente.
+ * @param {string} productName - O nome do produto a ser deletado.
+ */
+async function deleteProductFromCloud(productName) {
+    showSpinner(true);
+    try {
+        // Deleta da nuvem (Supabase)
+        const { error } = await supabaseClient
+            .from('products')
+            .delete()
+            .eq('name', productName);
+        
+        if (error) throw error;
+
+        // Deleta do banco de dados local (na memória)
+        delete productDatabase[productName];
+        
+        // Atualiza a interface
+        populateStockList();
+        showAlert(`Produto "${productName}" deletado com sucesso da nuvem!`);
+
+    } catch (e) {
+        console.error("Erro ao deletar produto:", e);
+        showAlert(`Falha ao deletar o produto: ${e.message}`);
+    } finally {
+        showSpinner(false);
+    }
+}
+
+/**
+ * Atualiza os dados de um produto na nuvem e localmente.
+ * @param {string} originalName - O nome original do produto.
+ * @param {object} productData - Objeto com os novos dados (name, price, src).
+ */
+async function updateProductInCloud(originalName, productData) {
+    showSpinner(true);
+    try {
+        let finalProductData = { ...productData };
+
+        // Se uma nova imagem foi enviada (base64), faz o upload para o Storage
+        if (finalProductData.src && finalProductData.src.startsWith('data:image')) {
+            const blob = dataUrlToBlob(finalProductData.src);
+            const fileName = `${Date.now()}-${finalProductData.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+            
+            const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(fileName, blob);
+            if (uploadError) throw uploadError;
+            
+            const { data: publicUrlData } = supabaseClient.storage.from('product-images').getPublicUrl(fileName);
+            finalProductData.src = publicUrlData.publicUrl;
+        }
+
+        // Atualiza a tabela 'products' no Supabase
+        const { error } = await supabaseClient
+            .from('products')
+            .update({
+                name: finalProductData.name,
+                price: finalProductData.price,
+                image_url: finalProductData.src
+            })
+            .eq('name', originalName);
+
+        if (error) throw error;
+
+        // Atualiza o banco de dados local
+        delete productDatabase[originalName]; // Remove o antigo
+        productDatabase[finalProductData.name] = finalProductData; // Adiciona o novo
+
+        populateStockList();
+        showAlert(`Produto "${finalProductData.name}" atualizado com sucesso na nuvem!`);
+
+    } catch (e) {
+        console.error("Erro ao atualizar produto:", e);
+        showAlert(`Falha ao atualizar o produto: ${e.message}`);
+    } finally {
+        showSpinner(false);
+    }
+}
+
+// ▲▲▲ FIM DO BLOCO ▲▲▲
+
+
+
+
+
+
 function dataUrlToBlob(dataUrl) {
     const arr = dataUrl.split(',');
     const mime = arr[0].match(/:(.*?);/)[1];
@@ -2231,34 +2343,54 @@ function updateTargetPagesState() {
     });
 }
 
+// ▼▼▼ SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 function applyMasterSettingsToSelectedPages() {
     const sourcePageIndex = parseInt(masterPageSelect.value, 10);
     const targetCheckboxes = targetPagesContainer.querySelectorAll('input[type="checkbox"]:checked');
     const targetPageIndexes = Array.from(targetCheckboxes).map(cb => parseInt(cb.value, 10));
+
     if (isNaN(sourcePageIndex) || !flyerData.pages[sourcePageIndex]) {
         showAlert("Página de origem inválida.");
         return;
     }
+
     if (targetPageIndexes.length === 0) {
         showAlert("Por favor, marque pelo menos uma página de destino para aplicar o estilo.");
         return;
     }
+
     const sourcePage = flyerData.pages[sourcePageIndex];
     const confirmationMessage = `Isso aplicará o estilo da Página ${sourcePageIndex + 1} para as ${targetPageIndexes.length} página(s) marcadas. Deseja continuar?`;
+
     showConfirm(confirmationMessage, (confirmed) => {
         if (confirmed) {
             showSpinner(true);
+            
+            // Cria uma cópia completa e segura das configurações e do layout da página de origem
             const settingsTemplate = JSON.parse(JSON.stringify(sourcePage.settings));
+            const manualLayoutTemplate = JSON.parse(JSON.stringify(sourcePage.manualLayout));
+
             targetPageIndexes.forEach(targetIndex => {
                 const targetPage = flyerData.pages[targetIndex];
                 if (targetPage) {
-                    const originalManualLayout = JSON.parse(JSON.stringify(targetPage.manualLayout));
-                    const originalPredefinedLayout = targetPage.settings.predefinedLayout;
+                    // Preserva os produtos e o fundo da página de destino
+                    const originalProducts = targetPage.products;
+                    const originalBackgroundImage = targetPage.backgroundImage;
+                    const originalBackgroundImageSrc = targetPage.backgroundImageSrc;
+
+                    // Aplica as novas configurações e layouts
                     targetPage.settings = JSON.parse(JSON.stringify(settingsTemplate));
-                    targetPage.manualLayout = originalManualLayout;
-                    targetPage.settings.predefinedLayout = originalPredefinedLayout;
+                    targetPage.manualLayout = JSON.parse(JSON.stringify(manualLayoutTemplate));
+
+                    // Restaura os produtos e fundo originais
+                    targetPage.products = originalProducts;
+                    targetPage.backgroundImage = originalBackgroundImage;
+                    targetPage.backgroundImageSrc = originalBackgroundImageSrc;
                 }
             });
+
+            // Atualiza a interface e redesenha o canvas
             applyPageSettingsToUI(flyerData.pages[flyerData.currentPageIndex]);
             redrawCanvas();
             showSpinner(false);
@@ -5094,27 +5226,19 @@ document.getElementById('highlightHeightMultiplier')?.addEventListener('input', 
 
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawGiganteTag' PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'drawGiganteTag' POR ESTA VERSÃO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'drawGiganteTag' PELA VERSÃO ABAIXO ▼▼▼
 function drawGiganteTag(ctx, product, finalX, finalY, finalWidth, finalHeight, details, fontSettings, priceSettings, descScaleX, descScaleY) {
     ctx.save();
-
-    // Lê as configurações de escala que vêm dos sliders
     const priceScaleX = details.scaleX || 1;
     const priceScaleY = details.scaleY || 1;
-    
-    // A função agora usa as coordenadas e dimensões recebidas diretamente
-    // sem calculá-las internamente. Os deslocamentos internos (offsetX, offsetY)
-    // ainda funcionarão para ajustes finos dentro do balão.
-
     const blackPartWidth = finalWidth * 0.55;
     const yellowPartWidth = finalWidth * 0.45;
     const blackPartX = finalX;
     const yellowPartX = finalX + blackPartWidth;
-
     const descColor = '#FFFFFF';
     const priceColor = '#d42127';
     const borderRadius = 15;
 
-    // Desenha as formas do balão (parte preta e amarela)
     ctx.fillStyle = '#000000';
     ctx.beginPath();
     ctx.moveTo(blackPartX + borderRadius, finalY);
@@ -5126,7 +5250,7 @@ function drawGiganteTag(ctx, product, finalX, finalY, finalWidth, finalHeight, d
     ctx.arcTo(blackPartX, finalY, blackPartX + borderRadius, finalY, borderRadius);
     ctx.closePath();
     ctx.fill();
-    
+
     ctx.fillStyle = '#ffc906';
     ctx.beginPath();
     ctx.moveTo(yellowPartX, finalY);
@@ -5138,12 +5262,10 @@ function drawGiganteTag(ctx, product, finalX, finalY, finalWidth, finalHeight, d
     ctx.closePath();
     ctx.fill();
 
-    // Desenha o texto da DESCRIÇÃO (com a escala dos sliders)
     ctx.fillStyle = descColor;
     const descFont = priceSettings.descFont || 'Oswald';
     let descFontSize = priceSettings.descFontSize || (finalHeight * 0.22);
     ctx.font = `bold ${descFontSize}px '${descFont}'`;
-    
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     const descOffsetX = priceSettings.descOffsetX || 0;
@@ -5152,47 +5274,41 @@ function drawGiganteTag(ctx, product, finalX, finalY, finalWidth, finalHeight, d
     const descX = blackPartX + blackPartWidth - rightPadding + descOffsetX;
     const descY = finalY + finalHeight / 2 + descOffsetY;
     wrapText(ctx, details.productName.toUpperCase(), descX, descY, blackPartWidth * 0.9, descFontSize * 1.1, 'right', descScaleX, descScaleY);
-    
-    // Desenha o texto do PREÇO (com a escala dos sliders)
+
     ctx.save();
     const priceCenterX = yellowPartX + yellowPartWidth / 2 + (priceSettings.priceOffsetX || 0);
     const priceCenterY = finalY + finalHeight / 2 + (priceSettings.priceOffsetY || 0);
     ctx.translate(priceCenterX, priceCenterY);
     ctx.scale(priceScaleX, priceScaleY);
-
     ctx.fillStyle = priceColor;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    const priceFont = 'Anton';
+
+    // LINHA ALTERADA: Agora lê a fonte das configurações
+    const priceFont = priceSettings.priceFont || 'Anton';
+
     const intFontSize = finalHeight * 0.70;
     const decimalFontSize = finalHeight * 0.30;
     const currencyFontSize = finalHeight * 0.25;
-    
     const spacing = 5;
     ctx.font = `bold ${currencyFontSize}px ${priceFont}`; const currencyWidth = ctx.measureText('R$').width;
     ctx.font = `bold ${intFontSize}px ${priceFont}`; const integerWidth = ctx.measureText(details.integerPart).width;
     ctx.font = `bold ${decimalFontSize}px ${priceFont}`; const decimalWidth = ctx.measureText(',' + details.decimalPart).width;
     const naturalTotalWidth = currencyWidth + spacing + integerWidth + spacing + decimalWidth;
-
     const maxWidth = yellowPartWidth * 0.90;
     if (naturalTotalWidth > maxWidth) {
         ctx.scale(maxWidth / naturalTotalWidth, 1);
     }
-
     const baselineY = (intFontSize / 3.5);
     let currentX = -naturalTotalWidth / 2;
-    
     ctx.font = `bold ${currencyFontSize}px ${priceFont}`;
     ctx.fillText('R$', currentX, baselineY);
     currentX += currencyWidth + spacing;
-    
     ctx.font = `bold ${intFontSize}px ${priceFont}`;
     ctx.fillText(details.integerPart, currentX, baselineY);
     currentX += integerWidth + spacing;
-    
     ctx.font = `bold ${decimalFontSize}px ${priceFont}`;
     ctx.fillText(',' + details.decimalPart, currentX, baselineY);
-    
     ctx.restore(); 
     ctx.restore(); 
 }
@@ -7061,17 +7177,18 @@ const cleanLogoSettings = {
                 priceOffsetX: parseInt(document.getElementById('rt_priceOffsetX').value, 10) || 0,
                 priceOffsetY: parseInt(document.getElementById('rt_priceOffsetY').value, 10) || 0
             },
-            giganteTag: {
-                height: parseInt(gtBalloonHeightInput.value, 10) || 100,
-                offsetX: parseInt(gtOffsetXInput.value, 10) || 0,
-                offsetY: parseInt(gtOffsetYInput.value, 10) || 0,
-                priceOffsetX: parseInt(document.getElementById('gt_priceOffsetX').value, 10) || 0,
-                priceOffsetY: parseInt(document.getElementById('gt_priceOffsetY').value, 10) || 0,
-                descFont: document.getElementById('gt_descFont').value,
-                descFontSize: parseInt(document.getElementById('gt_descFontSize').value, 10) || 30,
-                descOffsetX: parseInt(document.getElementById('gt_descOffsetX').value, 10) || 0,
-                descOffsetY: parseInt(document.getElementById('gt_descOffsetY').value, 10) || 0,
-            },
+             giganteTag: {
+        height: parseInt(gtBalloonHeightInput.value, 10) || 100,
+        offsetX: parseInt(gtOffsetXInput.value, 10) || 0,
+        offsetY: parseInt(gtOffsetYInput.value, 10) || 0,
+        priceFont: document.getElementById('gt_priceFont').value, // LINHA ADICIONADA
+        priceOffsetX: parseInt(document.getElementById('gt_priceOffsetX').value, 10) || 0,
+        priceOffsetY: parseInt(document.getElementById('gt_priceOffsetY').value, 10) || 0,
+        descFont: document.getElementById('gt_descFont').value,
+        descFontSize: parseInt(document.getElementById('gt_descFontSize').value, 10) || 30,
+        descOffsetX: parseInt(document.getElementById('gt_descOffsetX').value, 10) || 0,
+        descOffsetY: parseInt(document.getElementById('gt_descOffsetY').value, 10) || 0,
+    },
             descLeftRedTag: {
                 descFont: document.getElementById('dlrt_descFont').value,
                 descFontSize: parseInt(document.getElementById('dlrt_descFontSize').value, 10) || 17,
@@ -7334,6 +7451,7 @@ document.getElementById('sloganPositionY').value = settings.slogan.positionY || 
         gtBalloonHeightInput.value = gtBalloons.height || 100;
         gtOffsetXInput.value = gtBalloons.offsetX || 0;
         gtOffsetYInput.value = gtBalloons.offsetY || 0;
+        document.getElementById('gt_priceFont').value = gtBalloons.priceFont || 'Anton'; // LINHA ADICIONADA
         document.getElementById('gt_priceOffsetX').value = gtBalloons.priceOffsetX || 0;
         document.getElementById('gt_priceOffsetY').value = gtBalloons.priceOffsetY || 0;
         document.getElementById('gt_descFont').value = gtBalloons.descFont || 'Oswald';
@@ -7465,10 +7583,163 @@ document.getElementById('dlc_balloon_select').value = dlcBalloons.selectedBalloo
 });
 		
 		
-        function loadCustomFontsFromStorage() { const fonts = JSON.parse(localStorage.getItem('customFonts') || '{}'); for (const name in fonts) { const fontData = fonts[name]; const style = document.createElement('style'); style.textContent = `@font-face { font-family: '${name}'; src: url('${fontData.data}'); }`; document.head.appendChild(style); } updateCustomFontUI(); }
-        function updateCustomFontUI() { const fonts = JSON.parse(localStorage.getItem('customFonts') || '{}'); customFontList.innerHTML = ''; document.querySelectorAll('optgroup[id^="custom-fonts-"]').forEach(group => group.innerHTML = ''); for (const name in fonts) { const listItem = document.createElement('div'); listItem.className = 'flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-2 rounded'; listItem.textContent = name; const deleteBtn = document.createElement('button'); deleteBtn.innerHTML = '&times;'; deleteBtn.className = 'text-red-500 hover:text-red-700 font-bold text-xl'; deleteBtn.onclick = () => { deleteCustomFont(name); }; listItem.appendChild(deleteBtn); customFontList.appendChild(listItem); document.querySelectorAll('optgroup[id^="custom-fonts-"]').forEach(group => { const option = document.createElement('option'); option.value = name; option.textContent = name; group.appendChild(option); }); } }
-        function deleteCustomFont(name) { const fonts = JSON.parse(localStorage.getItem('customFonts') || '{}'); delete fonts[name]; localStorage.setItem('customFonts', JSON.stringify(fonts)); updateCustomFontUI(); redrawCanvas(); }
-        addCustomFontBtn.addEventListener('click', () => { const file = customFontInput.files[0]; const name = customFontNameInput.value.trim(); if (!file || !name) { showAlert('Por favor, selecione um arquivo de fonte e dê um nome a ela.'); return; } const reader = new FileReader(); reader.onload = (e) => { const fontDataUrl = e.target.result; const fonts = JSON.parse(localStorage.getItem('customFonts') || '{}'); fonts[name] = { data: fontDataUrl }; localStorage.setItem('customFonts', JSON.stringify(fonts)); const style = document.createElement('style'); style.textContent = `@font-face { font-family: '${name}'; src: url('${fontDataUrl}'); }`; document.head.appendChild(style); updateCustomFontUI(); customFontInput.value = ''; customFontNameInput.value = ''; showAlert(`Fonte "${name}" adicionada com sucesso!`); }; reader.readAsDataURL(file); });
+        // ▼▼▼ SUBSTITUA A FUNÇÃO ANTIGA PELA VERSÃO ABAIXO ▼▼▼
+async function loadCustomFontsFromStorage() {
+    try {
+        const { data: fonts, error } = await supabaseClient
+            .from('custom_fonts')
+            .select('name, font_url');
+
+        if (error) throw error;
+
+        for (const font of fonts) {
+            // Cria a regra @font-face para que o navegador carregue a fonte da nuvem
+            const style = document.createElement('style');
+            style.textContent = `@font-face { font-family: '${font.name}'; src: url('${font.font_url}'); }`;
+            document.head.appendChild(style);
+        }
+        
+        // Atualiza a lista de fontes no painel de gerenciamento
+        updateCustomFontUI(fonts);
+
+    } catch (e) {
+        console.error("Erro ao carregar fontes da nuvem:", e);
+        showAlert("Não foi possível carregar as fontes customizadas da nuvem.");
+    }
+}
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+        // ▼▼▼ SUBSTITUA A FUNÇÃO ANTIGA PELA VERSÃO ABAIXO ▼▼▼
+function updateCustomFontUI(fonts = []) {
+    customFontList.innerHTML = '';
+    document.querySelectorAll('optgroup[id^="custom-fonts-"]').forEach(group => group.innerHTML = '');
+
+    for (const font of fonts) {
+        const name = font.name;
+        const listItem = document.createElement('div');
+        listItem.className = 'flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-2 rounded';
+        listItem.textContent = name;
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.className = 'text-red-500 hover:text-red-700 font-bold text-xl';
+        deleteBtn.onclick = () => { deleteCustomFont(name); };
+        
+        listItem.appendChild(deleteBtn);
+        customFontList.appendChild(listItem);
+        
+        document.querySelectorAll('optgroup[id^="custom-fonts-"]').forEach(group => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            group.appendChild(option);
+        });
+    }
+}
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+		
+        // ▼▼▼ SUBSTITUA A FUNÇÃO ANTIGA PELA VERSÃO ABAIXO ▼▼▼
+async function deleteCustomFont(name) {
+    showConfirm(`Tem certeza que deseja deletar a fonte "${name}" da nuvem?`, async (confirmed) => {
+        if (!confirmed) return;
+
+        showSpinner(true);
+        try {
+            // 1. Pega o caminho do arquivo no banco de dados
+            const { data: fontData, error: selectError } = await supabaseClient
+                .from('custom_fonts')
+                .select('file_path')
+                .eq('name', name)
+                .single();
+
+            if (selectError) throw selectError;
+
+            // 2. Deleta o arquivo do Storage
+            if (fontData && fontData.file_path) {
+                const { error: storageError } = await supabaseClient.storage
+                    .from('custom-fonts')
+                    .remove([fontData.file_path]);
+                if (storageError) console.warn("Aviso: falha ao remover arquivo do storage, mas o registro do DB será removido.", storageError);
+            }
+
+            // 3. Deleta o registro da tabela 'custom_fonts'
+            const { error: dbError } = await supabaseClient
+                .from('custom_fonts')
+                .delete()
+                .eq('name', name);
+            
+            if (dbError) throw dbError;
+            
+            showAlert(`Fonte "${name}" deletada com sucesso!`);
+            location.reload(); // Recarrega a página para remover a fonte do cache do navegador
+
+        } catch (e) {
+            console.error("Erro ao deletar fonte:", e);
+            showAlert(`Falha ao deletar a fonte: ${e.message}`);
+        } finally {
+            showSpinner(false);
+        }
+    });
+}
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+        
+		// ▼▼▼ SUBSTITUA O BLOCO ANTIGO PELO CÓDIGO ABAIXO ▼▼▼
+addCustomFontBtn.addEventListener('click', async () => {
+    const file = customFontInput.files[0];
+    const name = customFontNameInput.value.trim();
+
+    if (!file || !name) {
+        showAlert('Por favor, selecione um arquivo de fonte e dê um nome a ela.');
+        return;
+    }
+
+    showSpinner(true);
+    showAlert("Enviando fonte para a nuvem...");
+
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado.");
+
+        // 1. Envia o arquivo da fonte para o Storage
+        const fileExtension = file.name.split('.').pop();
+        const filePath = `${user.id}/${name}.${fileExtension}`;
+        
+        const { error: uploadError } = await supabaseClient.storage
+            .from('custom-fonts')
+            .upload(filePath, file, { upsert: true }); // upsert: true substitui se já existir
+
+        if (uploadError) throw uploadError;
+
+        // 2. Pega a URL pública do arquivo que acabamos de enviar
+        const { data: publicUrlData } = supabaseClient.storage
+            .from('custom-fonts')
+            .getPublicUrl(filePath);
+
+        // 3. Salva as informações da fonte na tabela do Database
+        const { error: dbError } = await supabaseClient
+            .from('custom_fonts')
+            .upsert({
+                name: name,
+                font_url: publicUrlData.publicUrl,
+                file_path: filePath,
+                            }, { onConflict: 'name' });
+
+        if (dbError) throw dbError;
+        
+        // 4. Recarrega a lista de fontes da nuvem
+        await loadCustomFontsFromStorage();
+        customFontInput.value = '';
+        customFontNameInput.value = '';
+        showAlert(`Fonte "${name}" salva na nuvem com sucesso!`);
+
+    } catch (err) {
+        console.error("Erro ao salvar fonte na nuvem:", err);
+        showAlert(`Falha ao salvar a fonte: ${err.message}`);
+    } finally {
+        showSpinner(false);
+    }
+});
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
+		
 		
 		// --- LÓGICA PARA ADICIONAR FONTES VIA PASTA ---
 const addFontsFromFolderBtn = document.getElementById('addFontsFromFolderBtn');
@@ -7478,6 +7749,9 @@ addFontsFromFolderBtn.addEventListener('click', () => {
     fontFolderInput.click();
 });
 
+// ▼▼▼ COLE ESTE NOVO BLOCO NO LUGAR DO ANTIGO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO DE ADICIONAR FONTES POR PASTA POR ESTE CÓDIGO DE TESTE ▼▼▼
+// ▼▼▼ SUBSTITUA O CÓDIGO DE TESTE POR ESTE BLOCO FUNCIONAL ▼▼▼
 fontFolderInput.addEventListener('change', async (event) => {
     const files = event.target.files;
     if (!files || files.length === 0) {
@@ -7530,6 +7804,9 @@ fontFolderInput.addEventListener('change', async (event) => {
     showSpinner(false);
     showAlert(`${newFontsAdded} novas fontes foram adicionadas com sucesso!`);
 });
+// ▲▲▲ FIM DO BLOCO ▲▲▲
+// ▲▲▲ FIM DO CÓDIGO DE TESTE ▲▲▲
+// ▲▲▲ FIM DO NOVO BLOCO ▲▲▲
 		
 		
 		
@@ -7897,33 +8174,53 @@ const importProjectInput = document.getElementById('importProjectInput');
 // ▼▼▼ SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 
 // ▼▼▼ SUBSTITUA A FUNÇÃO DE SALVAR PROJETO PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA O BLOCO ANTIGO POR ESTE ▼▼▼
 saveProjectBtn.addEventListener('click', async () => {
     const projectName = projectNameInput.value.trim();
     if (!projectName) {
         showAlert('Por favor, insira um nome para o projeto.');
         return;
     }
-    const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
-    const projectState = getFlyerState();
-    const serializableState = JSON.parse(JSON.stringify(projectState, (key, value) => (value instanceof HTMLImageElement ? undefined : value)));
+
     showSpinner(true);
     try {
+        // Pega o usuário autenticado para obter o ID
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) {
+            throw new Error("Usuário não está autenticado. Recarregue a página.");
+        }
+
+        const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+        const projectState = getFlyerState();
+        const serializableState = JSON.parse(JSON.stringify(projectState, (key, value) => (value instanceof HTMLImageElement ? undefined : value)));
+
+        // Envia os dados para o Supabase
         const { error } = await supabaseClient
             .from('projects')
             .upsert({
                 name: projectName,
                 project_data: serializableState,
-                thumbnail: thumbnail
+                thumbnail: thumbnail,
+                user_id: user.id // <-- LINHA CRÍTICA ADICIONADA
             }, { onConflict: 'name' });
-        if (error) throw error;
+
+        if (error) {
+            // Se o Supabase retornar um erro, lança para o catch
+            throw error;
+        }
+
         await populateSavedProjectsList();
         showAlert(`Projeto "${projectName}" salvo com sucesso na nuvem!`);
+
     } catch (e) {
-        showAlert('Ocorreu um erro ao salvar na nuvem.');
-        console.error(e);
+        // Mostra o erro específico no console para facilitar futuras depurações
+        console.error("Erro detalhado ao salvar projeto:", e);
+        showAlert(`Ocorreu um erro ao salvar na nuvem: ${e.message}`);
+    } finally {
+        showSpinner(false);
     }
-    showSpinner(false);
 });
+// ▲▲▲ FIM DO BLOCO DE SUBSTITUIÇÃO ▲▲▲
 
 
 // ▼▼▼ SUBSTITUA A FUNÇÃO DE CARREGAR PROJETO PELA VERSÃO ABAIXO ▼▼▼
@@ -8135,51 +8432,38 @@ function updateSyncStatusUI() {
 
 
 
-
-
-// =======================================================
-// ====== COLE ESTA VERSÃO CORRIGIDA DA FUNÇÃO initialize ======
-// =======================================================
-// ▼▼▼ SUBSTITUA A SUA FUNÇÃO "initialize" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
-
-// ▼▼▼ SUBSTITUA A SUA FUNÇÃO "initialize" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
-// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
-
-// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
-// ▼▼▼ SUBSTITUA A FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
-// ▼▼▼ SUBSTITUA A FUNÇÃO 'initialize' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
-// ▼▼▼ SUBSTITUA A FUNÇÃO 'initialize' INTEIRA PELA VERSÃO FINAL ABAIXO ▼▼▼
 async function initialize() {
     showSpinner(true);
     
     try {
-        // ETAPA 1: Tenta recuperar a sessão existente.
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        // ETAPA 1: FAZ O LOGIN COM O "USUÁRIO MESTRE"
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: 'carlosdeathnote@gmail.com',    // <-- Use o email que você criou
+            password: 'Arte.com13061994*', // <-- Use a senha que você criou
+        });
 
-        if (session) {
-            // Se encontrou uma sessão, define-a como a sessão ativa no cliente.
-            // ESTA É A CORREÇÃO CRÍTICA QUE ESTAVA FALTANDO.
-            await supabaseClient.auth.setSession({
-                access_token: session.access_token,
-                refresh_token: session.refresh_token,
-            });
-            console.log("Sessão anônima existente recuperada e ATIVADA:", session.user.id);
-        } else {
-            // Se não encontrou nenhuma sessão, cria uma nova.
-            const { data, error } = await supabaseClient.auth.signInAnonymously();
-            if (error) throw error;
-            console.log("Nova sessão anônima criada:", data.user.id);
+        if (error) {
+            // Se o login falhar, mostra um erro grave e para a aplicação.
+            throw error;
         }
+
+        console.log("Login com Usuário Mestre realizado com sucesso:", data.user.id);
+
     } catch(e) {
         console.error("Falha crítica na autenticação com Supabase:", e);
-        showAlert("Não foi possível conectar aos serviços de nuvem. Verifique sua conexão e as configurações do Supabase.");
+        // Alerta para o usuário de que a conexão com a base de dados falhou
+        document.body.innerHTML = `<div style="padding: 40px; text-align: center; color: red; font-family: sans-serif;">
+            <h1>Erro de Conexão</h1>
+            <p>Não foi possível conectar ao banco de dados. Verifique o email/senha do usuário mestre no código ou as configurações do Supabase.</p>
+        </div>`;
+        return; // Para a execução
     }
     
     // ETAPA 2: Carrega o restante da aplicação normalmente.
     await loadProductDatabase();
     await populateSavedProjectsList();
-    loadCustomFontsFromStorage();
-    loadCustomBalloons();
+    await loadCustomFontsFromStorage();
+    await loadCustomBalloons();
     populateTemplatePreviews();
 
     if (flyerData.pages.length === 0) {
@@ -8751,32 +9035,50 @@ function saveCustomBalloon(name, imageDataUrl) {
 }
 
 // Carrega os balões salvos ao iniciar
-function loadCustomBalloons() {
-    const saved = JSON.parse(localStorage.getItem('customBalloons') || '{}');
-    customBalloonList.innerHTML = ''; // Limpa a lista de gerenciamento
-
-    // Limpa as opções customizadas dos menus de seleção antes de recarregá-las
+// ▼▼▼ SUBSTITUA A FUNÇÃO ANTIGA POR ESTA ▼▼▼
+async function loadCustomBalloons() {
+    customBalloonList.innerHTML = '';
     [firstLineBalloonStyleSelect, otherLinesBalloonStyleSelect].forEach(select => {
         const optgroup = select.querySelector('optgroup[label="Balões Customizados"]');
-        if (optgroup) {
-            optgroup.remove(); // Remove o grupo inteiro para recriá-lo do zero
-        }
+        if (optgroup) optgroup.innerHTML = '';
     });
 
-    // Recria a lista e as opções a partir do que está salvo
-    for (const name in saved) {
-        addCustomBalloonToUIAndSelects(name, saved[name]);
+    try {
+        const { data, error } = await supabaseClient
+            .from('custom_balloons')
+            .select('name, image_data_url');
+        
+        if (error) throw error;
+
+        for (const balloon of data) {
+            addCustomBalloonToUIAndSelects(balloon.name, balloon.image_data_url);
+        }
+    } catch (e) {
+        console.error("Erro ao carregar balões da nuvem:", e);
+        showAlert("Não foi possível carregar os balões customizados da nuvem.");
     }
 }
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 
 // Deleta um balão customizado
-function deleteCustomBalloon(name) {
-    const saved = JSON.parse(localStorage.getItem('customBalloons') || '{}');
-    delete saved[name];
-    localStorage.setItem('customBalloons', JSON.stringify(saved));
-    // Recarrega a aplicação para remover a opção de todos os lugares
-    location.reload(); 
+// ▼▼▼ SUBSTITUA A FUNÇÃO ANTIGA POR ESTA ▼▼▼
+async function deleteCustomBalloon(name) {
+    try {
+        const { error } = await supabaseClient
+            .from('custom_balloons')
+            .delete()
+            .eq('name', name);
+
+        if (error) throw error;
+
+        await loadCustomBalloons(); // Apenas recarrega a lista, sem dar refresh na página
+        showAlert(`Balão "${name}" deletado da nuvem com sucesso.`);
+    } catch (e) {
+        console.error("Erro ao deletar balão:", e);
+        showAlert(`Falha ao deletar balão: ${e.message}`);
+    }
 }
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 
 // Adiciona o balão na interface e nos menus de seleção
 function addCustomBalloonToUIAndSelects(name, imageDataUrl) {
@@ -8819,7 +9121,8 @@ function addCustomBalloonToUIAndSelects(name, imageDataUrl) {
 }
 
 // Evento para o botão de salvar
-saveCustomBalloonBtn.addEventListener('click', () => {
+// ▼▼▼ SUBSTITUA O BLOCO ANTIGO POR ESTE ▼▼▼
+saveCustomBalloonBtn.addEventListener('click', async () => {
     const file = customBalloonImageInput.files[0];
     const name = customBalloonNameInput.value.trim();
 
@@ -8827,18 +9130,35 @@ saveCustomBalloonBtn.addEventListener('click', () => {
         showAlert('Por favor, selecione uma imagem e dê um nome ao novo estilo.');
         return;
     }
-
+    
+    showSpinner(true);
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         const imageDataUrl = e.target.result;
-        saveCustomBalloon(name, imageDataUrl);
-        addCustomBalloonToUIAndSelects(name, imageDataUrl);
-        customBalloonImageInput.value = '';
-        customBalloonNameInput.value = '';
-        showAlert(`Balão "${name}" salvo com sucesso!`);
+        try {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) throw new Error("Usuário não autenticado.");
+
+            const { error } = await supabaseClient
+                .from('custom_balloons')
+                .upsert({ name: name, image_data_url: imageDataUrl, user_id: user.id }, { onConflict: 'name' });
+
+            if (error) throw error;
+
+            await loadCustomBalloons(); // Recarrega a lista da nuvem
+            customBalloonImageInput.value = '';
+            customBalloonNameInput.value = '';
+            showAlert(`Balão "${name}" salvo na nuvem com sucesso!`);
+        } catch(err) {
+            console.error("Erro ao salvar balão na nuvem:", err);
+            showAlert(`Falha ao salvar o balão: ${err.message}`);
+        } finally {
+            showSpinner(false);
+        }
     };
     reader.readAsDataURL(file);
 });
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 
 // Evento para os botões de deletar
 customBalloonList.addEventListener('click', (e) => {
@@ -9159,10 +9479,24 @@ const passwordSubmit = document.getElementById('password-submit');
 const passwordError = document.getElementById('password-error');
 
 // Função para verificar a senha
+// ▼▼▼ COLE ESTA NOVA VERSÃO DA FUNÇÃO ▼▼▼
 function verificarSenha() {
+    // Pega o checkbox DENTRO da função para garantir que temos o estado mais recente
+    const rememberMeCheckbox = document.getElementById('remember-me');
+
     if (passwordInput.value === SENHA_CORRETA) {
-        // Se a senha estiver correta, salva um indicador na sessão do navegador
-        sessionStorage.setItem('autenticado', 'true');
+        // Se a caixa "Lembrar de mim" estiver marcada...
+        if (rememberMeCheckbox.checked) {
+            // ...salva a autenticação no localStorage (permanente)
+            localStorage.setItem('autenticado', 'true');
+            // e limpa o sessionStorage por segurança.
+            sessionStorage.removeItem('autenticado');
+        } else {
+            // ...senão, salva no sessionStorage (temporário)
+            sessionStorage.setItem('autenticado', 'true');
+            // e limpa o localStorage para "deslembrar" o usuário.
+            localStorage.removeItem('autenticado');
+        }
         // Esconde a tela de senha
         passwordOverlay.style.display = 'none';
     } else {
@@ -9171,6 +9505,7 @@ function verificarSenha() {
         passwordInput.value = '';
     }
 }
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 
 // Adiciona o evento de clique ao botão
 passwordSubmit.addEventListener('click', verificarSenha);
@@ -9184,7 +9519,8 @@ passwordInput.addEventListener('keyup', (event) => {
 
 // Verifica se o usuário JÁ está autenticado nesta sessão
 // Isso evita que ele precise digitar a senha toda vez que recarregar a página (F5)
-if (sessionStorage.getItem('autenticado') === 'true') {
+// ▼▼▼ SUBSTITUA A LINHA DE VERIFICAÇÃO POR ESTA ▼▼▼
+if (localStorage.getItem('autenticado') === 'true' || sessionStorage.getItem('autenticado') === 'true') {
     passwordOverlay.style.display = 'none';
 }
 
@@ -9601,9 +9937,16 @@ const refreshStockListBtn = document.getElementById('refreshStockListBtn');
 // =======================================================
 // ====== FUNÇÃO ATUALIZADA PARA POPULAR O ESTOQUE =======
 // =======================================================
+// ▼▼▼ SUBSTITUA SUA FUNÇÃO ANTIGA POR ESTA ▼▼▼
 function populateStockList() {
-    stockProductList.innerHTML = ''; 
-    stockDbLabel.innerHTML = userId ? 'Produtos (Nuvem) ☁️' : 'Produtos (Local)';
+    stockProductList.innerHTML = '';
+    
+    // Mantém a lógica de exibir o status da nuvem
+    if (userId) {
+        updateSyncStatusUI(); // Atualiza o texto e cor do título
+    } else {
+        stockDbLabel.innerHTML = 'Produtos (Local)';
+    }
 
     if (Object.keys(productDatabase).length === 0) {
         stockProductList.innerHTML = '<p class="col-span-3 text-center text-sm text-gray-500 py-4">Nenhum produto cadastrado.</p>';
@@ -9615,27 +9958,28 @@ function populateStockList() {
     for (const productName of sortedProductNames) {
         const product = productDatabase[productName];
         const card = document.createElement('div');
-        // Adiciona 'relative' para posicionar os botões
         card.className = 'bg-white dark:bg-gray-800 p-2 rounded-lg shadow flex flex-col items-center text-center relative';
         
-        // --- Botões de Ação no Card ---
+        // --- INÍCIO DA MODIFICAÇÃO: Adiciona os botões de ação ---
         const controlsDiv = document.createElement('div');
         controlsDiv.className = 'absolute top-1 right-1 flex flex-col space-y-1';
 
         const editBtn = document.createElement('button');
-        editBtn.className = 'edit-stock-btn p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600';
+        editBtn.className = 'edit-stock-btn p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-transform hover:scale-110';
+        editBtn.title = 'Editar Produto';
         editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`;
-        editBtn.dataset.productName = productName; // Guarda o nome do produto
+        editBtn.dataset.productName = productName;
 
         const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-stock-btn p-1 bg-red-500 text-white rounded-full hover:bg-red-600';
+        deleteBtn.className = 'delete-stock-btn p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-transform hover:scale-110';
+        deleteBtn.title = 'Excluir Produto';
         deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`;
-        deleteBtn.dataset.productName = productName; // Guarda o nome do produto
+        deleteBtn.dataset.productName = productName;
         
         controlsDiv.appendChild(editBtn);
         controlsDiv.appendChild(deleteBtn);
+        // --- FIM DA MODIFICAÇÃO ---
         
-        // --- Conteúdo do Card ---
         const img = document.createElement('img');
         img.src = product.src || 'https://placehold.co/100x100/e2e8f0/adb5bd?text=Sem+Foto';
         img.className = 'w-20 h-20 object-contain rounded-md mb-2';
@@ -9749,6 +10093,10 @@ const deleteAllStockBtn = document.getElementById('deleteAllStockBtn');
 // Ação do botão "Deletar TODO o Estoque"
 // ▼▼▼ SUBSTITUA AS DUAS FUNÇÕES DE EVENTO DE ESTOQUE POR ESTE BLOCO ▼▼▼
 deleteAllStockBtn.addEventListener('click', () => {
+
+// ▼▼▼ ADICIONE ESTE NOVO BLOCO DE LÓGICA DE CLIQUE ▼▼▼
+
+
     showConfirm("TEM CERTEZA? Isso apagará TODOS os produtos do seu banco de dados. Esta ação não pode ser desfeita.", async (confirmed) => {
         if (confirmed) {
             showSpinner(true);
@@ -10360,6 +10708,35 @@ function formatarLista() {
 
 // ▲▲▲ FIM DO BLOCO ▲▲▲
 		
+		
+		
+		
+		// ▼▼▼ COLE ESTE BLOCO PARA REATIVAR O BOTÃO "APLICAR ESTILO MESTRE" ▼▼▼
+
+if (masterPageSelect) {
+    masterPageSelect.addEventListener('change', updateTargetPagesState);
+}
+
+if (applyMasterSettingsBtn) {
+    applyMasterSettingsBtn.addEventListener('click', applyMasterSettingsToSelectedPages);
+}
+
+if (selectAllTargetsBtn) {
+    selectAllTargetsBtn.addEventListener('click', () => {
+        targetPagesContainer.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb => cb.checked = true);
+    });
+}
+
+if (deselectAllTargetsBtn) {
+    deselectAllTargetsBtn.addEventListener('click', () => {
+        targetPagesContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    });
+}
+
+// Também é importante popular os controles quando o painel de páginas é aberto
+document.querySelector('a[data-panel="panel-pages"]').addEventListener('click', populateMasterPageControls);
+
+// ▲▲▲ FIM DO BLOCO ▲▲▲
 		
     </script>
 </body>
