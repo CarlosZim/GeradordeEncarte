@@ -50,10 +50,28 @@
  /* ▼▼▼ COLE O NOVO BLOCO DE CÓDIGO AQUI ▼▼▼ */
     #password-overlay {
         background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5)), url('https://i.imgur.com/bnFSlSc.jpeg');
-        background-size: cover;
+		        background-size: cover;
         background-position: center;
     }
     /* ▲▲▲ FIM DO BLOCO NOVO ▲▲▲ */
+	
+	
+	
+	/* ▼▼▼ NOVO ESTILO PARA A BUSCA DE IMAGENS ▼▼▼ */
+    #imageSearchResults .result-item {
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+    }
+    #imageSearchResults .result-item:hover {
+        transform: scale(1.05);
+        border-color: #60a5fa; /* Azul claro */
+    }
+    #imageSearchResults .result-item.selected {
+        border-color: #2563eb; /* Azul forte */
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.7);
+    }
+    /* ▲▲▲ FIM DO NOVO ESTILO ▲▲▲ */
 		
 		
     </style>
@@ -314,8 +332,10 @@
         <option value="2x2">4 Produtos - Grade 2x2</option>
         <option value="5_4_1d">5 Produtos - 4 + 1 Destaque Direito</option>
         <option value="5_4_1e">5 Produtos - 4 + 1 Destaque Esquerdo</option>
+		<option value="5_4_1c_center">5 Produtos - 4 + 1 Destaque Central</option>
         <option value="3x2">6 Produtos - Grade 3x2</option>
-        <option value="7_1t_6">7 Produtos - 1 Destaque Topo + 6</option>
+		        <option value="7_1t_6">7 Produtos - 1 Destaque Topo + 6</option>
+				<option value="7_1c_6">7 Produtos - 1 Destaque central + 6</option>
         <option value="7_3t_4">7 Produtos - 3 Destaques Topo + 4</option>
         <option value="7_4_3b">7 Produtos - 4 + 3 Destaques Abaixo</option>
         <option value="7_1l_6">7 Produtos - 1 Destaque Lateral + 6</option>
@@ -1463,6 +1483,13 @@ Produto B, 5.50" rows="5"></textarea>
         <textarea id="inputList" class="w-full h-48 bg-gray-50 dark:bg-gray-700 border rounded-lg p-2.5" placeholder="Exemplo: ARROZ REI ARTHUR 5KG: 21,40 	 DICKOW"></textarea>
     </div>
 
+<div class="flex items-center gap-2 my-4">
+    <input id="removePricesToggle" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+    <label for="removePricesToggle" class="text-sm font-medium cursor-pointer">Remover preços e texto subsequente</label>
+</div>
+
+
+
     <button id="formatarListaBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg">
     Formatar e Limpar Lista
 </button>
@@ -2030,6 +2057,36 @@ Produto B, 5.50" rows="5"></textarea>
 
 
 
+
+
+
+<div class="modal-overlay" id="imageSearchModal">
+    <div class="modal-content" style="max-width: 800px;">
+        <h3 class="text-xl font-bold mb-4">Selecionar Imagem do Banco de Dados</h3>
+        <p class="text-sm text-gray-400 mb-4">
+            Busque pelo nome do produto e clique na imagem desejada para selecioná-la.
+        </p>
+
+        <div class="mb-4">
+            <input type="text" id="imageSearchInput" class="w-full bg-gray-200 dark:bg-gray-600 border rounded-lg p-2.5" placeholder="Digite para buscar..."/>
+        </div>
+
+        <div id="imageSearchResults" class="max-h-96 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 p-2 rounded-lg bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-600">
+            </div>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" id="useSelectedImageBtn" disabled>
+                Usar Imagem Selecionada
+            </button>
+            <button class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg" id="triggerFileUploadBtn">
+                Ou Fazer Upload do Computador
+            </button>
+            <button class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg" id="cancelImageSearchBtn">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
 
 
 <script>
@@ -4715,6 +4772,49 @@ function drawPredefinedGrid(layoutName, productGridTopY, productGridBottomY) {
             for(let i=0; i<2; i++) for(let j=0; j<2; j++) drawSlot(productIndex++, highlightW + spacing + j * (cellW + spacing), productGridTopY + i * (cellH + spacing), cellW, cellH, false);
             break;
         }
+		
+		case '5_4_1c_center': { // 4 produtos + 1 destaque Central
+            const regularW = w * 0.3; // Largura dos slots laterais
+            const highlightW = w - (2 * regularW) - (2 * spacing); // Largura do destaque central
+            const regularH = (h - spacing) / 2; // Altura dos slots laterais
+
+            // Desenha os 2 slots da esquerda
+            drawSlot(productIndex++, 0, productGridTopY, regularW, regularH, false);
+            drawSlot(productIndex++, 0, productGridTopY + regularH + spacing, regularW, regularH, false);
+
+            // Desenha o slot de destaque central
+            drawSlot(productIndex++, regularW + spacing, productGridTopY, highlightW, h, true);
+
+            // Desenha os 2 slots da direita
+            const rightX = regularW + highlightW + (2 * spacing);
+            drawSlot(productIndex++, rightX, productGridTopY, regularW, regularH, false);
+            drawSlot(productIndex++, rightX, productGridTopY + regularH + spacing, regularW, regularH, false);
+            break;
+        }
+		
+		
+		case '7_1c_6': { // 1 Destaque central + 6
+            const regularW = w * 0.3; // Largura das colunas laterais
+            const highlightW = w - (2 * regularW) - (2 * spacing); // Largura do destaque
+            const regularH = (h - 2 * spacing) / 3; // Altura dos 3 slots em cada coluna
+
+            // Desenha os 3 slots da esquerda
+            for (let i = 0; i < 3; i++) {
+                drawSlot(productIndex++, 0, productGridTopY + i * (regularH + spacing), regularW, regularH, false);
+            }
+
+            // Desenha o slot de destaque central
+            drawSlot(productIndex++, regularW + spacing, productGridTopY, highlightW, h, true);
+
+            // Desenha os 3 slots da direita
+            const rightX = regularW + highlightW + (2 * spacing);
+            for (let i = 0; i < 3; i++) {
+                drawSlot(productIndex++, rightX, productGridTopY + i * (regularH + spacing), regularW, regularH, false);
+            }
+            break;
+        }
+		
+		
         case '7_1t_6': { // 1 destaque topo + 6 produtos
             const topH = h * 0.4;
             drawSlot(productIndex++, 0, productGridTopY, w, topH, true);
@@ -6041,11 +6141,12 @@ function redrawCanvas() {
 
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'updateProductListUI' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'updateProductListUI' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 function updateProductListUI() {
     const currentPage = flyerData.pages[flyerData.currentPageIndex];
     if (!currentPage) return;
 
-    productListDiv.innerHTML = 0 === currentPage.products.length ? `<p class="text-gray-500 text-sm">Nenhum produto adicionado.</p>` : '';
+    productListDiv.innerHTML = currentPage.products.length === 0 ? `<p class="text-gray-500 text-sm">Nenhum produto adicionado.</p>` : '';
 
     currentPage.products.forEach((p, index) => {
         const item = document.createElement('div');
@@ -6064,6 +6165,7 @@ function updateProductListUI() {
         imgPreview.src = p.image ? p.image.src : 'https://placehold.co/64x64/e2e8f0/adb5bd?text=Sem+Foto';
         imgPreview.draggable = false;
 
+        // Input de arquivo continua existindo, mas escondido, para a opção de upload.
         const imageInput = document.createElement('input');
         imageInput.type = 'file';
         imageInput.className = 'hidden';
@@ -6071,21 +6173,21 @@ function updateProductListUI() {
         imageInput.id = `edit-image-${index}`;
         imageInput.dataset.index = index;
 
+        // O 'label' agora não aponta mais para o input, ele vai abrir nosso novo modal.
         const imageLabel = document.createElement('label');
-        imageLabel.htmlFor = `edit-image-${index}`;
         imageLabel.className = 'cursor-pointer';
         imageLabel.appendChild(imgPreview);
+        // ===============================================
+        // A MUDANÇA PRINCIPAL ESTÁ AQUI
+        // ===============================================
+        imageLabel.addEventListener('click', () => openImageSearchModal(index));
+        // ===============================================
 
         imageContainer.appendChild(imageLabel);
         imageContainer.appendChild(imageInput);
 
         const inputsContainer = document.createElement('div');
-        // ==========================================================
-        // ===== A CORREÇÃO ESTÁ AQUI =====
-        // ==========================================================
-        // Adicionamos a classe 'min-w-0' para permitir que este contêiner encolha corretamente.
         inputsContainer.className = 'flex-grow space-y-1 min-w-0';
-        // ========================================================
 
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
@@ -6141,7 +6243,80 @@ function updateProductListUI() {
 		
         function dragStart() { dragStartIndex = +this.dataset.index; this.classList.add('dragging'); } function dragOver(e) { e.preventDefault(); } function dragEnter() { this.classList.add('drag-over'); } function dragLeave() { this.classList.remove('drag-over'); } function drop() { swapItems(dragStartIndex, +this.dataset.index); this.classList.remove('drag-over'); } function dragEnd() { document.querySelectorAll('.product-list-item').forEach(item => item.classList.remove('dragging', 'drag-over')); }
         function swapItems(fromIndex, toIndex) { const currentPage = flyerData.pages[flyerData.currentPageIndex], item = currentPage.products.splice(fromIndex, 1)[0]; currentPage.products.splice(toIndex, 0, item); updateProductListUI(); redrawCanvas(); }
-        function addDragListeners() { document.querySelectorAll('.product-list-item').forEach(d => { d.addEventListener('dragstart', dragStart); d.addEventListener('dragover', dragOver); d.addEventListener('drop', drop); d.addEventListener('dragend', dragEnd); d.addEventListener('dragenter', dragEnter); d.addEventListener('dragleave', dragLeave); }); document.querySelectorAll('.remove-btn').forEach(btn => btn.addEventListener('click', e => { flyerData.pages[flyerData.currentPageIndex].products.splice(parseInt(e.target.dataset.index), 1); updateProductListUI(); redrawCanvas(); })); document.querySelectorAll('.edit-name').forEach(input => input.addEventListener('input', e => { flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].name = e.target.value; redrawCanvas(); populateImageSelect(); })); document.querySelectorAll('.edit-price').forEach(input => input.addEventListener('input', e => { flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].price = e.target.value; redrawCanvas(); })); document.querySelectorAll('.edit-bgcolor').forEach(input => input.addEventListener('input', e => { flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].backgroundColor = e.target.value; redrawCanvas(); })); document.querySelectorAll('input[type="file"][id^="edit-image-"]').forEach(input => input.addEventListener('change', e => { const index = parseInt(e.target.dataset.index); handleSingleImageUpload(e, img => { flyerData.pages[flyerData.currentPageIndex].products[index].image = img; flyerData.pages[flyerData.currentPageIndex].products[index].src = img.src; redrawCanvas(); updateProductListUI(); }); })); }
+        
+		
+		// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'addDragListeners' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+
+function addDragListeners() {
+    document.querySelectorAll('.product-list-item').forEach(d => {
+        d.addEventListener('dragstart', dragStart);
+        d.addEventListener('dragover', dragOver);
+        d.addEventListener('drop', drop);
+        d.addEventListener('dragend', dragEnd);
+        d.addEventListener('dragenter', dragEnter);
+        d.addEventListener('dragleave', dragLeave);
+    });
+    document.querySelectorAll('.remove-btn').forEach(btn => btn.addEventListener('click', e => {
+        flyerData.pages[flyerData.currentPageIndex].products.splice(parseInt(e.target.dataset.index), 1);
+        updateProductListUI();
+        redrawCanvas();
+    }));
+    document.querySelectorAll('.edit-name').forEach(input => input.addEventListener('input', e => {
+        flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].name = e.target.value;
+        redrawCanvas();
+        populateImageMultiSelect(); // Corrigido de populateImageSelect para o novo nome
+    }));
+    document.querySelectorAll('.edit-price').forEach(input => input.addEventListener('input', e => {
+        flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].price = e.target.value;
+        redrawCanvas();
+    }));
+    document.querySelectorAll('.edit-bgcolor').forEach(input => input.addEventListener('input', e => {
+        flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].backgroundColor = e.target.value;
+        redrawCanvas();
+    }));
+    
+    // ==========================================================
+    // --- A LÓGICA DE SALVAR NO BANCO DE DADOS FOI ADICIONADA AQUI ---
+    // ==========================================================
+    document.querySelectorAll('input[type="file"][id^="edit-image-"]').forEach(input => input.addEventListener('change', e => {
+        const index = parseInt(e.target.dataset.index);
+        
+        handleSingleImageUpload(e, img => {
+            const productInFlyer = flyerData.pages[flyerData.currentPageIndex].products[index];
+            if (!productInFlyer) return;
+
+            // 1. Atualiza a imagem no encarte (como antes)
+            productInFlyer.image = img;
+            productInFlyer.src = img.src;
+
+            // 2. (NOVO) Adiciona/Atualiza o produto no banco de dados local
+            const productName = productInFlyer.name;
+            const productPrice = productInFlyer.price;
+            
+            productDatabase[productName] = {
+                name: productName,
+                price: productPrice,
+                src: img.src // O 'src' aqui é a imagem em base64
+            };
+
+            // 3. (NOVO) Marca o banco de dados como "não sincronizado"
+            isDatabaseSynced = false;
+            updateSyncStatusUI();
+
+            // 4. Redesenha tudo e avisa o usuário
+            redrawCanvas();
+            updateProductListUI();
+            
+            // Avisa o usuário que ele precisa sincronizar
+            showAlert(`Imagem de "${productName}" atualizada. Lembre-se de ir ao painel 'Estoque' e sincronizar com a nuvem para salvar permanentemente.`);
+        });
+    }));
+    // ==========================================================
+    // --- FIM DA NOVA LÓGICA ---
+    // ==========================================================
+}
+		
+		
         function handleSingleImageUpload(e, callback) { const file = e.target.files[0]; if (file) { const reader = new FileReader; reader.onload = event => { const img = new Image; img.onload = () => callback(img); img.src = event.target.result }; reader.readAsDataURL(file) } }
         function handleLogoUpload(e, logoObject) { const file = e.target.files[0]; if (file) { const reader = new FileReader; reader.onload = event => { const img = new Image; img.onload = () => { logoObject.img = img; logoObject.src = img.src; redrawCanvas() }; img.src = event.target.result }; reader.readAsDataURL(file) } }
 // =====================================================================================
@@ -9740,6 +9915,132 @@ importDbInput.addEventListener('change', (event) => {
 
 // ▲▲▲ FIM DO BLOCO ▲▲▲
 
+// ▼▼▼ NOVO BLOCO DE LÓGICA PARA O MODAL DE BUSCA DE IMAGEM ▼▼▼
+
+const imageSearchModal = document.getElementById('imageSearchModal');
+const imageSearchInput = document.getElementById('imageSearchInput');
+const imageSearchResults = document.getElementById('imageSearchResults');
+const useSelectedImageBtn = document.getElementById('useSelectedImageBtn');
+const cancelImageSearchBtn = document.getElementById('cancelImageSearchBtn');
+const triggerFileUploadBtn = document.getElementById('triggerFileUploadBtn');
+
+let productIndexToUpdate = null; // Guarda o índice do produto que estamos editando
+
+/**
+ * Abre o modal de busca, guarda o índice do produto e popula a lista.
+ * @param {number} index - O índice do produto na lista do encarte.
+ */
+function openImageSearchModal(index) {
+    productIndexToUpdate = index;
+    imageSearchInput.value = '';
+    populateImageSearchResults(''); // Mostra todos os produtos inicialmente
+    imageSearchModal.classList.add('visible');
+}
+
+/**
+ * Popula a grade de resultados de imagem com base em um filtro de busca.
+ * @param {string} filter - O texto digitado pelo usuário.
+ */
+function populateImageSearchResults(filter = '') {
+    imageSearchResults.innerHTML = '';
+    useSelectedImageBtn.disabled = true;
+    const normalizedFilter = normalizeString(filter);
+
+    const products = Object.values(productDatabase)
+        .filter(p => normalizeString(p.name).includes(normalizedFilter))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (products.length === 0) {
+        imageSearchResults.innerHTML = '<p class="col-span-full text-center text-gray-500 py-4">Nenhum produto encontrado.</p>';
+        return;
+    }
+
+    products.forEach(product => {
+        const item = document.createElement('div');
+        item.className = 'result-item flex flex-col items-center p-2 rounded-lg bg-white dark:bg-gray-800';
+        item.dataset.productName = product.name;
+
+        const img = document.createElement('img');
+        img.src = product.src;
+        img.className = 'w-20 h-20 object-contain mb-2';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = product.name;
+        nameSpan.className = 'text-xs text-center';
+
+        item.appendChild(img);
+        item.appendChild(nameSpan);
+
+        item.addEventListener('click', () => {
+            // Remove a seleção de qualquer outro item e seleciona o clicado
+            document.querySelectorAll('#imageSearchResults .result-item.selected').forEach(el => el.classList.remove('selected'));
+            item.classList.add('selected');
+            useSelectedImageBtn.disabled = false;
+        });
+
+        imageSearchResults.appendChild(item);
+    });
+}
+
+// Evento de digitação na busca
+imageSearchInput.addEventListener('keyup', () => {
+    populateImageSearchResults(imageSearchInput.value);
+});
+
+// Evento do botão "Cancelar"
+cancelImageSearchBtn.addEventListener('click', () => {
+    imageSearchModal.classList.remove('visible');
+    productIndexToUpdate = null;
+});
+
+// Evento do botão "Fazer Upload"
+triggerFileUploadBtn.addEventListener('click', () => {
+    if (productIndexToUpdate !== null) {
+        // Clica no input de arquivo escondido correspondente ao produto
+        document.getElementById(`edit-image-${productIndexToUpdate}`).click();
+    }
+    imageSearchModal.classList.remove('visible');
+});
+
+// Evento do botão "Usar Imagem Selecionada"
+useSelectedImageBtn.addEventListener('click', () => {
+    const selectedItem = imageSearchResults.querySelector('.result-item.selected');
+    if (!selectedItem || productIndexToUpdate === null) return;
+
+    const productName = selectedItem.dataset.productName;
+    const productData = productDatabase[productName];
+    const currentPage = flyerData.pages[flyerData.currentPageIndex];
+
+    if (productData && currentPage.products[productIndexToUpdate]) {
+        showSpinner(true);
+        const newImage = new Image();
+        newImage.onload = () => {
+            const productToUpdate = currentPage.products[productIndexToUpdate];
+            productToUpdate.image = newImage;
+            productToUpdate.src = newImage.src;
+            
+            // Recalcula os padrões inteligentes para a nova imagem
+            const smartDefaults = calculateSmartImageDefaults(newImage);
+            Object.assign(productToUpdate, smartDefaults);
+            
+            redrawCanvas();
+            updateProductListUI();
+            imageSearchModal.classList.remove('visible');
+            productIndexToUpdate = null;
+            showSpinner(false);
+        };
+        newImage.onerror = () => {
+            showAlert("Erro ao carregar a imagem selecionada.");
+            showSpinner(false);
+        };
+        newImage.src = productData.src;
+    }
+});
+// ▲▲▲ FIM DO BLOCO ▲▲▲
+
+
+
+
 
 window.onload = initialize;
 
@@ -10658,81 +10959,89 @@ function findBestMatchInList(queryName, list) {
 		// ▼▼▼ COLE ESTA FUNÇÃO DENTRO DA TAG <SCRIPT> ▼▼▼
 
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'formatarLista' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'formatarLista' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+
 function formatarLista() {
     const inputArea = document.getElementById('inputList');
     const outputArea = document.getElementById('outputList');
+    const removePricesCheckbox = document.getElementById('removePricesToggle');
+    const shouldRemovePrices = removePricesCheckbox.checked;
+
     const linhas = inputArea.value.split('\n');
     const resultado = [];
 
     for (const linha of linhas) {
-        // ▼▼▼ INÍCIO DA CORREÇÃO ▼▼▼
         const trimmedLine = linha.trim();
-        // Expressão regular para identificar padrões como "P10", "P 10", "PG10", etc. (ignora maiúsculas/minúsculas)
         const pageMarkerRegex = /^P(G)?\s*\d+$/i;
 
-        // Se a linha for um marcador de página, adiciona a linha original ao resultado e pula para a próxima
-        if (pageMarkerRegex.test(trimmedLine)) {
-            resultado.push(linha);
-            continue;
-        }
-        // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
-
-        if (trimmedLine === '') {
+        if (pageMarkerRegex.test(trimmedLine) || trimmedLine === '') {
             resultado.push(linha);
             continue;
         }
 
-        let descricao = '';
-        let preco = '';
-
-        // Heurística para encontrar descrição e preço
-        let separadorIndex = linha.indexOf(':');
-        if (separadorIndex === -1) {
-            separadorIndex = linha.indexOf(';');
-        }
-
-        if (separadorIndex !== -1) {
-            // CASO 1: A linha TEM um separador (':' ou ';')
-            descricao = linha.substring(0, separadorIndex);
-            let parteDoPreco = linha.substring(separadorIndex + 1);
-            
-            const match = parteDoPreco.match(/\d+([,.]\d{1,2})?/);
-            if (match) {
-                preco = match[0];
-            } else {
-                descricao = linha;
-            }
-        } else {
-            // CASO 2: A linha NÃO TEM separador
-            const matches = [...linha.matchAll(/\d+([,.]\d{1,2})?/g)];
-            if (matches.length > 0) {
-                const ultimoMatch = matches[matches.length - 1];
-                preco = ultimoMatch[0];
-                descricao = linha.substring(0, ultimoMatch.index);
-            } else {
-                descricao = linha;
-            }
-        }
-
-        // Montagem da linha final
-        descricao = descricao.replace(/R\$/gi, '').trim();
-        
         let linhaFinal;
-        if (preco) {
-            if (descricao) {
+
+        if (shouldRemovePrices) {
+            // LÓGICA NOVA: Remove o preço e tudo depois dele
+            let descricao = trimmedLine;
+            
+            // Tenta encontrar um separador ( : ou ; )
+            const separadorIndex = Math.min(
+                trimmedLine.indexOf(':') > -1 ? trimmedLine.indexOf(':') : Infinity,
+                trimmedLine.indexOf(';') > -1 ? trimmedLine.indexOf(';') : Infinity
+            );
+
+            if (separadorIndex !== Infinity) {
+                // Se encontrou um separador, pega tudo antes dele
+                descricao = trimmedLine.substring(0, separadorIndex);
+            } else {
+                // Se não, procura pelo padrão de preço (ex: 21,40 ou 21.40)
+                const match = trimmedLine.match(/\d+([,.]\d{1,2})/);
+                if (match && match.index > 0) {
+                    // Se encontrou um preço, pega tudo antes dele
+                    descricao = trimmedLine.substring(0, match.index);
+                }
+            }
+            linhaFinal = descricao.trim();
+        } else {
+            // LÓGICA ORIGINAL: Formata para "Descrição; Preço"
+            let descricao = '';
+            let preco = '';
+            let separadorIndex = linha.indexOf(':');
+            if (separadorIndex === -1) {
+                separadorIndex = linha.indexOf(';');
+            }
+
+            if (separadorIndex !== -1) {
+                descricao = linha.substring(0, separadorIndex);
+                let parteDoPreco = linha.substring(separadorIndex + 1);
+                const match = parteDoPreco.match(/\d+([,.]\d{1,2})?/);
+                if (match) preco = match[0];
+                else descricao = linha;
+            } else {
+                const matches = [...linha.matchAll(/\d+([,.]\d{1,2})?/g)];
+                if (matches.length > 0) {
+                    const ultimoMatch = matches[matches.length - 1];
+                    preco = ultimoMatch[0];
+                    descricao = linha.substring(0, ultimoMatch.index);
+                } else {
+                    descricao = linha;
+                }
+            }
+
+            descricao = descricao.replace(/R\$/gi, '').trim();
+            if (preco) {
                 linhaFinal = `${descricao}; ${preco}`;
             } else {
-                linhaFinal = `; ${preco}`;
+                linhaFinal = descricao.replace(/[:;]/g, '').trim();
             }
-        } else {
-            linhaFinal = descricao.replace(/[:;]/g, '').trim();
         }
-
         resultado.push(linhaFinal);
     }
-
     outputArea.value = resultado.join('\n');
 }
+
+// ▲▲▲ FIM DO BLOCO DE SUBSTITUIÇÃO ▲▲▲
 
 // ▲▲▲ FIM DO BLOCO PARA COLAR ▲▲▲
 		
