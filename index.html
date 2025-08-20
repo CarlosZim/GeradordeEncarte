@@ -1375,6 +1375,8 @@
                 <label class="block text-xs font-medium mb-1" for="dlc_balloonWidth">Largura Balão (%)</label>
                 <input type="range" id="dlc_balloonWidth" class="w-full" min="30" max="100" value="85">
             </div>
+			
+			
             <div>
                 <label class="block text-xs font-medium mb-1" for="dlc_balloonHeight">Altura Balão (%)</label>
                 <input type="range" id="dlc_balloonHeight" class="w-full" min="30" max="100" value="85">
@@ -1770,9 +1772,16 @@ Produto B, 5.50" rows="5"></textarea>
     <div class="grid grid-cols-3 gap-2 ..." id="savedProjectsGrid">
         </div>
 </div>
-<div class="grid grid-cols-2 gap-4 pt-4 border-t">
-<button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg" id="saveProjectBtn">Salvar Projeto</button>
-<button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg" id="loadProjectBtn">Carregar Projeto</button>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+    <button class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg" id="newProjectBtn">
+        Novo Projeto☁️
+    </button>
+    <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg" id="saveProjectBtn">
+        Salvar Projeto☁️
+    </button>
+    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg" id="loadProjectBtn">
+        Carregar Projeto☁️
+    </button>
 </div>
 <div class="pt-2">
 <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg" id="deleteProjectBtn">Deletar Projeto</button>
@@ -1966,6 +1975,16 @@ Produto B, 5.50" rows="5"></textarea>
             </svg>
             <span class="text-[8px] leading-tight">Layout Cartaz</span>
         </button>
+		
+		<button id="saveChangesBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-blue-600 hover:bg-blue-500 w-14" title="Salvar Alterações no Projeto">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V4zm2 5a1 1 0 011-1h2a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd" />
+        <path d="M3 9a2 2 0 00-2 2v4a2 2 0 002 2h10a2 2 0 002-2v-4a2 2 0 00-2-2H3z" />
+    </svg>
+    <span class="text-[8px] leading-tight">Salvar</span>
+</button>
+		
+		
         <button id="refreshPreviewBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-gray-700 hover:bg-gray-600 w-14" title="Atualizar Pré-visualização">
             <svg class="h-4 w-4 mb-px" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 4v5h5M23 19v-5h-5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M20.49 9A9 9 0 0012 3a9 9 0 00-9 9" stroke-linecap="round" stroke-linejoin="round"></path><path d="M3.51 15a9 9 0 0014.98 3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             <span class="text-[8px] leading-tight">Atualizar</span>
@@ -2198,6 +2217,35 @@ Produto B, 5.50" rows="5"></textarea>
 <script>
 
 
+
+// =================================================================
+// --- LÓGICA PARA O NOVO BOTÃO "NOVO PROJETO" ---
+// =================================================================
+
+const newProjectBtn = document.getElementById('newProjectBtn');
+
+/**
+ * Limpa o estado atual e prepara a aplicação para um novo projeto,
+ * mantendo o layout e configurações atuais como base.
+ */
+function startNewProject() {
+    showConfirm("Isso irá limpar o nome do projeto atual para que você possa salvá-lo como um novo arquivo. O conteúdo do encarte será mantido. Deseja continuar?", (confirmed) => {
+        if (confirmed) {
+            // ESTA É A PARTE MAIS IMPORTANTE: Limpa a variável que guarda o nome
+            selectedProjectName = null;
+            
+            // Limpa o campo de texto no painel para evitar confusão
+            projectNameInput.value = '';
+
+            showAlert("Pronto! Agora você está trabalhando em um novo projeto. Clique em 'Salvar' para dar um nome a ele.");
+        }
+    });
+}
+
+// Conecta a função ao botão
+if (newProjectBtn) {
+    newProjectBtn.addEventListener('click', startNewProject);
+}
 
 
 
@@ -9085,51 +9133,114 @@ const importProjectInput = document.getElementById('importProjectInput');
 
 // ▼▼▼ SUBSTITUA A FUNÇÃO DE SALVAR PROJETO PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA O BLOCO ANTIGO POR ESTE ▼▼▼
-saveProjectBtn.addEventListener('click', async () => {
-    const projectName = projectNameInput.value.trim();
+// =================================================================
+// --- NOVO BLOCO DE LÓGICA DE SALVAMENTO INTELIGENTE ---
+// =================================================================
+
+// Pega a referência do novo botão flutuante que criamos
+const saveChangesBtn = document.getElementById('saveChangesBtn');
+
+/**
+ * Função reutilizável que executa a lógica de salvar o projeto na nuvem.
+ * @param {string} projectName - O nome com o qual o projeto será salvo.
+ */
+async function executeSaveProject(projectName) {
     if (!projectName) {
-        showAlert('Por favor, insira um nome para o projeto.');
+        showAlert('É necessário um nome para salvar o projeto.');
         return;
     }
 
     showSpinner(true);
     try {
-        // Pega o usuário autenticado para obter o ID
         const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) {
-            throw new Error("Usuário não está autenticado. Recarregue a página.");
-        }
+        if (!user) throw new Error("Usuário não autenticado.");
 
         const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
         const projectState = getFlyerState();
+        projectState.flyerName = projectName; // Garante que o nome seja salvo no estado do projeto
         const serializableState = JSON.parse(JSON.stringify(projectState, (key, value) => (value instanceof HTMLImageElement ? undefined : value)));
 
-        // Envia os dados para o Supabase
         const { error } = await supabaseClient
             .from('projects')
             .upsert({
                 name: projectName,
                 project_data: serializableState,
                 thumbnail: thumbnail,
-                user_id: user.id // <-- LINHA CRÍTICA ADICIONADA
+                user_id: user.id
             }, { onConflict: 'name' });
 
-        if (error) {
-            // Se o Supabase retornar um erro, lança para o catch
-            throw error;
-        }
+        if (error) throw error;
 
-        await populateSavedProjectsList();
+        // Após salvar com sucesso, atualiza o estado da aplicação
+        selectedProjectName = projectName; // Define o projeto atual como "salvo"
+        projectNameInput.value = projectName; // Atualiza o campo de texto no painel
+        await populateSavedProjectsList(); // Atualiza a lista de projetos salvos
         showAlert(`Projeto "${projectName}" salvo com sucesso na nuvem!`);
 
     } catch (e) {
-        // Mostra o erro específico no console para facilitar futuras depurações
-        console.error("Erro detalhado ao salvar projeto:", e);
+        console.error("Erro ao salvar projeto:", e);
         showAlert(`Ocorreu um erro ao salvar na nuvem: ${e.message}`);
     } finally {
         showSpinner(false);
     }
-});
+}
+
+/**
+ * Lógica do botão flutuante "Salvar".
+ * Verifica se um projeto já está carregado para sobrescrever, ou pede um nome se for novo.
+ */
+// =================================================================
+// --- NOVO CÓDIGO CORRIGIDO (SEMPRE SALVAR COMO...) ---
+// =================================================================
+
+/**
+ * Lógica do botão flutuante "Salvar".
+ * AGORA: Sempre funciona como "Salvar Como...", pedindo um novo nome para o projeto.
+ */
+// =================================================================
+// --- CÓDIGO FINAL E CORRIGIDO (LÓGICA SALVAR / SALVAR COMO) ---
+// =================================================================
+
+/**
+ * Lógica do botão flutuante "Salvar".
+ * Se o projeto já tem nome, salva as alterações (Salvar).
+ * Se é um projeto novo, pede um nome (Salvar Como...).
+ */
+async function saveProjectChanges() {
+    // CENÁRIO 1: O projeto já tem um nome (foi carregado ou salvo anteriormente).
+    // Esta é a ação "Salvar".
+    if (selectedProjectName) {
+        // Apenas executa a função de salvamento usando o nome já existente.
+        // O alerta de sucesso já está dentro da função executeSaveProject.
+        executeSaveProject(selectedProjectName);
+    } 
+    // CENÁRIO 2: É um projeto novo, sem nome definido.
+    // Esta é a ação "Salvar Como...".
+    else {
+        showPrompt("Salvar Novo Projeto", "Este é um novo projeto. Digite um nome para salvá-lo:", "", (newProjectName) => {
+            if (newProjectName && newProjectName.trim()) {
+                executeSaveProject(newProjectName.trim());
+            }
+        });
+    }
+}
+
+// Conecta a função ao novo botão flutuante
+if (saveChangesBtn) {
+    saveChangesBtn.addEventListener('click', saveProjectChanges);
+}
+
+// O botão antigo no painel agora funciona como um "Salvar Como..." explícito
+if (saveProjectBtn) {
+    saveProjectBtn.addEventListener('click', () => {
+        const projectName = projectNameInput.value.trim();
+        executeSaveProject(projectName);
+    });
+}
+
+// =================================================================
+// --- FIM DO NOVO BLOCO ---
+// =================================================================
 // ▲▲▲ FIM DO BLOCO DE SUBSTITUIÇÃO ▲▲▲
 
 
@@ -9193,23 +9304,32 @@ deleteProjectBtn.addEventListener('click', async () => {
 });
 
 // ▼▼▼ SUBSTITUA A FUNÇÃO DE LISTAR PROJETOS PELA VERSÃO ABAIXO ▼▼▼
+// =================================================================
+// --- CÓDIGO FINAL E CORRIGIDO DA LISTA DE PROJETOS ---
+// =================================================================
 async function populateSavedProjectsList() {
     const projectsGrid = document.getElementById('savedProjectsGrid');
     const projectsLabel = document.getElementById('savedProjectsLabel');
     if (!projectsGrid || !projectsLabel) return;
+
     projectsGrid.innerHTML = '<p class="col-span-2 text-center text-sm">Carregando...</p>';
     projectsLabel.innerHTML = 'Projetos Salvos (Nuvem) ☁️';
-    selectedProjectName = null;
+
+    // A LINHA DO ERRO FOI REMOVIDA DAQUI.
+    // Não vamos mais limpar o 'selectedProjectName' ao atualizar a lista.
+
     try {
         const { data: projects, error } = await supabaseClient
             .from('projects')
             .select('name, thumbnail');
         if (error) throw error;
+
         projectsGrid.innerHTML = '';
         if (!projects || projects.length === 0) {
             projectsGrid.innerHTML = '<p class="col-span-2 text-center text-sm text-gray-500">Nenhum projeto salvo.</p>';
             return;
         }
+
         projects.forEach(project => {
             const card = document.createElement('div');
             card.className = 'template-preview-card bg-white dark:bg-gray-800 p-2 rounded-lg cursor-pointer shadow-md flex flex-col items-center';
@@ -9222,6 +9342,13 @@ async function populateSavedProjectsList() {
             nameLabel.className = 'text-[10px] text-center font-semibold break-words';
             card.appendChild(img);
             card.appendChild(nameLabel);
+
+            // MELHORIA: Se o nome deste card for o mesmo do projeto carregado,
+            // ele será destacado visualmente.
+            if (project.name === selectedProjectName) {
+                card.classList.add('selected');
+            }
+
             card.addEventListener('click', () => {
                 document.querySelectorAll('#savedProjectsGrid .selected').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
