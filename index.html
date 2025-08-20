@@ -1681,13 +1681,17 @@ Produto B, 5.50" rows="5"></textarea>
 <div class="space-y-3 max-h-96 overflow-y-auto" id="productList">
 </div>
 <div class="pt-4 border-t border-gray-200 dark:border-gray-600 mt-4 space-y-2">
-<button class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg" id="saveProductsToDbBtn">
-                            Salvar Produtos no Banco de Dados
-                        </button>
-<button class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg" id="clearProductListBtn">
-                            Limpar Lista de Produtos
-                        </button>
-</div>
+    <button class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg" id="saveProductsToDbBtn">
+        Salvar Produtos no Banco de Dados
+    </button>
+    <button class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg" id="clearProductListBtn">
+        Limpar Produtos (Pág. Atual)
+    </button>
+
+    <button class="w-full bg-red-900 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg" id="clearAllPagesProductListBtn">
+        Limpar Produtos (TODAS as Pág.)
+    </button>
+    </div>
 </div>
 <div class="panel hidden space-y-6" id="panel-templates">
 <h3 class="text-2xl font-bold border-b pb-2">Gerenciar Templates</h3>
@@ -2192,6 +2196,12 @@ Produto B, 5.50" rows="5"></textarea>
 
 
 <script>
+
+
+
+
+
+
         
 // ▼▼▼ COLE TODO ESTE CÓDIGO NO LUGAR DO SEU SCRIPT ANTIGO ▼▼▼
 
@@ -2205,41 +2215,82 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let productDatabase = {};
 
+
+// ▼▼▼ ADICIONE ESTA FUNÇÃO AUXILIAR NO INÍCIO DO SEU SCRIPT ▼▼▼
+/**
+ * Carrega uma imagem de uma URL, garantindo que o atributo crossOrigin seja definido
+ * para evitar que o canvas seja contaminado.
+ * @param {string} url - A URL da imagem a ser carregada.
+ * @returns {Promise<HTMLImageElement|null>} Uma promessa que resolve com o objeto da imagem ou nulo se falhar.
+ */
+function loadImageWithCors(url) {
+    return new Promise(resolve => {
+        if (!url) {
+            resolve(null);
+            return;
+        }
+        const img = new Image();
+        // Esta linha é a chave para permitir o download de imagens de outras origens
+        img.crossOrigin = "anonymous";
+        
+        img.onload = () => resolve(img);
+        img.onerror = () => {
+            console.warn(`Falha ao carregar imagem com CORS: ${url}. A imagem pode não aparecer ou bloquear o download.`);
+            resolve(null); // Resolve como nulo para não quebrar a aplicação
+        };
+        img.src = url;
+    });
+}
+
+
+
 async function loadProductDatabase() {
     const productDbLabel = document.getElementById('productDbLabel');
     if(productDbLabel) productDbLabel.innerHTML = 'Carregando Banco de Dados (Nuvem) ☁️...';
     try {
-        const { data, error } = await supabaseClient.from('products').select('*');
+        // A CORREÇÃO CRÍTICA ESTÁ AQUI: Adicionamos .limit(5000) para buscar mais produtos
+        const { data, error } = await supabaseClient
+            .from('products')
+            .select('*')
+            .limit(5000); // Aumenta o limite de busca para 5000 produtos
+
         if (error) throw error;
 
         productDatabase = {};
         if (data && data.length > 0) {
             productDatabase = Object.fromEntries(data.map(p => [p.name, { name: p.name, price: p.price, src: p.image_url }]));
         }
-        isDatabaseSynced = true; // ALTERAÇÃO AQUI
+        isDatabaseSynced = true;
     } catch (e) {
         console.error("Erro ao carregar do Supabase:", e);
         productDatabase = {};
-        isDatabaseSynced = false; // ALTERAÇÃO AQUI
+        isDatabaseSynced = false;
     } finally {
         populateStockList();
-        updateSyncStatusUI(); // ALTERAÇÃO AQUI
+        updateSyncStatusUI();
     }
 }
 
 // ▼▼▼ COLE ESTA NOVA VERSÃO DA FUNÇÃO ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO "syncProductDatabase" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO "syncProductDatabase" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'syncProductDatabase' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 async function syncProductDatabase() {
     try {
         const productsArray = Object.values(productDatabase);
-        showSpinner(true);
-        showAlert("Sincronizando com a nuvem... Isso pode demorar.");
+        if (productsArray.length === 0) {
+            // Se não há produtos, não faz nada. Evita mostrar alertas desnecessários.
+            isDatabaseSynced = true;
+            updateSyncStatusUI();
+            return true;
+        }
 
+        showSpinner(true);
+        
+        // Loop para fazer upload de imagens que ainda não estão na nuvem
         for (const product of productsArray) {
             if (product.src && product.src.startsWith('data:image')) {
                 const blob = dataUrlToBlob(product.src);
-                // Nome do arquivo sem o ID do usuário
                 const fileName = `${Date.now()}-${product.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
                 const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(fileName, blob, { upsert: true });
                 if (uploadError) throw uploadError;
@@ -2248,18 +2299,37 @@ async function syncProductDatabase() {
             }
         }
 
-        // Objeto para salvar sem o user_id
         const productsToStore = productsArray.map(p => ({
             name: p.name,
             price: p.price,
             image_url: p.src
         }));
 
-        if (productsToStore.length > 0) {
-            // A verificação de conflito (onConflict) volta a ser apenas pelo 'name'
-            const { error: upsertError } = await supabaseClient.from('products').upsert(productsToStore, { onConflict: 'name' });
-            if (upsertError) throw upsertError;
+        // ==========================================================
+        // INÍCIO DA CORREÇÃO: Lógica para enviar em lotes
+        // ==========================================================
+        const chunkSize = 500; // Define um tamanho de lote seguro (500 produtos por vez)
+        let totalChunks = Math.ceil(productsToStore.length / chunkSize);
+
+        for (let i = 0; i < productsToStore.length; i += chunkSize) {
+            const chunk = productsToStore.slice(i, i + chunkSize);
+            let currentChunkNum = (i / chunkSize) + 1;
+            
+            // Mostra um alerta de progresso para o usuário
+            showAlert(`Sincronizando lote ${currentChunkNum} de ${totalChunks}... Por favor, aguarde.`);
+            
+            const { error: upsertError } = await supabaseClient
+                .from('products')
+                .upsert(chunk, { onConflict: 'name' });
+
+            if (upsertError) {
+                // Se um dos lotes falhar, interrompe o processo e mostra o erro
+                throw upsertError;
+            }
         }
+        // ==========================================================
+        // FIM DA CORREÇÃO
+        // ==========================================================
 
         showAlert("Banco de dados salvo na nuvem com sucesso!");
         isDatabaseSynced = true;
@@ -6643,14 +6713,14 @@ function openImageGalleryModal(productIndex) {
 
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO "populateGalleryThumbnails" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO "populateGalleryThumbnails" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+
 function populateGalleryThumbnails(searchKeyword) {
     galleryThumbnails.innerHTML = '';
     if (currentGalleryProductIndex === null) return;
 
     const product = flyerData.pages[flyerData.currentPageIndex].products[currentGalleryProductIndex];
 
-    // ... (O bloco de compatibilidade e a Seção 1 "Imagens Atuais" permanecem exatamente iguais) ...
-    // Garante compatibilidade com a estrutura de dados de imagem
     if (!product.activeImageIndices) { product.activeImageIndices = [product.activeImageIndex || 0]; }
     if (!product.srcs) { product.srcs = []; }
 
@@ -6719,29 +6789,18 @@ function populateGalleryThumbnails(searchKeyword) {
     galleryThumbnails.appendChild(suggestionsContainer);
 
     const normalizedKeyword = normalizeString(searchKeyword);
-    // Pega todas as palavras do produto original para comparar
     const queryWords = new Set(normalizeString(product.name).split(' ').filter(Boolean));
     
-    // ==================================================================
-    // ▼▼▼ AQUI ESTÁ A MUDANÇA PRINCIPAL ▼▼▼
-    // A linha de filtro foi substituída por um processo de 4 etapas: filtrar, pontuar, ordenar e extrair.
     const suggestions = Object.values(productDatabase)
-        // 1. Filtro inicial: A primeira palavra ainda precisa ser a mesma.
         .filter(dbProduct => normalizeString(dbProduct.name).split(' ')[0] === normalizedKeyword)
-        // 2. Mapeamento e Pontuação: Calcula a relevância de cada sugestão.
         .map(dbProduct => {
             const suggestionWords = new Set(normalizeString(dbProduct.name).split(' ').filter(Boolean));
-            // Encontra quantas palavras são iguais entre o original e a sugestão
             const intersection = new Set([...queryWords].filter(word => suggestionWords.has(word)));
-            // Calcula a pontuação (Coeficiente de Dice: bom para similaridade de texto)
             const score = (2 * intersection.size) / (queryWords.size + suggestionWords.size);
             return { product: dbProduct, score: score };
         })
-        // 3. Ordenação: Coloca os produtos com maior pontuação primeiro.
         .sort((a, b) => b.score - a.score)
-        // 4. Extração: Pega apenas o objeto do produto, já na ordem correta.
         .map(item => item.product);
-    // ==================================================================
 
     if (suggestions.length === 0) {
         suggestionsGrid.innerHTML = '<p class="col-span-full text-xs text-gray-500">Nenhuma sugestão encontrada.</p>';
@@ -6750,7 +6809,7 @@ function populateGalleryThumbnails(searchKeyword) {
 
     suggestions.forEach(dbProduct => {
         if (product.srcs.includes(dbProduct.src)) {
-            return; // Não mostra a sugestão se a imagem já está no produto
+            return;
         }
 
         const thumbWrapper = document.createElement('div');
@@ -6761,8 +6820,15 @@ function populateGalleryThumbnails(searchKeyword) {
         thumbImg.src = dbProduct.src;
         thumbImg.className = 'w-full h-20 object-contain';
 
+        // ==========================================================
+        // ===== A CORREÇÃO ESTÁ AQUI DENTRO =====
+        // ==========================================================
         thumbWrapper.onclick = () => {
             const newImg = new Image();
+            
+            // LINHA DA CORREÇÃO:
+            newImg.crossOrigin = "anonymous"; // <-- Adicionamos esta linha crucial!
+            
             newImg.onload = () => {
                 product.images.push(newImg);
                 product.srcs.push(newImg.src);
@@ -6770,8 +6836,11 @@ function populateGalleryThumbnails(searchKeyword) {
                 updateProductListUI();
                 redrawCanvas();
             };
-            newImg.src = dbProduct.src;
+            newImg.src = dbProduct.src; // O src é definido DEPOIS do crossOrigin
         };
+        // ==========================================================
+        // ===== FIM DA CORREÇÃO =====
+        // ==========================================================
 
         thumbWrapper.appendChild(thumbImg);
         suggestionsGrid.appendChild(thumbWrapper);
@@ -7232,6 +7301,8 @@ addProductBtn.addEventListener('click', () => {
 
 // ▼▼▼ SUBSTITUA A FUNÇÃO 'bulkAddBtn.addEventListener' PELA VERSÃO FINAL E CORRETA ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'bulkAddBtn' INTEIRO PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'bulkAddBtn' INTEIRO PELA VERSÃO ABAIXO ▼▼▼
 bulkAddBtn.addEventListener('click', (e) => {
     const text = bulkAddTextarea.value.trim();
     if (!text) {
@@ -7256,19 +7327,15 @@ bulkAddBtn.addEventListener('click', (e) => {
 
             for (const line of lines) {
                 if (/^p\s*\d+/i.test(line)) {
-                    if (currentPageLines.length > 0) {
-                        pagesFromFile.push(currentPageLines);
-                    }
+                    if (currentPageLines.length > 0) { pagesFromFile.push(currentPageLines); }
                     currentPageLines = [];
                 } else {
                     currentPageLines.push(line);
                 }
             }
-            if (currentPageLines.length > 0) {
-                pagesFromFile.push(currentPageLines);
-            }
+            if (currentPageLines.length > 0) { pagesFromFile.push(currentPageLines); }
 
-            const allProductPromises = pagesFromFile.flat().map(line => new Promise(resolve => {
+            const allProductPromises = pagesFromFile.flat().map(line => new Promise(async (resolve) => {
                 let nameFromList = '';
                 let pricePart = '0.00';
                 const parts = line.split(';');
@@ -7276,18 +7343,14 @@ bulkAddBtn.addEventListener('click', (e) => {
                 if (parts.length > 1 && parts[1].trim()) {
                     const priceText = parts[1].trim().split(' ')[0].replace(',', '.');
                     const parsedPrice = parseFloat(priceText);
-                    if (!isNaN(parsedPrice)) {
-                        pricePart = parsedPrice.toFixed(2);
-                    }
+                    if (!isNaN(parsedPrice)) { pricePart = parsedPrice.toFixed(2); }
                 }
                 const bestMatchName = findBestMatchInDb(nameFromList);
                 const productData = bestMatchName ? productDatabase[bestMatchName] : null;
 
                 if (productData && productData.src) {
-                    const img = new Image();
-                    img.onload = () => resolve({ name: nameFromList, price: pricePart, src: productData.src, image: img });
-                    img.onerror = () => resolve({ name: nameFromList, price: pricePart, src: null, image: null });
-                    img.src = productData.src;
+                    const img = await loadImageWithCors(productData.src); // Usa a nova função
+                    resolve({ name: nameFromList, price: pricePart, src: productData.src, image: img });
                 } else {
                     resolve({ name: nameFromList, price: pricePart, src: null, image: null });
                 }
@@ -7305,63 +7368,29 @@ bulkAddBtn.addEventListener('click', (e) => {
                 if (productsForThisPage.length > 0) {
                     let newPage = createDefaultPage(); 
                     newPage.settings = JSON.parse(JSON.stringify(settingsTemplate));
-					
-					
-					 // ▼▼▼ ADICIONE ESTE BLOCO PARA DEFINIR O FORMATO DA PÁGINA ▼▼▼
-                    // Define o formato da página para Instagram automaticamente
-                    newPage.settings.pageSize = '1769x2212 '; // O valor exato da opção no menu <select>
+                    newPage.settings.pageSize = '1769x2212 ';
                     newPage.settings.customWidth = 1769;
                     newPage.settings.customHeight = 2212;
-                    // ▲▲▲ FIM DO BLOCO ▲▲▲
-					
-
-// ▼▼▼ ADICIONE ESTA LINHA AQUI ▼▼▼
                     Object.assign(newPage.settings.headerValidity, instagramHeaderDefaults);
-                    // ▲▲▲ FIM DA ADIÇÃO ▲▲▲
-
-
-// ▼▼▼ ADICIONE ESTA LINHA PARA AS MARGENS PADRÃO ▼▼▼
                     newPage.settings.margins = instagramMarginDefaults;
-                    // ▲▲▲ FIM DA ADIÇÃO ▲▲▲
-
-
-
-                    // Desativa a função de destaque de *linha* em todas as páginas, pois vamos controlar a cor manualmente.
                     newPage.settings.highlight.enabled = false;
                     
-                    if (flyerData.pages.length === 0) { // Lógica para a nova Página 1
+                    if (flyerData.pages.length === 0) { 
                         newPage.backgroundImage = null;
                         newPage.backgroundImageSrc = null;
                         newPage.settings.backgroundImageSrc = null;
-
-                        // Aplica a cor de destaque em CADA PRODUTO da primeira página.
-                        productsForThisPage.forEach(p => {
-                            p.backgroundColor = highlightColorForPage1;
-                        });
-                        
-                        // Força TODOS os balões desta página a usarem o estilo da "1ª Linha".
-                        if (newPage.settings.balloons) {
-                            newPage.settings.balloons.otherLines = newPage.settings.balloons.firstLine;
-                        }
-
-                    } else { // Lógica para as novas Páginas 2, 3, 4...
+                        productsForThisPage.forEach(p => { p.backgroundColor = highlightColorForPage1; });
+                        if (newPage.settings.balloons) { newPage.settings.balloons.otherLines = newPage.settings.balloons.firstLine; }
+                    } else { 
                         newPage.backgroundImage = bodyBackground_Img;
                         newPage.backgroundImageSrc = bodyBackground_Src;
                         newPage.settings.backgroundImageSrc = bodyBackground_Src;
-                        
-                        // Garante que o estilo dos balões seja o padrão (não o de destaque).
-                        if (newPage.settings.balloons) {
-                            newPage.settings.balloons.firstLine = newPage.settings.balloons.otherLines;
-                        }
+                        if (newPage.settings.balloons) { newPage.settings.balloons.firstLine = newPage.settings.balloons.otherLines; }
                     }
                     
                     newPage.products = productsForThisPage.map(p => ({ ...p, ...calculateSmartImageDefaults(p.image) }));
-
-
-                    
                     newPage.settings.predefinedLayout = 'manual';
                     newPage.manualLayout = generateAutoLayout(newPage.products.length);
-
                     flyerData.pages.push(newPage);
                 }
             }
@@ -7382,7 +7411,6 @@ bulkAddBtn.addEventListener('click', (e) => {
         }
     });
 });
-
 
 		
         productImageInput.addEventListener('change', e => handleSingleImageUpload(e, img => { newProductImage = img; }));
@@ -7567,57 +7595,75 @@ function getFlyerState() {
         // ▼▼▼ SUBSTITUA A FUNÇÃO 'applyFlyerState' PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO "applyFlyerState" INTEIRA POR ESTA VERSÃO CORRIGIDA ▼▼▼
 
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'applyFlyerState' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'applyFlyerState' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'applyFlyerState' INTEIRA PELA VERSÃO DEFINITIVA ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'applyFlyerState' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'applyFlyerState' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO "applyFlyerState" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+
 async function applyFlyerState(state) {
     showSpinner(true);
     showAlert("Carregando projeto, por favor aguarde...");
 
-    // Função auxiliar para carregar imagens com a correção de CORS
-    const loadImage = (url) => new Promise(resolve => {
-        if (!url) {
-            resolve(null);
-            return;
-        }
-        const img = new Image();
-        // A CORREÇÃO CRÍTICA ESTÁ AQUI:
-        // Isso informa ao navegador que temos permissão para usar a imagem.
-        img.crossOrigin = "anonymous"; 
-        
-        img.onload = () => resolve(img);
-        img.onerror = () => {
-            console.error(`Falha ao carregar imagem: ${url}`);
-            resolve(null); // Resolve como nulo para não quebrar todo o processo
-        };
-        img.src = url;
-    });
-
     try {
         flyerNameInput.value = state.flyerName || '';
 
-        // Carrega as logos
+        // Carrega as logos (código existente, já está correto)
         flyerData.logos.promo.src = state.logos.promo.src;
-        flyerData.logos.promo.img = await loadImage(state.logos.promo.src);
+        flyerData.logos.promo.img = await loadImageWithCors(state.logos.promo.src);
         flyerData.logos.store.src = state.logos.store.src;
-        flyerData.logos.store.img = await loadImage(state.logos.store.src);
+        flyerData.logos.store.img = await loadImageWithCors(state.logos.store.src);
         flyerData.logos.complementary.src = state.logos.complementary.src;
-        flyerData.logos.complementary.img = await loadImage(state.logos.complementary.src);
+        flyerData.logos.complementary.img = await loadImageWithCors(state.logos.complementary.src);
 
-        // Mapeia todas as promessas de carregamento de imagem de todas as páginas
         const pagePromises = state.pages.map(async (pageData) => {
-            const productPromises = pageData.products.map(async (productData) => ({
-                ...productData,
-                image: await loadImage(productData.src)
-            }));
+            
+            // ==========================================================
+            // ===== INÍCIO DA CORREÇÃO PRINCIPAL =====
+            // ==========================================================
+            const productPromises = pageData.products.map(async (productData) => {
+                let imagesToLoad = [];
+                // 1. Verifica se a nova estrutura de galeria (srcs) existe
+                if (Array.isArray(productData.srcs) && productData.srcs.length > 0) {
+                    imagesToLoad = productData.srcs;
+                } 
+                // 2. Se não existir, usa a estrutura antiga (src) para compatibilidade
+                else if (productData.src) {
+                    imagesToLoad = [productData.src];
+                }
+
+                // 3. Carrega todas as imagens encontradas usando a função de CORS
+                const loadedImages = await Promise.all(
+                    imagesToLoad.map(src => loadImageWithCors(src))
+                );
+
+                // Filtra qualquer imagem que tenha falhado ao carregar
+                const validImages = loadedImages.filter(Boolean);
+                
+                // 4. Retorna o objeto do produto com a estrutura de imagem completa e correta
+                return {
+                    ...productData,
+                    images: validImages, // Array de objetos de imagem
+                    srcs: validImages.map(img => img.src), // Array de URLs
+                    image: validImages[0] || null, // Mantém a compatibilidade
+                    src: validImages.length > 0 ? validImages[0].src : null, // Mantém a compatibilidade
+                };
+            });
+            // ==========================================================
+            // ===== FIM DA CORREÇÃO PRINCIPAL =====
+            // ==========================================================
             
             const layoutPromises = pageData.manualLayout.map(async (layoutData) => ({
                 ...layoutData,
-                titleLogoImg: await loadImage(layoutData.titleLogoSrc)
+                titleLogoImg: await loadImageWithCors(layoutData.titleLogoSrc)
             }));
 
             return {
                 ...pageData,
                 products: await Promise.all(productPromises),
                 manualLayout: await Promise.all(layoutPromises),
-                backgroundImage: await loadImage(pageData.backgroundImageSrc)
+                backgroundImage: await loadImageWithCors(pageData.backgroundImageSrc)
             };
         });
 
@@ -7628,7 +7674,6 @@ async function applyFlyerState(state) {
             flyerData.pages.push(createDefaultPage());
         }
 
-        // Atualiza a interface com os dados totalmente carregados
         switchPage(flyerData.currentPageIndex, false);
         showAlert(`Projeto "${state.flyerName || 'importado'}" carregado com sucesso!`);
 
@@ -9274,18 +9319,24 @@ const refreshIconSVG = `<svg class="h-4 w-4" fill="none" stroke="currentColor" s
 /**
  * Atualiza o indicador visual de status de sincronização no painel de estoque.
  */
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'updateSyncStatusUI' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 function updateSyncStatusUI() {
     if (!stockDbLabel || !refreshStockListBtn) return;
 
+    // Recalcula a contagem aqui também para garantir que o título esteja sempre completo
+    const productCount = Object.keys(productDatabase).length;
+
     if (isDatabaseSynced) {
-        stockDbLabel.innerHTML = 'Produtos (Sincronizado ☁️)';
+        // Adiciona a contagem ao texto de "Sincronizado"
+        stockDbLabel.innerHTML = `Produtos (${productCount}) (Sincronizado ☁️)`;
         stockDbLabel.className = 'text-lg font-semibold text-green-400';
         refreshStockListBtn.title = 'Atualizar Lista da Nuvem';
         refreshStockListBtn.innerHTML = refreshIconSVG;
         refreshStockListBtn.classList.remove('border-yellow-400');
         refreshStockListBtn.classList.add('border-green-400');
     } else {
-        stockDbLabel.innerHTML = 'Produtos (Não Sincronizado ⚠️)';
+        // Adiciona a contagem ao texto de "Não Sincronizado"
+        stockDbLabel.innerHTML = `Produtos (${productCount}) (Não Sincronizado ⚠️)`;
         stockDbLabel.className = 'text-lg font-semibold text-yellow-400';
         refreshStockListBtn.title = 'Sincronizar com a Nuvem Agora';
         refreshStockListBtn.innerHTML = cloudUploadIconSVG;
@@ -10706,6 +10757,33 @@ useSelectedImageBtn.addEventListener('click', () => {
 // ▲▲▲ FIM DO BLOCO DE SUBSTITUIÇÃO ▲▲▲
 
 
+// ▼▼▼ COLE ESTE BLOCO NO FINAL DO SEU SCRIPT ▼▼▼
+
+// --- LÓGICA PARA LIMPAR PRODUTOS DE TODAS AS PÁGINAS ---
+const clearAllPagesProductListBtn = document.getElementById('clearAllPagesProductListBtn');
+if (clearAllPagesProductListBtn) {
+    clearAllPagesProductListBtn.addEventListener('click', () => {
+        // Pede uma confirmação extra, pois é uma ação destrutiva
+        showConfirm(
+            "TEM CERTEZA? Isso removerá TODOS os produtos de TODAS as páginas do encarte. Esta ação não pode ser desfeita.",
+            (confirmed) => {
+                if (confirmed) {
+                    // Itera por cada página no projeto
+                    flyerData.pages.forEach(page => {
+                        // Define a lista de produtos da página como um array vazio
+                        page.products = [];
+                    });
+                    
+                    updateProductListUI(); // Atualiza a UI da lista de produtos (que agora está vazia)
+                    redrawCanvas();       // Redesenha o canvas para mostrar os slots vazios
+                    showAlert("Todos os produtos foram removidos de todas as páginas.");
+                }
+            }
+        );
+    });
+}
+
+// ▲▲▲ FIM DO BLOCO ▲▲▲
 
 
 
@@ -10789,6 +10867,8 @@ saveProductsToDbBtn.addEventListener('click', async () => {
 // ====== BUSCA INTELIGENTE COM SEPARADOR ÚNICO (;) ======
 // =======================================================
 // COLE ESTE BLOCO CORRIGIDO NO LUGAR DO ANTIGO
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO ABAIXO ▼▼▼
 searchDbBtn.addEventListener('click', async () => {
     const queries = productSearchTextarea.value.trim().split('\n').filter(q => q.trim());
     if (queries.length === 0) {
@@ -10818,24 +10898,12 @@ searchDbBtn.addEventListener('click', async () => {
 
         if (bestMatchName) {
             const productData = productDatabase[bestMatchName];
-
-            // ===== INÍCIO DA CORREÇÃO =====
-            // Se um preço foi informado na busca, usa ele. 
-            // Senão, usa o do banco de dados, e se não houver, usa '0.00' como último recurso.
             const priceForFlyer = pricePart !== '0.00' ? pricePart : (productData.price || '0.00');
-            // ===== FIM DA CORREÇÃO =====
-
-            const img = new Image();
-            img.onload = () => resolve({ name: nameFromList, price: priceForFlyer, src: productData.src, image: img });
-            img.onerror = () => resolve({ name: nameFromList, price: priceForFlyer, src: productData.src, image: null });
-            img.src = productData.src;
+            
+            const img = await loadImageWithCors(productData.src); // Usa a nova função
+            resolve({ name: nameFromList, price: priceForFlyer, src: productData.src, image: img });
         } else {
-            resolve({
-                name: nameFromList,
-                price: pricePart,
-                src: null,
-                image: null
-            });
+            resolve({ name: nameFromList, price: pricePart, src: null, image: null });
         }
     }));
 
@@ -10945,17 +11013,33 @@ const refreshStockListBtn = document.getElementById('refreshStockListBtn');
 // ====== FUNÇÃO ATUALIZADA PARA POPULAR O ESTOQUE =======
 // =======================================================
 // ▼▼▼ SUBSTITUA SUA FUNÇÃO ANTIGA POR ESTA ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'populateStockList' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'populateStockList' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 function populateStockList() {
     stockProductList.innerHTML = '';
     
-    // Mantém a lógica de exibir o status da nuvem
-    if (userId) {
-        updateSyncStatusUI(); // Atualiza o texto e cor do título
-    } else {
-        stockDbLabel.innerHTML = 'Produtos (Local)';
+    // Contagem de produtos
+    const productCount = Object.keys(productDatabase).length;
+    
+    // Atualiza o título do painel (como antes)
+    const stockDbLabel = document.getElementById('stockDbLabel');
+    if (stockDbLabel) {
+        let syncStatusText = isDatabaseSynced ? '(Sincronizado ☁️)' : '(Não Sincronizado ⚠️)';
+        stockDbLabel.innerHTML = `Produtos (${productCount}) ${syncStatusText}`;
     }
 
-    if (Object.keys(productDatabase).length === 0) {
+    // ==========================================================
+    // INÍCIO DA NOVA LÓGICA: Atualiza a contagem no menu lateral
+    // ==========================================================
+    const navCountSpan = document.getElementById('stock-nav-count');
+    if (navCountSpan) {
+        navCountSpan.textContent = `(${productCount})`;
+    }
+    // ==========================================================
+    // FIM DA NOVA LÓGICA
+    // ==========================================================
+    
+    if (productCount === 0) {
         stockProductList.innerHTML = '<p class="col-span-3 text-center text-sm text-gray-500 py-4">Nenhum produto cadastrado.</p>';
         return;
     }
@@ -10967,7 +11051,6 @@ function populateStockList() {
         const card = document.createElement('div');
         card.className = 'bg-white dark:bg-gray-800 p-2 rounded-lg shadow flex flex-col items-center text-center relative';
         
-        // --- INÍCIO DA MODIFICAÇÃO: Adiciona os botões de ação ---
         const controlsDiv = document.createElement('div');
         controlsDiv.className = 'absolute top-1 right-1 flex flex-col space-y-1';
 
@@ -10985,7 +11068,6 @@ function populateStockList() {
         
         controlsDiv.appendChild(editBtn);
         controlsDiv.appendChild(deleteBtn);
-        // --- FIM DA MODIFICAÇÃO ---
         
         const img = document.createElement('img');
         img.src = product.src || 'https://placehold.co/100x100/e2e8f0/adb5bd?text=Sem+Foto';
@@ -10995,7 +11077,7 @@ function populateStockList() {
         nameSpan.textContent = productName;
         nameSpan.className = 'text-xs font-semibold break-words';
         
-        card.appendChild(controlsDiv); // Adiciona os botões ao card
+        card.appendChild(controlsDiv);
         card.appendChild(img);
         card.appendChild(nameSpan);
         stockProductList.appendChild(card);
@@ -11099,24 +11181,46 @@ const deleteAllStockBtn = document.getElementById('deleteAllStockBtn');
 
 // Ação do botão "Deletar TODO o Estoque"
 // ▼▼▼ SUBSTITUA AS DUAS FUNÇÕES DE EVENTO DE ESTOQUE POR ESTE BLOCO ▼▼▼
+// ▼▼▼ SUBSTITUA O EVENT LISTENER ANTIGO POR ESTE ▼▼▼
 deleteAllStockBtn.addEventListener('click', () => {
-
-// ▼▼▼ ADICIONE ESTE NOVO BLOCO DE LÓGICA DE CLIQUE ▼▼▼
-
-
-    showConfirm("TEM CERTEZA? Isso apagará TODOS os produtos do seu banco de dados. Esta ação não pode ser desfeita.", async (confirmed) => {
+    showConfirm("TEM CERTEZA? Isso apagará TODOS os produtos do seu banco de dados na nuvem. Esta ação não pode ser desfeita.", (confirmed) => {
         if (confirmed) {
-            showSpinner(true);
-            productDatabase = {};
-            await syncProductDatabase(); // Usa a função corrigida
-            populateStockList();
-            showSpinner(false);
-            showAlert("Todos os produtos do estoque foram deletados.");
+            // Agora chama a função correta que deleta tudo da nuvem
+            deleteAllProductsFromCloud();
         }
     });
 });
 
 // ▼▼▼ BLOCO DE CÓDIGO CORRIGIDO ▼▼▼
+
+// ▼▼▼ COLE ESTA NOVA FUNÇÃO NO SEU SCRIPT ▼▼▼
+async function deleteAllProductsFromCloud() {
+    showSpinner(true);
+    try {
+        // Comando para deletar TODAS as linhas da tabela 'products'.
+        // Usamos um filtro 'not equal' com um valor impossível para segurança,
+        // o que efetivamente seleciona todas as linhas para exclusão.
+        const { error } = await supabaseClient
+            .from('products')
+            .delete()
+            .neq('name', 'impossible_product_name_to_avoid_empty_filter');
+
+        if (error) throw error;
+
+        // Limpa o banco de dados local após o sucesso na nuvem
+        productDatabase = {};
+        populateStockList();
+        showAlert("Todos os produtos do estoque foram deletados da nuvem com sucesso!");
+
+    } catch (e) {
+        console.error("Erro ao deletar todo o estoque:", e);
+        showAlert(`Falha ao deletar o estoque: ${e.message}`);
+    } finally {
+        showSpinner(false);
+    }
+}
+
+
 stockProductList.addEventListener('click', (e) => {
     const targetButton = e.target.closest('button');
     if (!targetButton) return;
