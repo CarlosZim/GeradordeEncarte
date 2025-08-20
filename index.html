@@ -2213,6 +2213,25 @@ Produto B, 5.50" rows="5"></textarea>
     </div>
 </div>
 
+<div class="modal-overlay" id="modelPageSelectorModal">
+    <div class="modal-content">
+        <h3 class="text-xl font-bold mb-4">Selecione a Página Modelo</h3>
+        <p class="text-sm text-gray-400 mb-6">
+            O fundo, logos e data de validade da página que você escolher serão usados como base para os novos cartazes.
+        </p>
+        <div id="modelPageListContainer" class="max-h-60 overflow-y-auto space-y-2 my-4 text-left p-2 rounded-lg bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-600">
+            </div>
+        <div class="flex justify-center gap-4 mt-6">
+            <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" id="confirmModelPageBtn" disabled>
+                Usar Modelo
+            </button>
+            <button class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg" id="cancelModelPageBtn">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
 
 <script>
 
@@ -6213,11 +6232,12 @@ function wrapText(context, text, x, y, maxWidth, lineHeight, alignment = 'left',
 
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawPricePosterLayout' PELA VERSÃO ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawPricePosterLayout' PELA VERSÃO ABAIXO ▼▼▼
+
 function drawPricePosterLayout(page) {
     // --- CONTROLES DE ESPAÇAMENTO (AJUSTE ESTES VALORES) ---
-    const priceLetterSpacing = 20;  // Espaçamento em pixels entre as letras do PREÇO
-    // Removido o descLetterSpacing pois o wrapText já controla o espaçamento entre linhas.
-    // ---------------------------------------------------------
+    const priceLetterSpacing = 20;
+    const descLetterSpacing = 10;  // <--- CONTROLE O ESPAÇAMENTO DA DESCRIÇÃO AQUI
 
     const ctx = canvas.getContext('2d');
     const w = canvas.width;
@@ -6238,14 +6258,12 @@ function drawPricePosterLayout(page) {
             ctx.drawImage(globalLogo.img, logoSettings.x, logoSettings.y, logoWidth, logoHeight);
         }
     });
-    
-    // O selo de validade agora é desenhado DEPOIS dos outros textos, para ficar por cima.
 
     // --- ETAPA 2: DESENHA O RETÂNGULO DE FUNDO PARA O PREÇO ---
     const mainBoxY = settings.margins.top;
     const mainBoxX = settings.margins.lateral;
     const mainBoxWidth = w - (settings.margins.lateral * 2);
-    const mainBoxHeight = h - mainBoxY - settings.margins.footer; // Ajustado para remover espaço extra
+    const mainBoxHeight = h - mainBoxY - settings.margins.footer;
     const padding = w * 0.05;
 
     ctx.fillStyle = '#FFFFFF';
@@ -6256,7 +6274,7 @@ function drawPricePosterLayout(page) {
     const priceText = `${integerPart},${decimalPart}`;
     const priceFont = 'Anton';
     const priceY = mainBoxY + mainBoxHeight * 0.4;
-    const priceFontSize = mainBoxHeight * 0.60; 
+    const priceFontSize = mainBoxHeight * 0.60;
     
     ctx.font = `bold ${priceFontSize}px ${priceFont}`;
     ctx.fillStyle = '#FF0000';
@@ -6276,32 +6294,53 @@ function drawPricePosterLayout(page) {
     ctx.translate(w / 2, priceY);
     ctx.scale(scaleX, 1);
     
-    let currentX = -naturalPriceWidth / 2;
+    let currentXPrice = -naturalPriceWidth / 2;
     for (const char of priceText) {
-        ctx.fillText(char, currentX, 0);
-        currentX += ctx.measureText(char).width + priceLetterSpacing;
+        ctx.fillText(char, currentXPrice, 0);
+        currentXPrice += ctx.measureText(char).width + priceLetterSpacing;
     }
     ctx.restore();
 
-    // --- ETAPA 4: DESENHA A DESCRIÇÃO COM ALINHAMENTO FIXO ---
+    // --- ETAPA 4: DESENHA A DESCRIÇÃO COM ESPAÇAMENTO LETRA A LETRA ---
     const descFont = 'Anton';
-    // CORREÇÃO: O tamanho da fonte da descrição agora é calculado para se adaptar melhor.
-    let descFontSize = Math.min(320, mainBoxHeight * 0.15); 
+    let descFontSize = Math.min(320, mainBoxHeight * 0.15);
     ctx.font = `bold ${descFontSize}px ${descFont}`;
     ctx.fillStyle = '#000000';
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'left'; // Alinhamento à esquerda para desenho manual
+    ctx.textBaseline = 'top'; // Alinha pelo topo para facilitar o cálculo das linhas
     
-    const descStartY = mainBoxY + mainBoxHeight * 0.75; 
-    
-    // CORREÇÃO: A lógica de quebra de linha agora usa a função wrapText
+    const descStartY = mainBoxY + mainBoxHeight * 0.70; // Posição vertical
     const lineSpacing = settings.pricePoster?.lineSpacing || 1.2;
-    wrapText(ctx, product.name.toUpperCase(), w / 2, descStartY, availableWidth, descFontSize * lineSpacing, 'center');
-
-    // --- ETAPA 5 (NOVA): DESENHA O RODAPÉ E O SELO DE VALIDADE ---
-    // Desenha o rodapé primeiro
-    drawFooter(ctx, settings.footer);
+    const descLineHeight = descFontSize * lineSpacing;
     
-    // Desenha o selo de validade por último para que ele fique por cima de tudo
+    // Pega as linhas já com quebra automática
+    const { lines } = getWrappedLines(ctx, product.name.toUpperCase(), availableWidth);
+    let currentY = descStartY;
+
+    // Itera sobre cada linha
+    for (const line of lines) {
+        // Calcula a largura da linha com o espaçamento para poder centralizá-la
+        let naturalLineWidth = 0;
+        for (const char of line) {
+            naturalLineWidth += ctx.measureText(char).width + descLetterSpacing;
+        }
+        if (line.length > 0) naturalLineWidth -= descLetterSpacing; // Remove o último espaçamento
+
+        // Define o ponto X inicial para que a linha fique centralizada
+        let currentXDesc = (w / 2) - (naturalLineWidth / 2);
+
+        // Desenha cada letra da linha
+        for (const char of line) {
+            ctx.fillText(char, currentXDesc, currentY);
+            currentXDesc += ctx.measureText(char).width + descLetterSpacing;
+        }
+        
+        // Move para a próxima linha
+        currentY += descLineHeight;
+    }
+    
+    // --- ETAPA 5: DESENHA O RODAPÉ E O SELO DE VALIDADE ---
+    drawFooter(ctx, settings.footer);
     drawHeaderValidity(ctx, settings.headerValidity);
 }
 
@@ -8464,17 +8503,25 @@ document.getElementById('dlc_balloon_select').value = dlcBalloons.selectedBalloo
         function saveCurrentPageSettings() { if (flyerData.pages.length) { const e = flyerData.pages[flyerData.currentPageIndex]; e.settings = getPageSettingsFromUI(); e.manualLayout = getLayoutFromInputs() } }
         function updatePageUI() { pageListContainer.innerHTML = ''; flyerData.pages.forEach((e, t) => { const o = document.createElement('button'); o.textContent = `Página ${t + 1}`; o.dataset.index = t; const n = 'w-full text-left p-2 rounded-md', a = 'bg-blue-600 text-white', l = 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'; o.className = `${n} ${t === flyerData.currentPageIndex ? a : l}`; o.addEventListener('click', () => switchPage(t)); pageListContainer.appendChild(o) }); useFirstPageBgContainer.classList.toggle('hidden', !(flyerData.pages.length > 0 && flyerData.pages[0].backgroundImage)) }
         
-		function switchPage(e, t = !0) {
-    if (!(e < 0 || e >= flyerData.pages.length)) {
-        t && saveCurrentPageSettings();
-        flyerData.currentPageIndex = e;
-        const o = flyerData.pages[e];
-        applyPageSettingsToUI(o);
-        setCanvasSize();
-        updatePageUI();
-        updateProductListUI();
-        updateNavButtonStates(); // <-- ADICIONE ESTA LINHA
+		// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'switchPage' INTEIRA PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+function switchPage(pageIndex, saveCurrent = true) {
+    if (pageIndex < 0 || pageIndex >= flyerData.pages.length) {
+        return; // Não faz nada se o índice for inválido
     }
+
+    if (saveCurrent) {
+        saveCurrentPageSettings();
+    }
+
+    flyerData.currentPageIndex = pageIndex;
+    const currentPage = flyerData.pages[pageIndex];
+
+    applyPageSettingsToUI(currentPage);
+    setCanvasSize();
+    updatePageUI();
+    updateProductListUI();
+    
+    updateNavButtonStates(); // <--- ESTA É A LINHA CRÍTICA QUE RESOLVE O PROBLEMA
 }
 		
 		
@@ -9796,103 +9843,8 @@ function populatePriceTagProductList() {
 }
 
 // Evento do botão "Gerar Cartazes"
-// ▼▼▼ SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
-// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'generatePriceTagBtn.addEventListener' PELA VERSÃO CORRIGIDA ▼▼▼
-// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'generatePriceTagBtn.addEventListener' PELA VERSÃO CORRIGIDA ▼▼▼
-// ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePriceTagBtn.addEventListener' INTEIRA PELA VERSÃO CORRIGIDA ▼▼▼
-// ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePriceTagBtn.addEventListener' INTEIRA PELA VERSÃO CORRIGIDA ▼▼▼
-// ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePriceTagBtn.addEventListener' INTEIRA PELA VERSÃO CORRIGIDA ▼▼▼
-// ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePriceTagBtn.addEventListener' INTEIRA PELA VERSÃO CORRIGIDA ▼▼▼
-// ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePriceTagBtn.addEventListener' INTEIRA PELA VERSÃO CORRIGIDA ▼▼▼
-generatePriceTagBtn.addEventListener('click', () => {
-    const selectedCheckboxes = document.querySelectorAll('#priceTagProductList input[type="checkbox"]:checked');
-    
-    if (selectedCheckboxes.length === 0) {
-        showAlert("Por favor, marque pelo menos um produto para gerar o cartaz.");
-        return;
-    }
 
-    showSpinner(true);
 
-    const templatePage = flyerData.pages[flyerData.currentPageIndex];
-    const templateSettings = JSON.parse(JSON.stringify(templatePage.settings));
-    
-    const lineSpacingValue = parseFloat(document.getElementById('priceTagLineSpacing').value) || 1.2;
-
-    selectedCheckboxes.forEach(checkbox => {
-        const selectedId = checkbox.value;
-        const [pageIndex, productIndex] = selectedId.split('-').map(Number);
-        const originalProduct = flyerData.pages[pageIndex].products[productIndex];
-
-        if (originalProduct) {
-            const newPriceTagPage = createDefaultPage();
-            newPriceTagPage.settings = JSON.parse(JSON.stringify(templateSettings));
-            
-            const logoScaleFactor = 2.0; 
-
-            Object.keys(newPriceTagPage.settings.logos).forEach(logoKey => {
-                const logo = newPriceTagPage.settings.logos[logoKey];
-                logo.width = Math.round(logo.width * logoScaleFactor);
-                logo.x = Math.round(logo.x * logoScaleFactor);
-                logo.y = Math.round(logo.y * logoScaleFactor);
-            });
-
-            // ==========================================================
-            // INÍCIO DA CORREÇÃO PARA FIXAR POSIÇÃO DAS LOGOS
-            // ==========================================================
-            newPriceTagPage.settings.logos.store.x = 3000; // Posição X fixa para a Logo da Loja
-            newPriceTagPage.settings.logos.complementary.x = 900; // Posição X fixa para a Imagem de Complemento
-            // ==========================================================
-            // FIM DA CORREÇÃO
-            // ==========================================================
-            
-            newPriceTagPage.settings.pageSize = 'custom';
-            newPriceTagPage.settings.customWidth = 3780;
-            newPriceTagPage.settings.customHeight = 5315;
-            
-            newPriceTagPage.settings.margins = { top: 1370, lateral: 150, footer: 150 };
-            
-            const headerValiditySettings = newPriceTagPage.settings.headerValidity;
-            const newBaseFontSize = 110; 
-            const originalBaseFontSize = templateSettings.headerValidity.fontSizeStartDate || 60;
-            const scaleFactor = newBaseFontSize / originalBaseFontSize;
-            
-            headerValiditySettings.enabled = true;
-            headerValiditySettings.fontSizeStartDate = newBaseFontSize;
-            headerValiditySettings.fontSizeDates = newBaseFontSize;
-            headerValiditySettings.fontSizeLine1 = Math.round((templateSettings.headerValidity.fontSizeLine1 || 25) * scaleFactor);
-            headerValiditySettings.fontSizeStock = Math.round((templateSettings.headerValidity.fontSizeStock || 35) * scaleFactor);
-            headerValiditySettings.fontSizeExtra2 = Math.round((templateSettings.headerValidity.fontSizeExtra2 || 25) * scaleFactor);
-            headerValiditySettings.dateToStockSpacing = -431;
-            headerValiditySettings.width = 1000;
-            headerValiditySettings.x = 2792;
-            headerValiditySettings.y = -12;
-            headerValiditySettings.lineSpacing = -3;
-            headerValiditySettings.headerSeparatorSpacing = 10;
-            headerValiditySettings.headerValidityScale = 100;
-            
-            if (!newPriceTagPage.settings.pricePoster) { newPriceTagPage.settings.pricePoster = {}; }
-            newPriceTagPage.settings.pricePoster.lineSpacing = lineSpacingValue;
-            
-            if (templatePage.backgroundImage) {
-                newPriceTagPage.backgroundImage = templatePage.backgroundImage;
-                newPriceTagPage.backgroundImageSrc = templatePage.backgroundImageSrc;
-            }
-
-            newPriceTagPage.products = [ { ...originalProduct } ];
-            newPriceTagPage.isPricePoster = true;
-            newPriceTagPage.manualLayout = [];
-            
-            flyerData.pages.push(newPriceTagPage);
-        }
-    });
-
-    const firstNewPageIndex = flyerData.pages.length - selectedCheckboxes.length;
-    switchPage(firstNewPageIndex, true);
-
-    showSpinner(false);
-    showAlert(`${selectedCheckboxes.length} cartaz(es) de preço gerado(s) como novas páginas no final do seu projeto.`);
-});
 
 // Eventos para os botões de selecionar/desselecionar todos
 priceTagSelectAllBtn.addEventListener('click', () => {
@@ -11624,112 +11576,282 @@ descriptionUpdateBtn.addEventListener('click', syncFlyerWithList);
 // ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePostersFromList' INTEIRA PELA VERSÃO CORRIGIDA ▼▼▼
 // ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePostersFromList' INTEIRA PELA VERSÃO CORRIGIDA ▼▼▼
 // ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePostersFromList' INTEIRA PELA VERSÃO CORRIGIDA ▼▼▼
+
+
+// ▼▼▼ SUBSTITUA AS FUNÇÕES ANTIGAS E ADICIONE ESTE BLOCO INTEIRO DE CÓDIGO JS ▼▼▼
+
+// --- LÓGICA DO NOVO PAINEL DE SELEÇÃO DE PÁGINA MODELO ---
+
+// 1. Pega os elementos do novo modal
+const modelPageSelectorModal = document.getElementById('modelPageSelectorModal');
+const modelPageListContainer = document.getElementById('modelPageListContainer');
+const confirmModelPageBtn = document.getElementById('confirmModelPageBtn');
+const cancelModelPageBtn = document.getElementById('cancelModelPageBtn');
+
+// Variável para guardar a ação que deve ser executada após a seleção
+let _onModelPageSelectedCallback = null;
+
+/**
+ * Abre o painel para o usuário escolher uma página como modelo.
+ * @param {function} onConfirm - A função que será executada quando o usuário confirmar, passando o índice da página modelo.
+ */
+function openModelPageSelector(onConfirm) {
+    if (flyerData.pages.length === 0) {
+        showAlert("Não há páginas no projeto para usar como modelo.");
+        return;
+    }
+
+    _onModelPageSelectedCallback = onConfirm;
+    modelPageListContainer.innerHTML = '';
+    confirmModelPageBtn.disabled = true; // Desativa o botão de confirmação
+
+    // Cria a lista de páginas selecionáveis
+    flyerData.pages.forEach((page, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'p-2 rounded-lg cursor-pointer border-2 border-transparent hover:bg-gray-200 dark:hover:bg-gray-700';
+        itemDiv.textContent = `Página ${index + 1} ${page.isPricePoster ? '(Cartaz)' : ''}`;
+        itemDiv.dataset.index = index;
+
+        itemDiv.addEventListener('click', () => {
+            // Remove a seleção de outros itens
+            document.querySelectorAll('#modelPageListContainer > div.selected').forEach(el => el.classList.remove('selected', 'border-blue-500', 'bg-blue-100', 'dark:bg-blue-900/50'));
+            // Adiciona a seleção ao item clicado
+            itemDiv.classList.add('selected', 'border-blue-500', 'bg-blue-100', 'dark:bg-blue-900/50');
+            confirmModelPageBtn.disabled = false; // Ativa o botão de confirmação
+        });
+
+        modelPageListContainer.appendChild(itemDiv);
+    });
+
+    modelPageSelectorModal.classList.add('visible');
+}
+
+// Evento do botão de confirmação do novo painel
+confirmModelPageBtn.addEventListener('click', () => {
+    const selectedItem = modelPageListContainer.querySelector('.selected');
+    if (selectedItem && typeof _onModelPageSelectedCallback === 'function') {
+        const modelPageIndex = parseInt(selectedItem.dataset.index, 10);
+        _onModelPageSelectedCallback(modelPageIndex); // Executa a ação guardada
+    }
+    modelPageSelectorModal.classList.remove('visible');
+});
+
+// Evento do botão de cancelar do novo painel
+cancelModelPageBtn.addEventListener('click', () => {
+    modelPageSelectorModal.classList.remove('visible');
+    _onModelPageSelectedCallback = null;
+});
+
+
+// --- FUNÇÕES DE GERAÇÃO DE CARTAZES ATUALIZADAS ---
+
+/**
+ * Função ATUALIZADA que é chamada pelo botão "Gerar Cartazes Selecionados".
+ * Agora, ela abre o painel de seleção de modelo.
+ */
+generatePriceTagBtn.addEventListener('click', () => {
+    const selectedCheckboxes = document.querySelectorAll('#priceTagProductList input[type="checkbox"]:checked');
+    if (selectedCheckboxes.length === 0) {
+        showAlert("Por favor, marque pelo menos um produto para gerar o cartaz.");
+        return;
+    }
+    // Em vez de gerar direto, abre o seletor e passa a função de geração como callback
+    openModelPageSelector((modelPageIndex) => {
+        generatePostersFromSelection(modelPageIndex, selectedCheckboxes);
+    });
+});
+
+
+/**
+ * Função NOVA que contém a lógica de gerar cartazes a partir da seleção do encarte.
+ * @param {number} modelPageIndex - O índice da página escolhida como modelo.
+ * @param {NodeListOf<Element>} selectedCheckboxes - A lista de checkboxes marcados.
+ */
+function generatePostersFromSelection(modelPageIndex, selectedCheckboxes) {
+    showSpinner(true);
+
+    const templatePage = flyerData.pages[modelPageIndex]; // Usa a página modelo selecionada
+    const templateSettings = JSON.parse(JSON.stringify(templatePage.settings));
+    const lineSpacingValue = parseFloat(document.getElementById('priceTagLineSpacing').value) || 1.2;
+
+    selectedCheckboxes.forEach(checkbox => {
+        const [pageIndex, productIndex] = checkbox.value.split('-').map(Number);
+        const originalProduct = flyerData.pages[pageIndex].products[productIndex];
+
+        if (originalProduct) {
+            const newPriceTagPage = createDefaultPage();
+            newPriceTagPage.settings = JSON.parse(JSON.stringify(templateSettings));
+            
+            // Lógica para adaptar o layout para um cartaz grande (mantida)
+            const logoScaleFactor = 2.0;
+            Object.keys(newPriceTagPage.settings.logos).forEach(logoKey => {
+                const logo = newPriceTagPage.settings.logos[logoKey];
+                logo.width = Math.round(logo.width * logoScaleFactor);
+                logo.x = Math.round(logo.x * logoScaleFactor);
+                logo.y = Math.round(logo.y * logoScaleFactor);
+            });
+            newPriceTagPage.settings.logos.store.x = 3000;
+            newPriceTagPage.settings.logos.complementary.x = 900;
+            newPriceTagPage.settings.pageSize = 'custom';
+            newPriceTagPage.settings.customWidth = 3780;
+            newPriceTagPage.settings.customHeight = 5315;
+            newPriceTagPage.settings.margins = { top: 1370, lateral: 150, footer: 150 };
+            
+            // ▼▼▼ INÍCIO DA ALTERAÇÃO - CONFIGURAÇÕES DE VALIDADE DO TOPO ▼▼▼
+            const headerValiditySettings = newPriceTagPage.settings.headerValidity;
+            headerValiditySettings.enabled = true; 
+            headerValiditySettings.x = 2856;
+            headerValiditySettings.y = 212;
+            headerValiditySettings.width = 900;
+            headerValiditySettings.fontSizeLine1 = 100; // <--- MUDANÇA APLICADA AQUI
+            headerValiditySettings.fontSizeStartDate = 110;
+            headerValiditySettings.fontSizeDates = 110; 
+            headerValiditySettings.fontSizeStock = 64;
+            headerValiditySettings.dateToStockSpacing = 0;
+            // ▲▲▲ FIM DA ALTERAÇÃO ▲▲▲
+
+            if (!newPriceTagPage.settings.pricePoster) { newPriceTagPage.settings.pricePoster = {}; }
+            newPriceTagPage.settings.pricePoster.lineSpacing = lineSpacingValue;
+
+            if (templatePage.backgroundImage) {
+                newPriceTagPage.backgroundImage = templatePage.backgroundImage;
+                newPriceTagPage.backgroundImageSrc = templatePage.backgroundImageSrc;
+            }
+
+            newPriceTagPage.products = [ { ...originalProduct } ];
+            newPriceTagPage.isPricePoster = true;
+            newPriceTagPage.manualLayout = [];
+            
+            flyerData.pages.push(newPriceTagPage);
+        }
+    });
+
+    const firstNewPageIndex = flyerData.pages.length - selectedCheckboxes.length;
+    switchPage(firstNewPageIndex, true);
+
+    showSpinner(false);
+    showAlert(`${selectedCheckboxes.length} cartaz(es) de preço gerado(s) com sucesso!`);
+}
+
+
+/**
+ * Função ATUALIZADA chamada pelo botão "Gerar Cartazes da Lista".
+ * Agora, abre o painel de seleção.
+ */
 async function generatePostersFromList() {
     const text = document.getElementById('priceTagListTextarea').value.trim();
     if (!text) {
         showAlert("Por favor, cole a lista de produtos na área de texto.");
         return;
     }
-
-    showSpinner(true);
-    showAlert("Gerando cartazes... Buscando imagens no banco de dados.");
-
-    const lineSpacingValue = parseFloat(document.getElementById('priceTagLineSpacing').value) || 1.2;
-    const lines = text.split('\n').filter(line => line.trim());
-    
-    const productPromises = lines.map(line => new Promise(async (resolve) => {
-        const parts = line.split(';');
-        const name = parts[0].trim();
-        let price = '0.00';
-        if (parts.length > 1 && parts[1].trim()) {
-            const parsedPrice = parseFloat(parts[1].trim().replace(',', '.'));
-            if (!isNaN(parsedPrice)) {
-                price = parsedPrice.toFixed(2);
-            }
-        }
-
-        const dbMatchName = findBestMatchInDb(name);
-        if (dbMatchName && productDatabase[dbMatchName]) {
-            const dbProduct = productDatabase[dbMatchName];
-            const img = new Image();
-            img.onload = () => resolve({ name: name, price: price, src: dbProduct.src, image: img });
-            img.onerror = () => resolve({ name: name, price: price, src: null, image: null });
-            img.src = dbProduct.src;
-        } else {
-            resolve({ name: name, price: price, src: null, image: null });
-        }
-    }));
-
-    const productsForPosters = (await Promise.all(productPromises)).filter(Boolean);
-
-    if (productsForPosters.length === 0) {
-        showSpinner(false);
-        showAlert("Nenhum produto válido encontrado na lista. Verifique o formato NOME; PREÇO.");
-        return;
-    }
-
-    const templatePage = flyerData.pages[flyerData.currentPageIndex];
-    const templateSettings = JSON.parse(JSON.stringify(templatePage.settings));
-
-    productsForPosters.forEach(product => {
-        const newPriceTagPage = createDefaultPage();
-        newPriceTagPage.settings = JSON.parse(JSON.stringify(templateSettings));
-        
-        const logoScaleFactor = 2.0;
-
-        Object.keys(newPriceTagPage.settings.logos).forEach(logoKey => {
-            const logo = newPriceTagPage.settings.logos[logoKey];
-            logo.width = Math.round(logo.width * logoScaleFactor);
-            logo.x = Math.round(logo.x * logoScaleFactor);
-            logo.y = Math.round(logo.y * logoScaleFactor);
-        });
-        
-        // ==========================================================
-        // INÍCIO DA CORREÇÃO PARA FIXAR POSIÇÃO DAS LOGOS
-        // ==========================================================
-        newPriceTagPage.settings.logos.store.x = 3000; // Posição X fixa para a Logo da Loja
-        newPriceTagPage.settings.logos.complementary.x = 900; // Posição X fixa para a Imagem de Complemento
-        // ==========================================================
-        // FIM DA CORREÇÃO
-        // ==========================================================
-
-        newPriceTagPage.settings.pageSize = 'custom';
-        newPriceTagPage.settings.customWidth = 3780;
-        newPriceTagPage.settings.customHeight = 5315;
-        
-        newPriceTagPage.settings.margins = {
-           top: 1370,
-           lateral: 150,
-           footer: 150
-        };
-        
-        const headerValiditySettings = newPriceTagPage.settings.headerValidity;
-        headerValiditySettings.enabled = true;
-        
-        if (!newPriceTagPage.settings.pricePoster) {
-            newPriceTagPage.settings.pricePoster = {};
-        }
-        newPriceTagPage.settings.pricePoster.lineSpacing = lineSpacingValue;
-
-        if (templatePage.backgroundImage) {
-            newPriceTagPage.backgroundImage = templatePage.backgroundImage;
-            newPriceTagPage.backgroundImageSrc = templatePage.backgroundImageSrc;
-        }
-
-        newPriceTagPage.products = [ { ...product } ];
-        newPriceTagPage.isPricePoster = true;
-        newPriceTagPage.manualLayout = [];
-        
-        flyerData.pages.push(newPriceTagPage);
+    // Abre o seletor e passa a função de geração como callback
+    openModelPageSelector((modelPageIndex) => {
+        generatePostersFromListWithModel(modelPageIndex, text);
     });
-
-    const firstNewPageIndex = flyerData.pages.length - productsForPosters.length;
-    switchPage(firstNewPageIndex, true);
-
-    showSpinner(false);
-    showAlert(`${productsForPosters.length} cartaz(es) de preço gerado(s) com sucesso como novas páginas!`);
 }
 
+
+
+async function generatePostersFromListWithModel(modelPageIndex, text) {
+    showSpinner(true); 
+
+    try {
+        // ▼▼▼ ADICIONADO: Verificação de segurança da página modelo ▼▼▼
+        if (typeof modelPageIndex !== 'number' || !flyerData.pages[modelPageIndex]) {
+            throw new Error("Página modelo inválida ou não selecionada. Por favor, tente novamente.");
+        }
+        // ▲▲▲ FIM DA VERIFICAÇÃO ▲▲▲
+
+        const lineSpacingValue = parseFloat(document.getElementById('priceTagLineSpacing').value) || 1.2;
+        const lines = text.split('\n').filter(line => line.trim());
+
+        const productsForPosters = lines.map(line => {
+            let name = line.trim();
+            let price = '0.00';
+
+            const lastColon = line.lastIndexOf(':');
+            const lastSemicolon = line.lastIndexOf(';');
+            const separatorIndex = Math.max(lastColon, lastSemicolon);
+
+            if (separatorIndex > -1) {
+                name = line.substring(0, separatorIndex).trim();
+                const priceText = line.substring(separatorIndex + 1).trim();
+                const parsedPrice = parseFloat(priceText.replace(',', '.'));
+                if (!isNaN(parsedPrice)) {
+                    price = parsedPrice.toFixed(2);
+                }
+            }
+            return { name, price, image: null, src: null };
+        });
+
+        if (productsForPosters.length === 0) {
+            showSpinner(false);
+            showAlert("Nenhum produto válido encontrado na lista.");
+            return;
+        }
+
+        const templatePage = flyerData.pages[modelPageIndex];
+        const templateSettings = JSON.parse(JSON.stringify(templatePage.settings));
+
+        productsForPosters.forEach(product => {
+            const newPriceTagPage = createDefaultPage();
+            newPriceTagPage.settings = JSON.parse(JSON.stringify(templateSettings));
+
+            const logoScaleFactor = 2.0;
+            Object.keys(newPriceTagPage.settings.logos).forEach(logoKey => {
+                const logo = newPriceTagPage.settings.logos[logoKey];
+                logo.width = Math.round(logo.width * logoScaleFactor);
+                logo.x = Math.round(logo.x * logoScaleFactor);
+                logo.y = Math.round(logo.y * logoScaleFactor);
+            });
+            newPriceTagPage.settings.logos.store.x = 3000;
+            newPriceTagPage.settings.logos.complementary.x = 900;
+            newPriceTagPage.settings.pageSize = 'custom';
+            newPriceTagPage.settings.customWidth = 3780;
+            newPriceTagPage.settings.customHeight = 5315;
+            newPriceTagPage.settings.margins = { top: 1370, lateral: 150, footer: 150 };
+
+            const headerValiditySettings = newPriceTagPage.settings.headerValidity;
+            headerValiditySettings.enabled = true;
+            headerValiditySettings.x = 2856;
+            headerValiditySettings.y = 212;
+            headerValiditySettings.width = 900;
+            headerValiditySettings.fontSizeLine1 = 100;
+            headerValiditySettings.fontSizeStartDate = 110;
+            headerValiditySettings.fontSizeDates = 110;
+            headerValiditySettings.fontSizeStock = 64;
+            headerValiditySettings.dateToStockSpacing = 0;
+
+            if (!newPriceTagPage.settings.pricePoster) { newPriceTagPage.settings.pricePoster = {}; }
+            newPriceTagPage.settings.pricePoster.lineSpacing = lineSpacingValue;
+
+            if (templatePage.backgroundImage) {
+                newPriceTagPage.backgroundImage = templatePage.backgroundImage;
+                newPriceTagPage.backgroundImageSrc = templatePage.backgroundImageSrc;
+            }
+
+            newPriceTagPage.products = [{ ...product }];
+            newPriceTagPage.isPricePoster = true;
+            newPriceTagPage.manualLayout = [];
+
+            flyerData.pages.push(newPriceTagPage);
+        });
+
+        const firstNewPageIndex = flyerData.pages.length - productsForPosters.length;
+        switchPage(firstNewPageIndex, true);
+
+        showSpinner(false);
+        showAlert(`${productsForPosters.length} cartaz(es) de preço gerado(s) com sucesso!`);
+
+    } catch (error) {
+        showSpinner(false);
+        // Agora o alerta mostrará a mensagem de erro específica
+        showAlert(`Ocorreu um erro: ${error.message}`);
+        console.error("Erro em generatePostersFromListWithModel:", error);
+    }
+}
+
+// ▲▲▲ FIM DO BLOCO DE SUBSTITUIÇÃO ▲▲▲
 
 
 
