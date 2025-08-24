@@ -87,6 +87,7 @@
 	
 	/* ▼▼▼ COLE ESTE BLOCO PARA AJUSTAR OS BOTÕES NO CELULAR ▼▼▼ */
 /* ▼▼▼ SUBSTITUA A REGRA ANTERIOR POR ESTA ▼▼▼ */
+/* ▼▼▼ SUBSTITUA A REGRA ANTERIOR POR ESTA ▼▼▼ */
 @media (max-width: 767px) {
   .floating-buttons-container {
     /* Define uma altura máxima para o painel não sair da tela */
@@ -115,7 +116,36 @@
   }
 }
 /* ▲▲▲ FIM DO BLOCO ▲▲▲ */
+
+  .floating-buttons-container::-webkit-scrollbar-thumb {
+    background-color: #6b7280;
+    border-radius: 10px;
+  }
+}
+/* ▲▲▲ FIM DO BLOCO ▲▲▲ */
 	
+		
+		/* ▼▼▼ COLE ESTE BLOCO NO FINAL DA SUA TAG <style> ▼▼▼ */
+.number-control-btn {
+    flex-shrink: 0;
+    width: 2.5rem; /* 40px */
+    height: 2.5rem; /* 40px */
+    font-size: 1.5rem; /* 24px */
+    font-weight: bold;
+    color: white;
+    background-color: #4a5568; /* cinza escuro */
+    border: none;
+    border-radius: 0.375rem; /* 6px */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.number-control-btn:hover {
+    background-color: #2d3748; /* cinza mais escuro */
+}
+/* ▲▲▲ FIM DO BLOCO ▲▲▲ */
 		
 		
     </style>
@@ -164,6 +194,12 @@
     <span class="text-xs">Formatar Lista</span>
 </a>
 
+<a class="menu-item p-1 rounded-lg w-full flex flex-col items-center hover:bg-gray-700" data-panel="panel-projects" href="#">
+<svg class="h-4 w-4 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-xs">Projetos</span>
+</a>
 
 <a class="menu-item p-1 rounded-lg w-full flex flex-col items-center hover:bg-gray-700" data-panel="panel-pages" href="#">
 <svg class="h-4 w-4 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -246,12 +282,7 @@
 </svg>
 <span class="text-xs">Estoque</span>
 </a>
-<a class="menu-item p-1 rounded-lg w-full flex flex-col items-center hover:bg-gray-700" data-panel="panel-projects" href="#">
-<svg class="h-4 w-4 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<path d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
-</svg>
-<span class="text-xs">Projetos</span>
-</a>
+
 </nav>
 </div>
 <div class="fixed inset-0 z-10 hidden" id="menuBackdrop"></div>
@@ -748,7 +779,11 @@
                 <optgroup id="custom-fonts-product-name" label="Fontes Customizadas"></optgroup>
             </select>
             <label class="block text-sm font-medium mt-2 mb-1" for="productNameFontSize">Tamanho da Fonte (px)</label>
-            <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="productNameFontSize" type="number" value="42"/>
+<div class="flex items-center gap-2">
+    <button type="button" class="number-control-btn" data-action="decrement" data-target="productNameFontSize">-</button>
+    <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm text-center" id="productNameFontSize" type="number" value="42"/>
+    <button type="button" class="number-control-btn" data-action="increment" data-target="productNameFontSize">+</button>
+</div>
             <label class="block text-sm font-medium mt-2 mb-1" for="descriptionStartY">Posição Y Inicial da Descrição (px)</label>
             <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="descriptionStartY" type="number" value="25"/>
             
@@ -1400,6 +1435,14 @@
 <input class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="enableFooterText" type="checkbox"/>
 <label class="text-sm font-medium" for="enableFooterText">Ativar Texto de Rodapé</label>
 </div>
+
+<div class="flex items-center gap-2">
+    <input class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="enableFooterBackground" type="checkbox"/>
+    <label class="text-sm font-medium" for="enableFooterBackground">Ativar Fundo no Rodapé</label>
+</div>
+
+
+
 <div class="hidden space-y-4" id="footer-text-options">
 <div>
 <label class="block text-sm font-medium mb-1" for="validity">Texto Principal do Rodapé</label>
@@ -1433,55 +1476,56 @@
 <label class="block text-sm font-medium mb-1" for="footerTextSpacing">Espaçamento entre Textos (px)</label>
 <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerTextSpacing" min="0" type="number" value="10"/>
 </div>
-<div class="flex items-center gap-2">
-<input class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="enableFooterBackground" type="checkbox"/>
-<label class="text-sm font-medium" for="enableFooterBackground">Ativar Fundo no Rodapé</label>
+
+
+<div class="space-y-4">
+    <div class="flex items-center gap-2 mt-2">
+        <input checked="" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="footerAutoPosition" type="checkbox"/>
+        <label class="text-sm font-medium" for="footerAutoPosition">Posicionar Rodapé Automaticamente</label>
+    </div>
+    <div id="footerManualPositionContainer">
+        <label class="block text-sm font-medium mb-1" for="footerTextVerticalAlign">Alinhamento Vertical do Texto</label>
+        <select class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerTextVerticalAlign">
+            <option value="middle">Centro</option>
+            <option value="top">Topo</option>
+            <option value="bottom">Fundo</option>
+        </select>
+    </div>
+    <div>
+        <label class="block text-sm font-medium mb-1" for="footerPositionY">Ajuste Posição Y (px) </label>
+        <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerPositionY" min="0" type="number" value="35"/>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-medium mb-1" for="footerTextColor">Cor do Texto</label>
+            <input class="w-full h-10 p-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer" id="footerTextColor" type="color"/>
+        </div>
+         <div>
+            <label class="block text-sm font-medium mb-1" for="footerFontSize">Tamanho da Fonte</label>
+            <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerFontSize" min="10" type="number" value="50"/>
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1" for="footerSubtextFontSize">Tamanho Subtexto</label>
+            <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerSubtextFontSize" min="8" type="number" value="37"/>
+        </div>
+    </div>
 </div>
-<div class="hidden space-y-4" id="footer-options">
-<div class="flex items-center gap-2 mt-2">
-<input checked="" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="footerAutoPosition" type="checkbox"/>
-<label class="text-sm font-medium" for="footerAutoPosition">Posicionar Rodapé Automaticamente</label>
-</div>
-<div id="footerManualPositionContainer">
-<label class="block text-sm font-medium mb-1" for="footerTextVerticalAlign">Alinhamento Vertical do Texto</label>
-<select class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerTextVerticalAlign">
-<option value="middle">Centro</option>
-<option value="top">Topo</option>
-<option value="bottom">Fundo</option>
-</select>
-</div>
-<div>
-<label class="block text-sm font-medium mb-1" for="footerPositionY">Ajuste Posição Y (px) </label>
-<input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerPositionY" min="0" type="number" value="35"/>
-</div>
-<div class="grid grid-cols-2 gap-4">
-<div>
-<label class="block text-sm font-medium mb-1" for="footerBgColor">Cor do Fundo</label>
-<input class="w-full h-10 p-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer" id="footerBgColor" type="color"/>
-</div>
-<div>
-<label class="block text-sm font-medium mb-1" for="footerTextColor">Cor do Texto</label>
-<input class="w-full h-10 p-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer" id="footerTextColor" type="color"/>
-</div>
-</div>
-<div class="grid grid-cols-2 gap-4">
-<div>
-<label class="block text-sm font-medium mb-1" for="footerFontSize">Tamanho da Fonte</label>
-<input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerFontSize" min="10" type="number" value="50"/>
-</div>
-<div>
-<label class="block text-sm font-medium mb-1" for="footerSubtextFontSize">Tamanho Subtexto</label>
-<input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerSubtextFontSize" min="8" type="number" value="37"/>
-</div>
-<div>
-<label class="block text-sm font-medium mb-1" for="footerBorderRadius">Raio da Borda</label>
-<input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerBorderRadius" min="0" type="number"/>
-</div>
-</div>
-<div>
-<label class="block text-sm font-medium mb-1" for="footerPaddingY">Espaçamento Interno (Y)</label>
-<input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerPaddingY" min="0" type="number" value="30"/>
-</div>
+
+<div class="hidden space-y-4 pt-4 mt-4 border-t border-gray-600" id="footer-background-options">
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-medium mb-1" for="footerBgColor">Cor do Fundo</label>
+            <input class="w-full h-10 p-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer" id="footerBgColor" type="color"/>
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1" for="footerBorderRadius">Raio da Borda</label>
+            <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerBorderRadius" min="0" type="number"/>
+        </div>
+    </div>
+    <div>
+        <label class="block text-sm font-medium mb-1" for="footerPaddingY">Espaçamento Interno (Y)</label>
+        <input class="w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" id="footerPaddingY" min="0" type="number" value="30"/>
+    </div>
 </div>
 </div>
 </div>
@@ -1728,6 +1772,16 @@ Produto B, 5.50" rows="5"></textarea>
         </button>
 <input class="hidden" directory="" id="folderInput" multiple="" type="file" webkitdirectory=""/>
 </div>
+
+<div class="relative mb-2">
+    <input type="text" id="stockSearchInput" placeholder="Buscar produto no estoque..." class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 pl-10 text-sm focus:ring-blue-500 focus:border-blue-500">
+    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+        </svg>
+    </div>
+</div>
+
 <div class="space-y-2">
 <div class="flex justify-between items-center">
 <h4 class="text-lg font-semibold" id="stockDbLabel">Produtos no Banco de Dados</h4>
@@ -1735,6 +1789,7 @@ Produto B, 5.50" rows="5"></textarea>
 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 4v5h5M20 20v-5h-5M20 4h-5v5M4 20h5v-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 </button>
 </div>
+
 <div class="grid grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto p-2 bg-gray-100 dark:bg-gray-900 rounded-lg" id="stockProductList">
 </div>
 <div class="pt-4 mt-4 border-t">
@@ -1918,93 +1973,88 @@ Produto B, 5.50" rows="5"></textarea>
 <main class="flex-1 flex items-center justify-center p-4 lg:p-8 transition-all duration-300 ease-in-out" id="mainContent">
 <canvas class="shadow-2xl rounded-lg max-w-full max-h-full" id="flyerCanvas"></canvas>
 
-<div class="absolute bottom-4 right-4 z-50 flex flex-col items-end gap-1 floating-buttons-container">
+<div class="absolute bottom-4 right-4 z-[60] flex flex-col items-end gap-1 floating-buttons-container">
 
     <div class="p-1.5 bg-gray-800 bg-opacity-60 backdrop-blur-sm rounded-xl flex flex-col gap-1">
-        
-        <span class="block w-14 text-white text-[8px] font-bold text-center mb-1">Downloads</span>
+        <span class="block w-14 text-white text-[8px] font-bold text-center mb-1">Zoom / Navegar</span>
+        <button id="zoomInBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-gray-700 hover:bg-gray-600 w-14" title="Aumentar Zoom">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+            <span class="text-[8px] leading-tight">Zoom +</span>
+        </button>
+        <button id="zoomOutBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-gray-700 hover:bg-gray-600 w-14" title="Diminuir Zoom">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+            <span class="text-[8px] leading-tight">Zoom -</span>
+        </button>
+        <button id="panModeBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-purple-700 hover:bg-purple-600 w-14" title="Ativar/Desativar Modo de Navegação">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 3.75H6A2.25 2.25 0 003.75 6v1.5M16.5 3.75H18A2.25 2.25 0 0120.25 6v1.5m0 9V18A2.25 2.25 0 0118 20.25h-1.5M3.75 16.5V18A2.25 2.25 0 006 20.25h1.5M12 15.75l3.75-3.75M12 15.75l-3.75-3.75M12 15.75V8.25"></path></svg>
+            <span class="text-[8px] leading-tight">Navegar</span>
+        </button>
+		<button id="resetZoomBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-gray-700 hover:bg-gray-600 w-14" title="Resetar Zoom e Posição">
+            <svg class="h-4 w-4 mb-px" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 10l6 6m0-6l-6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <span class="text-[8px] leading-tight">Resetar</span>
+        </button>
+		
+    </div>
 
+    <div class="p-1.5 bg-gray-800 bg-opacity-60 backdrop-blur-sm rounded-xl flex flex-col gap-1">
+        <span class="block w-14 text-white text-[8px] font-bold text-center mb-1">Downloads</span>
         <button id="downloadBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-green-700 hover:bg-green-600 w-14" title="Baixar Página Atual (PNG)">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             <span class="text-[8px] leading-tight">PNG</span>
         </button>
         <button id="downloadAllBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-green-900 hover:bg-green-800 w-14" title="Baixar TODAS as Páginas (PNG)">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4m0 0v2m0-2h2m-2 0H8" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4m0 0v2m0-2h2m-2 0H8"></path></svg>
             <span class="text-[8px] leading-tight">PNGs</span>
         </button>
         <button id="downloadPdfBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-red-700 hover:bg-red-600 w-14" title="Baixar Página Atual (PDF)">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
             <span class="text-[8px] leading-tight">PDF</span>
         </button>
         <button id="downloadPdfAllBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-red-900 hover:bg-red-800 w-14" title="Baixar TODAS as Páginas (PDF)">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2-2H4a2 2 0 01-2-2v-4z" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2-2H4a2 2 0 01-2-2v-4z"></path></svg>
             <span class="text-[8px] leading-tight">PDFs</span>
         </button>
         <button id="exportPostersPdfBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-cyan-700 hover:bg-cyan-600 w-14" title="Baixar Cartazes de Preço (PDF)">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-                <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg>
             <span class="text-[8px] leading-tight">Cartazes</span>
         </button>
     </div>
 
     <div class="p-1.5 bg-gray-800 bg-opacity-60 backdrop-blur-sm rounded-xl flex flex-col gap-1">
         <span class="block w-14 text-white text-[8px] font-bold text-center mb-1">Controles</span>
+        <button id="saveChangesBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-blue-600 hover:bg-blue-500 w-14" title="Salvar Alterações no Projeto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V4zm2 5a1 1 0 011-1h2a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"></path><path d="M3 9a2 2 0 00-2 2v4a2 2 0 002 2h10a2 2 0 002-2v-4a2 2 0 00-2-2H3z"></path></svg>
+            <span class="text-[8px] leading-tight">Salvar</span>
+        </button>
         <button id="deletePageBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-red-600 hover:bg-red-500 w-14" title="Deletar Página Atual">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="text-[8px] leading-tight">Deletar Pág.</span>
         </button>
         <button id="multiDeletePageBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-red-700 hover:bg-red-600 w-14" title="Deletar Múltiplas Páginas">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             <span class="text-[8px] leading-tight">Deletar Várias</span>
         </button>
         <button id="applyPosterLayoutToAllBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-purple-600 hover:bg-purple-500 w-14" title="Aplicar Layout do Cartaz (p/ outros)">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
             <span class="text-[8px] leading-tight">Layout Cartaz</span>
         </button>
-		
-		<button id="saveChangesBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-blue-600 hover:bg-blue-500 w-14" title="Salvar Alterações no Projeto">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V4zm2 5a1 1 0 011-1h2a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd" />
-        <path d="M3 9a2 2 0 00-2 2v4a2 2 0 002 2h10a2 2 0 002-2v-4a2 2 0 00-2-2H3z" />
-    </svg>
-    <span class="text-[8px] leading-tight">Salvar</span>
-</button>
-		
-		
         <button id="refreshPreviewBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-gray-700 hover:bg-gray-600 w-14" title="Atualizar Pré-visualização">
             <svg class="h-4 w-4 mb-px" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 4v5h5M23 19v-5h-5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M20.49 9A9 9 0 0012 3a9 9 0 00-9 9" stroke-linecap="round" stroke-linejoin="round"></path><path d="M3.51 15a9 9 0 0014.98 3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             <span class="text-[8px] leading-tight">Atualizar</span>
         </button>
         <button id="prevPageBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-gray-700 hover:bg-gray-600 w-14" title="Página Anterior">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
             <span class="text-[8px] leading-tight">Anterior</span>
         </button>
         <button id="nextPageBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-gray-700 hover:bg-gray-600 w-14" title="Próxima Página">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
             <span class="text-[8px] leading-tight">Próxima</span>
         </button>
         <button id="duplicatePageBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-gray-700 hover:bg-gray-600 w-14" title="Nova Página (Duplicar Atual)">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
             <span class="text-[8px] leading-tight">Duplicar</span>
         </button>
-        <button id="resetZoomBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-gray-700 hover:bg-gray-600 w-14" title="Resetar Zoom e Posição">
-            <svg class="h-4 w-4 mb-px" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 10l6 6m0-6l-6 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-            <span class="text-[8px] leading-tight">Resetar</span>
-        </button>
+        
     </div>
 </div>
 
@@ -2235,6 +2285,18 @@ Produto B, 5.50" rows="5"></textarea>
 
 <script>
 
+
+// ▼▼▼ ADICIONE ESTE BLOCO DE VARIÁVEIS ▼▼▼
+let isPanning = false;
+let panModeActive = false;
+let initialPinchDistance = null;
+let lastPanPoint = { x: 0, y: 0 };
+// ▲▲▲ FIM DO BLOCO ▲▲▲
+
+
+
+
+const stockSearchInput = document.getElementById('stockSearchInput');
 
 
 // =================================================================
@@ -2899,7 +2961,7 @@ downloadAllBtn.addEventListener('click', downloadAllPages);
         const enableFooterTextCheckbox = document.getElementById('enableFooterText');
         const footerTextOptionsDiv = document.getElementById('footer-text-options');
         const enableFooterBackgroundCheckbox = document.getElementById('enableFooterBackground');
-        const footerOptionsDiv = document.getElementById('footer-options');
+        const footerBackgroundOptionsDiv = document.getElementById('footer-background-options');
         const footerBgColorInput = document.getElementById('footerBgColor');
         const footerTextColorInput = document.getElementById('footerTextColor');
         const footerFontSelect = document.getElementById('footerFont');
@@ -3123,8 +3185,8 @@ const preloadedProjects = {
 
         // --- UI & Utility Functions ---
         function showSpinner(show) { loadingSpinner.classList.toggle('visible', show); }
-        function showAlert(message) { modalMessage.textContent = message; modalInputContainer.classList.add('hidden'); modalOkBtn.style.display = 'inline-block'; modalConfirmBtn.style.display = 'none'; modalCancelBtn.style.display = 'none'; customModal.classList.add('visible'); }
-        function showConfirm(message, onConfirm) { modalMessage.textContent = message; modalInputContainer.classList.add('hidden'); modalOkBtn.style.display = 'none'; modalConfirmBtn.style.display = 'inline-block'; modalCancelBtn.style.display = 'inline-block'; customModal.classList.add('visible'); modalConfirmBtn.onclick = () => { customModal.classList.remove('visible'); onConfirm(true); }; modalCancelBtn.onclick = () => { customModal.classList.remove('visible'); onConfirm(false); }; }
+        function showAlert(message) { modalMessage.innerHTML = message; modalInputContainer.classList.add('hidden'); modalOkBtn.style.display = 'inline-block'; modalConfirmBtn.style.display = 'none'; modalCancelBtn.style.display = 'none'; customModal.classList.add('visible'); }
+        function showConfirm(message, onConfirm) { modalMessage.innerHTML = message; modalInputContainer.classList.add('hidden'); modalOkBtn.style.display = 'none'; modalConfirmBtn.style.display = 'inline-block'; modalCancelBtn.style.display = 'inline-block'; customModal.classList.add('visible'); modalConfirmBtn.onclick = () => { customModal.classList.remove('visible'); onConfirm(true); }; modalCancelBtn.onclick = () => { customModal.classList.remove('visible'); onConfirm(false); }; }
         function showPrompt(message, label, defaultValue, onConfirm) { modalMessage.textContent = message; modalInputLabel.textContent = label; modalTextInput.value = defaultValue; modalInputContainer.classList.remove('hidden'); modalOkBtn.style.display = 'none'; modalConfirmBtn.style.display = 'inline-block'; modalCancelBtn.style.display = 'inline-block'; customModal.classList.add('visible'); modalConfirmBtn.onclick = () => { customModal.classList.remove('visible'); onConfirm(modalTextInput.value); }; modalCancelBtn.onclick = () => { customModal.classList.remove('visible'); onConfirm(null); }; }
         modalOkBtn.addEventListener('click', () => customModal.classList.remove('visible'));
         
@@ -3374,7 +3436,7 @@ activePanelId = null; menuItems.forEach(i => i.classList.remove('bg-blue-600'));
         enableSloganBorderCheckbox.addEventListener('change', () => sloganBorderColorContainer.classList.toggle('hidden', !enableSloganBorderCheckbox.checked));
         enableFooterTextCheckbox.addEventListener('change', () => footerTextOptionsDiv.classList.toggle('hidden', !enableFooterTextCheckbox.checked));
         enableFooterBackgroundCheckbox.addEventListener('change', () => {
-            footerOptionsDiv.classList.toggle('hidden', !enableFooterBackgroundCheckbox.checked)
+            footerBackgroundOptionsDiv.classList.toggle('hidden', !enableFooterBackgroundCheckbox.checked)
             const autoPosCheckbox = document.getElementById('footerAutoPosition');
             if(autoPosCheckbox) autoPosCheckbox.dispatchEvent(new Event('change'));
         });
@@ -6234,18 +6296,26 @@ function wrapText(context, text, x, y, maxWidth, lineHeight, alignment = 'left',
 
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawPricePosterLayout' PELA VERSÃO ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawPricePosterLayout' PELA VERSÃO ABAIXO ▼▼▼
 function drawPricePosterLayout(page) {
-    // --- CONTROLES DE ESPAÇAMENTO (AJUSTE ESTES VALORES) ---
-    const priceLetterSpacing = 20;
-    const descLetterSpacing = 10;  // <--- CONTROLE O ESPAÇAMENTO DA DESCRIÇÃO AQUI
-
     const ctx = canvas.getContext('2d');
     const w = canvas.width;
     const h = canvas.height;
     const settings = page.settings;
+
+    if (!page.products || page.products.length === 0) {
+        console.error("Tentativa de desenhar uma página de cartaz sem produto.", page);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = 'red';
+        ctx.font = 'bold 40px sans-serif'; // Fonte menor para a resolução reduzida
+        ctx.textAlign = 'center';
+        ctx.fillText('ERRO: CARTAZ SEM PRODUTO', w / 2, h / 2);
+        return;
+    }
+
     const product = page.products[0];
 
-    // --- ETAPA 1: DESENHA O LAYOUT BASE DO ENCARTE ---
     if (page.backgroundImage) {
         ctx.drawImage(page.backgroundImage, 0, 0, w, h);
     }
@@ -6259,7 +6329,6 @@ function drawPricePosterLayout(page) {
         }
     });
 
-    // --- ETAPA 2: DESENHA O RETÂNGULO DE FUNDO PARA O PREÇO ---
     const mainBoxY = settings.margins.top;
     const mainBoxX = settings.margins.lateral;
     const mainBoxWidth = w - (settings.margins.lateral * 2);
@@ -6269,12 +6338,12 @@ function drawPricePosterLayout(page) {
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(mainBoxX, mainBoxY, mainBoxWidth, mainBoxHeight);
 
-    // --- ETAPA 3: DESENHA O PREÇO GIGANTE COM ESPAÇAMENTO ---
     const [integerPart, decimalPart] = parseFloat(product.price).toFixed(2).split('.');
     const priceText = `${integerPart},${decimalPart}`;
     const priceFont = 'Anton';
     const priceY = mainBoxY + mainBoxHeight * 0.4;
     const priceFontSize = mainBoxHeight * 0.60;
+    const priceLetterSpacing = 10; // Metade do valor original
     
     ctx.font = `bold ${priceFontSize}px ${priceFont}`;
     ctx.fillStyle = '#FF0000';
@@ -6301,45 +6370,38 @@ function drawPricePosterLayout(page) {
     }
     ctx.restore();
 
-    // --- ETAPA 4: DESENHA A DESCRIÇÃO COM ESPAÇAMENTO LETRA A LETRA ---
     const descFont = 'Anton';
-    let descFontSize = Math.min(320, mainBoxHeight * 0.15);
+    let descFontSize = Math.min(160, mainBoxHeight * 0.15); // Metade do cap original
+    const descLetterSpacing = 5; // Metade do valor original
     ctx.font = `bold ${descFontSize}px ${descFont}`;
     ctx.fillStyle = '#000000';
-    ctx.textAlign = 'left'; // Alinhamento à esquerda para desenho manual
-    ctx.textBaseline = 'top'; // Alinha pelo topo para facilitar o cálculo das linhas
+    ctx.textAlign = 'left'; 
+    ctx.textBaseline = 'top'; 
     
-    const descStartY = mainBoxY + mainBoxHeight * 0.70; // Posição vertical
+    const descStartY = mainBoxY + mainBoxHeight * 0.70; 
     const lineSpacing = settings.pricePoster?.lineSpacing || 1.2;
     const descLineHeight = descFontSize * lineSpacing;
     
-    // Pega as linhas já com quebra automática
     const { lines } = getWrappedLines(ctx, product.name.toUpperCase(), availableWidth);
     let currentY = descStartY;
 
-    // Itera sobre cada linha
     for (const line of lines) {
-        // Calcula a largura da linha com o espaçamento para poder centralizá-la
         let naturalLineWidth = 0;
         for (const char of line) {
             naturalLineWidth += ctx.measureText(char).width + descLetterSpacing;
         }
-        if (line.length > 0) naturalLineWidth -= descLetterSpacing; // Remove o último espaçamento
+        if (line.length > 0) naturalLineWidth -= descLetterSpacing;
 
-        // Define o ponto X inicial para que a linha fique centralizada
         let currentXDesc = (w / 2) - (naturalLineWidth / 2);
 
-        // Desenha cada letra da linha
         for (const char of line) {
             ctx.fillText(char, currentXDesc, currentY);
             currentXDesc += ctx.measureText(char).width + descLetterSpacing;
         }
         
-        // Move para a próxima linha
         currentY += descLineHeight;
     }
     
-    // --- ETAPA 5: DESENHA O RODAPÉ E O SELO DE VALIDADE ---
     drawFooter(ctx, settings.footer);
     drawHeaderValidity(ctx, settings.headerValidity);
 }
@@ -8221,6 +8283,7 @@ const cleanLogoSettings = {
 		// COLE ESTE BLOCO INTEIRO NO LUGAR DO QUE VOCÊ APAGOU
 // SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'applyPageSettingsToUI' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'applyPageSettingsToUI' PELA VERSÃO ABAIXO ▼▼▼
 function applyPageSettingsToUI(page) {
 
     const settings = page.settings;
@@ -8241,15 +8304,12 @@ function applyPageSettingsToUI(page) {
     promoLogoWidthInput.value = settings.logos.promo.width;
     storeLogoWidthInput.value = settings.logos.store.width;
     complementaryLogoWidthInput.value = settings.logos.complementary.width;
-	// ▼▼▼ ADICIONE ESTE BLOCO DE CÓDIGO ▼▼▼
-document.getElementById('promoLogoX').value = settings.logos.promo.x;
-document.getElementById('promoLogoY').value = settings.logos.promo.y;
-document.getElementById('storeLogoX').value = settings.logos.store.x;
-document.getElementById('storeLogoY').value = settings.logos.store.y;
-document.getElementById('complementaryLogoX').value = settings.logos.complementary.x;
-document.getElementById('complementaryLogoY').value = settings.logos.complementary.y;
-// ▲▲▲ FIM DO BLOCO ▲▲▲
-	
+	document.getElementById('promoLogoX').value = settings.logos.promo.x;
+	document.getElementById('promoLogoY').value = settings.logos.promo.y;
+	document.getElementById('storeLogoX').value = settings.logos.store.x;
+	document.getElementById('storeLogoY').value = settings.logos.store.y;
+	document.getElementById('complementaryLogoX').value = settings.logos.complementary.x;
+	document.getElementById('complementaryLogoY').value = settings.logos.complementary.y;
 	
     enableSloganCheckbox.checked = settings.slogan.enabled;
     sloganTextInput.value = settings.slogan.text;
@@ -8257,13 +8317,10 @@ document.getElementById('complementaryLogoY').value = settings.logos.complementa
     sloganColorInput.value = settings.slogan.color;
     enableSloganBorderCheckbox.checked = settings.slogan.borderEnabled;
     sloganBorderColorInput.value = settings.slogan.borderColor;
-	// ▼▼▼ ADICIONE ESTAS 2 LINHAS AQUI ▼▼▼
-document.getElementById('sloganFontFamily').value = settings.slogan.fontFamily || 'Anton';
-document.getElementById('sloganBorderWidth').value = settings.slogan.borderWidth || 4;
-
-// ▼▼▼ ADICIONE ESTAS 2 LINHAS AQUI ▼▼▼
-document.getElementById('sloganPositionX').value = settings.slogan.positionX || 540;
-document.getElementById('sloganPositionY').value = settings.slogan.positionY || 150;
+	document.getElementById('sloganFontFamily').value = settings.slogan.fontFamily || 'Anton';
+	document.getElementById('sloganBorderWidth').value = settings.slogan.borderWidth || 4;
+	document.getElementById('sloganPositionX').value = settings.slogan.positionX || 540;
+	document.getElementById('sloganPositionY').value = settings.slogan.positionY || 150;
 	
     enableSlotBorderCheckbox.checked = settings.slotBorder.customColorEnabled;
     slotColorInput.value = settings.slotBorder.color;
@@ -8326,7 +8383,7 @@ document.getElementById('sloganPositionY').value = settings.slogan.positionY || 
     otherLinesPriceFontSizeInput.value = defaultBalloons.price.otherLinesSize;
 	document.getElementById('priceScaleX').value = defaultBalloons.price.scaleX || 100;
     document.getElementById('priceScaleY').value = defaultBalloons.price.scaleY || 100;
-	document.getElementById('default_priceOffsetY').value = defaultBalloons.price.priceOffsetY ?? 4; // <-- ADICIONE ESTA LINHA
+	document.getElementById('default_priceOffsetY').value = defaultBalloons.price.priceOffsetY ?? 4;
 
     balloonHeightPercentInput.value = settings.balloons.balloonHeightPercent || 100;
 	document.getElementById('default_balloon_color').value = settings.balloonStyles.default.color || '#e63946';
@@ -8377,10 +8434,8 @@ document.getElementById('sloganPositionY').value = settings.slogan.positionY || 
         document.getElementById('goy_priceOffsetY').value = goyBalloons.priceOffsetY || 0;
     }
     
-    // --- INÍCIO DO BLOCO CORRIGIDO E ATUALIZADO ---
-    const customBalloonsSettings = settings.balloonStyles.customBalloons; // LINHA CORRIGIDA (era customImage)
+    const customBalloonsSettings = settings.balloonStyles.customBalloons;
     if (customBalloonsSettings) {
-        // As configurações de um balão específico são aplicadas se ele estiver ativo
         let activeCustomBalloonName = null;
         const firstStyle = settings.balloons.firstLine;
         const otherStyle = settings.balloons.otherLines;
@@ -8398,18 +8453,17 @@ document.getElementById('sloganPositionY').value = settings.slogan.positionY || 
             document.getElementById('customBalloonPriceOffsetX').value = activeSettings.priceOffsetX || 50;
             document.getElementById('customBalloonPriceOffsetY').value = activeSettings.priceOffsetY || 50;
             document.getElementById('customBalloonWidth').value = activeSettings.balloonWidth || 85;
-            document.getElementById('customBalloonHeight').value = activeSettings.balloonHeight || 85; // LINHA NOVA
-            document.getElementById('customBalloonPriceFont').value = activeSettings.priceFont || 'Anton'; // LINHA NOVA
+            document.getElementById('customBalloonHeight').value = activeSettings.balloonHeight || 85;
+            document.getElementById('customBalloonPriceFont').value = activeSettings.priceFont || 'Anton';
         }
     }
-    // --- FIM DO BLOCO CORRIGIDO E ATUALIZADO ---
 
     const gtBalloons = settings.balloonStyles.giganteTag;
     if (gtBalloons) {
         gtBalloonHeightInput.value = gtBalloons.height || 100;
         gtOffsetXInput.value = gtBalloons.offsetX || 0;
         gtOffsetYInput.value = gtBalloons.offsetY || 0;
-        document.getElementById('gt_priceFont').value = gtBalloons.priceFont || 'Anton'; // LINHA ADICIONADA
+        document.getElementById('gt_priceFont').value = gtBalloons.priceFont || 'Anton';
         document.getElementById('gt_priceOffsetX').value = gtBalloons.priceOffsetX || 0;
         document.getElementById('gt_priceOffsetY').value = gtBalloons.priceOffsetY || 0;
         document.getElementById('gt_descFont').value = gtBalloons.descFont || 'Oswald';
@@ -8418,18 +8472,13 @@ document.getElementById('sloganPositionY').value = settings.slogan.positionY || 
         document.getElementById('gt_descOffsetY').value = gtBalloons.descOffsetY || 0;
     }
 
-// ▼▼▼ ADICIONE ESTE BLOCO DE CÓDIGO NOVO ▼▼▼
     const dlcBalloons = settings.balloonStyles.descLeftCustom;
     if (dlcBalloons) {
-        // Popula o dropdown primeiro
         populateCustomBalloonSelector();
-        // LINHA CORRIGIDA
-document.getElementById('dlc_balloon_select').value = dlcBalloons.selectedBalloonName || '';
+        document.getElementById('dlc_balloon_select').value = dlcBalloons.selectedBalloonName || '';
         document.getElementById('dlc_balloonWidth').value = dlcBalloons.balloonWidthPercent || 85;
         document.getElementById('dlc_balloonHeight').value = dlcBalloons.balloonHeightPercent || 85;
     }
-    // ▲▲▲ FIM DO BLOCO NOVO ▲▲▲
-
 
     firstLineBalloonStyleSelect.value = settings.balloons.firstLine;
     otherLinesBalloonStyleSelect.value = settings.balloons.otherLines;
@@ -8462,7 +8511,14 @@ document.getElementById('dlc_balloon_select').value = dlcBalloons.selectedBalloo
     document.getElementById('highlight-no-border-container').classList.toggle('hidden', !settings.highlight.enabled);
     highlightedBalloonControls.classList.toggle('hidden', !settings.highlight.enabled);
     footerTextOptionsDiv.classList.toggle('hidden', !settings.footer.textEnabled);
-    footerOptionsDiv.classList.toggle('hidden', !settings.footer.backgroundEnabled);
+    
+    // ▼▼▼ LINHA CRÍTICA DA CORREÇÃO ▼▼▼
+    const footerBackgroundOptionsDiv = document.getElementById('footer-background-options');
+    if(footerBackgroundOptionsDiv) {
+        footerBackgroundOptionsDiv.classList.toggle('hidden', !settings.footer.backgroundEnabled);
+    }
+    // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
+
     slotBackgroundOptionsDiv.classList.toggle('hidden', !settings.slotBackground.enabled);
 
     lineLayoutContainer.innerHTML = '';
@@ -8490,7 +8546,7 @@ document.getElementById('dlc_balloon_select').value = dlcBalloons.selectedBalloo
 		document.getElementById('headerFontSizeExtra2').value = hvSettings.fontSizeExtra2 || 25;
         document.getElementById('headerExtraTextAlign').value = hvSettings.extraTextAlign || 'center';
         document.getElementById('headerLineSpacing').value = hvSettings.lineSpacing || 10;
-		document.getElementById('headerSeparatorSpacing').value = hvSettings.headerSeparatorSpacing ?? 10; // <-- ADICIONE ESTA LINHA
+		document.getElementById('headerSeparatorSpacing').value = hvSettings.headerSeparatorSpacing ?? 10;
 		document.getElementById('headerExtraSpacing').value = hvSettings.extraSpacing || 5;
         document.getElementById('headerDateToStockSpacing').value = hvSettings.dateToStockSpacing ?? 15;
         document.getElementById('headerValidityEnableBg').checked = hvSettings.backgroundEnabled !== undefined ? hvSettings.backgroundEnabled : true;
@@ -9354,26 +9410,32 @@ deleteProjectBtn.addEventListener('click', async () => {
 // =================================================================
 // --- CÓDIGO FINAL E CORRIGIDO DA LISTA DE PROJETOS ---
 // =================================================================
+// =================================================================
+// --- VERSÃO ATUALIZADA - MENU RÁPIDO AO CLICAR NO PROJETO ---
+// =================================================================
+// =================================================================
+// --- VERSÃO FINAL E CORRIGIDA - CORRIGE O ERRO "FALHA AO CARREGAR" ---
+// =================================================================
+// =================================================================
+// --- VERSÃO CORRIGIDA QUE RESOLVE O BUG DO MODAL APÓS CARREGAR ---
+// =================================================================
 async function populateSavedProjectsList() {
     const projectsGrid = document.getElementById('savedProjectsGrid');
     const projectsLabel = document.getElementById('savedProjectsLabel');
     if (!projectsGrid || !projectsLabel) return;
 
-    projectsGrid.innerHTML = '<p class="col-span-2 text-center text-sm">Carregando...</p>';
+    projectsGrid.innerHTML = '<p class="col-span-full text-center text-sm">Carregando...</p>';
     projectsLabel.innerHTML = 'Projetos Salvos (Nuvem) ☁️';
-
-    // A LINHA DO ERRO FOI REMOVIDA DAQUI.
-    // Não vamos mais limpar o 'selectedProjectName' ao atualizar a lista.
 
     try {
         const { data: projects, error } = await supabaseClient
             .from('projects')
-            .select('name, thumbnail');
+            .select('name, thumbnail'); 
         if (error) throw error;
 
         projectsGrid.innerHTML = '';
         if (!projects || projects.length === 0) {
-            projectsGrid.innerHTML = '<p class="col-span-2 text-center text-sm text-gray-500">Nenhum projeto salvo.</p>';
+            projectsGrid.innerHTML = '<p class="col-span-full text-center text-sm text-gray-500">Nenhum projeto salvo.</p>';
             return;
         }
 
@@ -9381,27 +9443,63 @@ async function populateSavedProjectsList() {
             const card = document.createElement('div');
             card.className = 'template-preview-card bg-white dark:bg-gray-800 p-2 rounded-lg cursor-pointer shadow-md flex flex-col items-center';
             card.dataset.projectName = project.name;
+
             const img = document.createElement('img');
             img.src = project.thumbnail || 'https://placehold.co/200x250/e2e8f0/adb5bd?text=Sem+Preview';
             img.className = 'w-full h-auto object-contain rounded-md mb-2';
+
             const nameLabel = document.createElement('span');
             nameLabel.textContent = project.name;
             nameLabel.className = 'text-[10px] text-center font-semibold break-words';
+
             card.appendChild(img);
             card.appendChild(nameLabel);
 
-            // MELHORIA: Se o nome deste card for o mesmo do projeto carregado,
-            // ele será destacado visualmente.
-            if (project.name === selectedProjectName) {
-                card.classList.add('selected');
-            }
-
+            // ▼▼▼ A LÓGICA DE CLIQUE FOI REESCRITA PARA USAR 'showConfirm' ▼▼▼
             card.addEventListener('click', () => {
                 document.querySelectorAll('#savedProjectsGrid .selected').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
                 selectedProjectName = project.name;
                 projectNameInput.value = project.name;
+
+                // Cria a mensagem com a imagem e o nome do projeto
+                const confirmationMessage = `
+                    <p class="mb-4">Deseja carregar o projeto?</p>
+                    <img src="${img.src}" class="w-32 h-auto object-contain rounded-md mb-2 mx-auto">
+                    <p class="font-bold text-lg">${project.name}</p>
+                `;
+
+                // Usa a função de confirmação padrão do sistema
+                showConfirm(confirmationMessage, async (confirmed) => {
+                    if (confirmed) {
+                        showSpinner(true);
+                        try {
+                            const { data: projectData, error: loadError } = await supabaseClient
+                                .from('projects')
+                                .select('project_data')
+                                .eq('name', project.name)
+                                .single();
+
+                            if (loadError) throw loadError;
+
+                            if (projectData && projectData.project_data) {
+                                await applyFlyerState(projectData.project_data);
+                                // Agora o showAlert funcionará corretamente
+                                showAlert(`Projeto "${project.name}" carregado com sucesso!`);
+                            } else {
+                                throw new Error("Dados do projeto não encontrados.");
+                            }
+                        } catch (e) {
+                            console.error("Erro ao carregar dados do projeto:", e);
+                            showAlert(`Falha ao carregar o projeto: ${e.message}`);
+                        } finally {
+                            showSpinner(false);
+                        }
+                    }
+                });
             });
+            // ▲▲▲ FIM DA NOVA LÓGICA DE CLIQUE ▲▲▲
+
             projectsGrid.appendChild(card);
         });
     } catch (e) {
@@ -9912,6 +10010,9 @@ jpegQualitySlider.addEventListener('input', (e) => {
 });
 
 // Função principal que gera o PDF
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'generatePosterPDF' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'generatePosterPDF' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+// ▼▼▼ COLE ESTE BLOCO INTEIRO NO LUGAR DA SUA FUNÇÃO generatePosterPDF ANTIGA ▼▼▼
 async function generatePosterPDF() {
     const posterPages = flyerData.pages
         .map((page, index) => ({ page, originalIndex: index }))
@@ -9946,20 +10047,16 @@ async function generatePosterPDF() {
 
     const MM_PER_INCH = 25.4;
     const sizes_mm = { A5: [148, 210], A4: [210, 297], SRA3: [320, 450] };
-    const mmToPx = (mm, dpi) => (mm / MM_PER_INCH) * dpi;
-
+    
     try {
         if (layout === '1up') {
             const [w_mm, h_mm] = sizes_mm[sheetSize];
             const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [w_mm, h_mm] });
-            const tempWidth = Math.round(mmToPx(w_mm, dpi));
-            const tempHeight = Math.round(mmToPx(h_mm, dpi));
 
             for (let i = 0; i < posterPages.length; i++) {
                 const { page, originalIndex } = posterPages[i];
                 
-                canvas.width = tempWidth;
-                canvas.height = tempHeight;
+                // CORREÇÃO: Renderiza o cartaz na sua resolução máxima original.
                 switchPage(originalIndex, false);
                 await delay(200);
                 redrawCanvas();
@@ -9967,6 +10064,7 @@ async function generatePosterPDF() {
 
                 const canvasImg = canvas.toDataURL('image/jpeg', jpegQuality);
                 if (i > 0) pdf.addPage([w_mm, h_mm], 'portrait');
+                // Adiciona a imagem ao PDF, deixando que a biblioteca faça o redimensionamento.
                 pdf.addImage(canvasImg, 'JPEG', 0, 0, w_mm, h_mm, undefined, 'FAST');
             }
             pdf.save(`cartazes_1_por_folha_${sheetSize}_${dpi}dpi.pdf`);
@@ -9977,16 +10075,12 @@ async function generatePosterPDF() {
             
             const poster_w_mm = sizes_mm.A5[0];
             const poster_h_mm = sizes_mm.A5[1];
-            const tempWidth = Math.round(mmToPx(poster_w_mm, dpi));
-            const tempHeight = Math.round(mmToPx(poster_h_mm, dpi));
 
             for (let i = 0; i < posterPages.length; i += 2) {
                 if (i > 0) pdf.addPage([h_mm, w_mm], 'landscape');
-                
-                canvas.width = tempWidth;
-                canvas.height = tempHeight;
-                
+                                
                 const { page: page1, originalIndex: originalIndex1 } = posterPages[i];
+                // CORREÇÃO (Imagem 1): Renderiza na resolução máxima.
                 switchPage(originalIndex1, false);
                 await delay(200);
                 redrawCanvas();
@@ -9996,6 +10090,7 @@ async function generatePosterPDF() {
 
                 if (i + 1 < posterPages.length) {
                     const { page: page2, originalIndex: originalIndex2 } = posterPages[i + 1];
+                    // CORREÇÃO (Imagem 2): Renderiza na resolução máxima.
                     switchPage(originalIndex2, false);
                     await delay(200);
                     redrawCanvas();
@@ -10006,16 +10101,21 @@ async function generatePosterPDF() {
             }
             pdf.save(`cartazes_2_por_folha_A4_${dpi}dpi.pdf`);
         }
+        
+        // Mensagem de sucesso movida para o final do bloco 'try'
+        showAlert("PDF com os cartazes gerado com sucesso!");
+
     } catch (error) {
         console.error("Erro ao gerar PDF:", error);
         showAlert("Ocorreu um erro ao gerar o PDF. Tente novamente.");
     } finally {
+        // Restaura o canvas ao seu tamanho original e volta para a página que o usuário estava vendo
         canvas.width = originalCanvasSize.width;
         canvas.height = originalCanvasSize.height;
         switchPage(originalPageIndex, false);
         redrawCanvas();
         showSpinner(false);
-        showAlert("PDF com os cartazes gerado com sucesso!");
+        // A mensagem de sucesso foi removida daqui para não aparecer em caso de erro.
     }
 }
 
@@ -11094,68 +11194,64 @@ const refreshStockListBtn = document.getElementById('refreshStockListBtn');
 // ▼▼▼ SUBSTITUA SUA FUNÇÃO ANTIGA POR ESTA ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'populateStockList' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'populateStockList' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
-function populateStockList() {
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'populateStockList' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+function populateStockList(filter = '') {
     stockProductList.innerHTML = '';
-    
-    // Contagem de produtos
-    const productCount = Object.keys(productDatabase).length;
-    
-    // Atualiza o título do painel (como antes)
+    const normalizedFilter = normalizeString(filter); // Usa a função que já temos para ignorar acentos/maiúsculas
+
+    // Filtra os produtos antes de exibi-los
+    const filteredProductNames = Object.keys(productDatabase)
+        .filter(productName => normalizedFilter === '' || normalizeString(productName).includes(normalizedFilter));
+
+    const productCount = filteredProductNames.length;
+    const totalProductCount = Object.keys(productDatabase).length;
+
     const stockDbLabel = document.getElementById('stockDbLabel');
     if (stockDbLabel) {
         let syncStatusText = isDatabaseSynced ? '(Sincronizado ☁️)' : '(Não Sincronizado ⚠️)';
-        stockDbLabel.innerHTML = `Produtos (${productCount}) ${syncStatusText}`;
+        stockDbLabel.innerHTML = `Produtos (${productCount} de ${totalProductCount}) ${syncStatusText}`;
     }
 
-    // ==========================================================
-    // INÍCIO DA NOVA LÓGICA: Atualiza a contagem no menu lateral
-    // ==========================================================
     const navCountSpan = document.getElementById('stock-nav-count');
     if (navCountSpan) {
-        navCountSpan.textContent = `(${productCount})`;
+        navCountSpan.textContent = `(${totalProductCount})`;
     }
-    // ==========================================================
-    // FIM DA NOVA LÓGICA
-    // ==========================================================
-    
+
     if (productCount === 0) {
-        stockProductList.innerHTML = '<p class="col-span-3 text-center text-sm text-gray-500 py-4">Nenhum produto cadastrado.</p>';
+        stockProductList.innerHTML = `<p class="col-span-3 text-center text-sm text-gray-500 py-4">${filter ? 'Nenhum produto encontrado para "' + filter + '".' : 'Nenhum produto cadastrado.'}</p>`;
         return;
     }
-    
-    const sortedProductNames = Object.keys(productDatabase).sort();
+
+    const sortedProductNames = filteredProductNames.sort();
 
     for (const productName of sortedProductNames) {
         const product = productDatabase[productName];
         const card = document.createElement('div');
         card.className = 'bg-white dark:bg-gray-800 p-2 rounded-lg shadow flex flex-col items-center text-center relative';
-        
+
         const controlsDiv = document.createElement('div');
         controlsDiv.className = 'absolute top-1 right-1 flex flex-col space-y-1';
-
         const editBtn = document.createElement('button');
         editBtn.className = 'edit-stock-btn p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-transform hover:scale-110';
         editBtn.title = 'Editar Produto';
         editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`;
         editBtn.dataset.productName = productName;
-
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-stock-btn p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-transform hover:scale-110';
         deleteBtn.title = 'Excluir Produto';
         deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`;
         deleteBtn.dataset.productName = productName;
-        
         controlsDiv.appendChild(editBtn);
         controlsDiv.appendChild(deleteBtn);
-        
+
         const img = document.createElement('img');
         img.src = product.src || 'https://placehold.co/100x100/e2e8f0/adb5bd?text=Sem+Foto';
         img.className = 'w-20 h-20 object-contain rounded-md mb-2';
-        
+
         const nameSpan = document.createElement('span');
         nameSpan.textContent = productName;
         nameSpan.className = 'text-xs font-semibold break-words';
-        
+
         card.appendChild(controlsDiv);
         card.appendChild(img);
         card.appendChild(nameSpan);
@@ -11670,7 +11766,7 @@ generatePriceTagBtn.addEventListener('click', () => {
 function generatePostersFromSelection(modelPageIndex, selectedCheckboxes) {
     showSpinner(true);
 
-    const templatePage = flyerData.pages[modelPageIndex]; // Usa a página modelo selecionada
+    const templatePage = flyerData.pages[modelPageIndex];
     const templateSettings = JSON.parse(JSON.stringify(templatePage.settings));
     const lineSpacingValue = parseFloat(document.getElementById('priceTagLineSpacing').value) || 1.2;
 
@@ -11682,33 +11778,33 @@ function generatePostersFromSelection(modelPageIndex, selectedCheckboxes) {
             const newPriceTagPage = createDefaultPage();
             newPriceTagPage.settings = JSON.parse(JSON.stringify(templateSettings));
             
-            // Lógica para adaptar o layout para um cartaz grande (mantida)
-            const logoScaleFactor = 2.0;
+            // CORREÇÃO: Reduzindo a escala dos logos pela metade
+            const logoScaleFactor = 1.0; // Metade do valor original que era 2.0
             Object.keys(newPriceTagPage.settings.logos).forEach(logoKey => {
                 const logo = newPriceTagPage.settings.logos[logoKey];
                 logo.width = Math.round(logo.width * logoScaleFactor);
                 logo.x = Math.round(logo.x * logoScaleFactor);
                 logo.y = Math.round(logo.y * logoScaleFactor);
             });
-            newPriceTagPage.settings.logos.store.x = 3000;
-            newPriceTagPage.settings.logos.complementary.x = 900;
-            newPriceTagPage.settings.pageSize = 'custom';
-            newPriceTagPage.settings.customWidth = 3780;
-            newPriceTagPage.settings.customHeight = 5315;
-            newPriceTagPage.settings.margins = { top: 1370, lateral: 150, footer: 150 };
             
-            // ▼▼▼ INÍCIO DA ALTERAÇÃO - CONFIGURAÇÕES DE VALIDADE DO TOPO ▼▼▼
+            // CORREÇÃO: Reduzindo as dimensões e posições pela metade
+            newPriceTagPage.settings.logos.store.x = 1500;
+            newPriceTagPage.settings.logos.complementary.x = 450;
+            newPriceTagPage.settings.pageSize = 'custom';
+            newPriceTagPage.settings.customWidth = 1890;    // Metade de 3780
+            newPriceTagPage.settings.customHeight = 2658;   // Metade de 5315
+            newPriceTagPage.settings.margins = { top: 685, lateral: 75, footer: 75 }; // Metade dos valores originais
+
             const headerValiditySettings = newPriceTagPage.settings.headerValidity;
             headerValiditySettings.enabled = true; 
-            headerValiditySettings.x = 2856;
-            headerValiditySettings.y = 212;
-            headerValiditySettings.width = 900;
-            headerValiditySettings.fontSizeLine1 = 100; // <--- MUDANÇA APLICADA AQUI
-            headerValiditySettings.fontSizeStartDate = 110;
-            headerValiditySettings.fontSizeDates = 110; 
-            headerValiditySettings.fontSizeStock = 64;
+            headerValiditySettings.x = 1428;           // Metade de 2856
+            headerValiditySettings.y = 106;            // Metade de 212
+            headerValiditySettings.width = 450;          // Metade de 900
+            headerValiditySettings.fontSizeLine1 = 50;   // Metade de 100
+            headerValiditySettings.fontSizeStartDate = 55; // Metade de 110
+            headerValiditySettings.fontSizeDates = 55;   // Metade de 110
+            headerValiditySettings.fontSizeStock = 32;   // Metade de 64
             headerValiditySettings.dateToStockSpacing = 0;
-            // ▲▲▲ FIM DA ALTERAÇÃO ▲▲▲
 
             if (!newPriceTagPage.settings.pricePoster) { newPriceTagPage.settings.pricePoster = {}; }
             newPriceTagPage.settings.pricePoster.lineSpacing = lineSpacingValue;
@@ -11752,37 +11848,66 @@ async function generatePostersFromList() {
 
 
 
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePostersFromListWithModel' INTEIRA PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'generatePostersFromListWithModel' INTEIRA PELA VERSÃO CORRIGIDA ▼▼▼
+// =================================================================
+// --- VERSÃO CORRIGIDA DA FUNÇÃO DE GERAR CARTAZES DA LISTA ---
+// =================================================================
 async function generatePostersFromListWithModel(modelPageIndex, text) {
     showSpinner(true); 
 
     try {
-        // ▼▼▼ ADICIONADO: Verificação de segurança da página modelo ▼▼▼
         if (typeof modelPageIndex !== 'number' || !flyerData.pages[modelPageIndex]) {
             throw new Error("Página modelo inválida ou não selecionada. Por favor, tente novamente.");
         }
-        // ▲▲▲ FIM DA VERIFICAÇÃO ▲▲▲
 
         const lineSpacingValue = parseFloat(document.getElementById('priceTagLineSpacing').value) || 1.2;
         const lines = text.split('\n').filter(line => line.trim());
 
-        const productsForPosters = lines.map(line => {
-            let name = line.trim();
+        const productPromises = lines.map(async (line) => {
+            const parts = line.split(';');
+            const name = parts[0].trim();
             let price = '0.00';
-
-            const lastColon = line.lastIndexOf(':');
-            const lastSemicolon = line.lastIndexOf(';');
-            const separatorIndex = Math.max(lastColon, lastSemicolon);
-
-            if (separatorIndex > -1) {
-                name = line.substring(0, separatorIndex).trim();
-                const priceText = line.substring(separatorIndex + 1).trim();
-                const parsedPrice = parseFloat(priceText.replace(',', '.'));
+            if (parts.length > 1 && parts[1].trim()) {
+                const parsedPrice = parseFloat(parts[1].trim().replace(',', '.'));
                 if (!isNaN(parsedPrice)) {
                     price = parsedPrice.toFixed(2);
                 }
             }
-            return { name, price, image: null, src: null };
+
+            // ▼▼▼ INÍCIO DA CORREÇÃO ▼▼▼
+            // Esta função auxiliar interna irá criar um objeto de produto completo.
+            const createFullProductObject = (imageObject) => {
+                const smartDefaults = calculateSmartImageDefaults(imageObject);
+                return {
+                    name: name,
+                    price: price,
+                    image: imageObject,
+                    src: imageObject ? imageObject.src : null,
+                    images: imageObject ? [imageObject] : [],
+                    srcs: imageObject ? [imageObject.src] : [],
+                    activeImageIndex: 0,
+                    activeImageIndices: [0],
+                    ...smartDefaults,
+                    backgroundColor: null,
+                    descScaleX: 100, descScaleY: 100, priceScaleX: 100, priceScaleY: 100
+                };
+            };
+            // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
+
+            const bestMatchName = findBestMatchInDb(name);
+            if (bestMatchName && productDatabase[bestMatchName]) {
+                const dbProduct = productDatabase[bestMatchName];
+                const img = await loadImageWithCors(dbProduct.src);
+                // Agora usamos a função auxiliar para retornar um produto completo
+                return createFullProductObject(img);
+            } else {
+                // E também aqui, para produtos sem imagem
+                return createFullProductObject(null);
+            }
         });
+
+        const productsForPosters = await Promise.all(productPromises);
 
         if (productsForPosters.length === 0) {
             showSpinner(false);
@@ -11794,47 +11919,50 @@ async function generatePostersFromListWithModel(modelPageIndex, text) {
         const templateSettings = JSON.parse(JSON.stringify(templatePage.settings));
 
         productsForPosters.forEach(product => {
-            const newPriceTagPage = createDefaultPage();
-            newPriceTagPage.settings = JSON.parse(JSON.stringify(templateSettings));
+            if (product) {
+                const newPriceTagPage = createDefaultPage();
+                newPriceTagPage.settings = JSON.parse(JSON.stringify(templateSettings));
 
-            const logoScaleFactor = 2.0;
-            Object.keys(newPriceTagPage.settings.logos).forEach(logoKey => {
-                const logo = newPriceTagPage.settings.logos[logoKey];
-                logo.width = Math.round(logo.width * logoScaleFactor);
-                logo.x = Math.round(logo.x * logoScaleFactor);
-                logo.y = Math.round(logo.y * logoScaleFactor);
-            });
-            newPriceTagPage.settings.logos.store.x = 3000;
-            newPriceTagPage.settings.logos.complementary.x = 900;
-            newPriceTagPage.settings.pageSize = 'custom';
-            newPriceTagPage.settings.customWidth = 3780;
-            newPriceTagPage.settings.customHeight = 5315;
-            newPriceTagPage.settings.margins = { top: 1370, lateral: 150, footer: 150 };
+                const logoScaleFactor = 1.0;
+                Object.keys(newPriceTagPage.settings.logos).forEach(logoKey => {
+                    const logo = newPriceTagPage.settings.logos[logoKey];
+                    logo.width = Math.round(logo.width * logoScaleFactor);
+                    logo.x = Math.round(logo.x * logoScaleFactor);
+                    logo.y = Math.round(logo.y * logoScaleFactor);
+                });
 
-            const headerValiditySettings = newPriceTagPage.settings.headerValidity;
-            headerValiditySettings.enabled = true;
-            headerValiditySettings.x = 2856;
-            headerValiditySettings.y = 212;
-            headerValiditySettings.width = 900;
-            headerValiditySettings.fontSizeLine1 = 100;
-            headerValiditySettings.fontSizeStartDate = 110;
-            headerValiditySettings.fontSizeDates = 110;
-            headerValiditySettings.fontSizeStock = 64;
-            headerValiditySettings.dateToStockSpacing = 0;
+                newPriceTagPage.settings.logos.store.x = 1500;
+                newPriceTagPage.settings.logos.complementary.x = 450;
+                newPriceTagPage.settings.pageSize = 'custom';
+                newPriceTagPage.settings.customWidth = 1890;
+                newPriceTagPage.settings.customHeight = 2658;
+                newPriceTagPage.settings.margins = { top: 685, lateral: 75, footer: 75 };
 
-            if (!newPriceTagPage.settings.pricePoster) { newPriceTagPage.settings.pricePoster = {}; }
-            newPriceTagPage.settings.pricePoster.lineSpacing = lineSpacingValue;
+                const headerValiditySettings = newPriceTagPage.settings.headerValidity;
+                headerValiditySettings.enabled = true;
+                headerValiditySettings.x = 1428;
+                headerValiditySettings.y = 106;
+                headerValiditySettings.width = 450;
+                headerValiditySettings.fontSizeLine1 = 50;
+                headerValiditySettings.fontSizeStartDate = 55;
+                headerValiditySettings.fontSizeDates = 55;
+                headerValiditySettings.fontSizeStock = 32;
+                headerValiditySettings.dateToStockSpacing = 0;
 
-            if (templatePage.backgroundImage) {
-                newPriceTagPage.backgroundImage = templatePage.backgroundImage;
-                newPriceTagPage.backgroundImageSrc = templatePage.backgroundImageSrc;
+                if (!newPriceTagPage.settings.pricePoster) { newPriceTagPage.settings.pricePoster = {}; }
+                newPriceTagPage.settings.pricePoster.lineSpacing = lineSpacingValue;
+
+                if (templatePage.backgroundImage) {
+                    newPriceTagPage.backgroundImage = templatePage.backgroundImage;
+                    newPriceTagPage.backgroundImageSrc = templatePage.backgroundImageSrc;
+                }
+
+                newPriceTagPage.products = [{ ...product }];
+                newPriceTagPage.isPricePoster = true;
+                newPriceTagPage.manualLayout = [];
+
+                flyerData.pages.push(newPriceTagPage);
             }
-
-            newPriceTagPage.products = [{ ...product }];
-            newPriceTagPage.isPricePoster = true;
-            newPriceTagPage.manualLayout = [];
-
-            flyerData.pages.push(newPriceTagPage);
         });
 
         const firstNewPageIndex = flyerData.pages.length - productsForPosters.length;
@@ -11845,7 +11973,6 @@ async function generatePostersFromListWithModel(modelPageIndex, text) {
 
     } catch (error) {
         showSpinner(false);
-        // Agora o alerta mostrará a mensagem de erro específica
         showAlert(`Ocorreu um erro: ${error.message}`);
         console.error("Erro em generatePostersFromListWithModel:", error);
     }
@@ -12107,6 +12234,250 @@ if (deselectAllTargetsBtn) {
 document.querySelector('a[data-panel="panel-pages"]').addEventListener('click', populateMasterPageControls);
 
 // ▲▲▲ FIM DO BLOCO ▲▲▲
+		
+		
+		// ▼▼▼ ADICIONE ESTE BLOCO NO FINAL DO SEU SCRIPT ▼▼▼
+if (stockSearchInput) {
+    stockSearchInput.addEventListener('input', () => {
+        populateStockList(stockSearchInput.value);
+    });
+}
+// ▲▲▲ FIM DO BLOCO ▲▲▲
+
+
+
+// =================================================================
+// --- NOVO BLOCO DE LÓGICA PARA ZOOM E NAVEGAÇÃO MÓVEL ---
+// =================================================================
+
+// Pega a referência dos novos botões
+const zoomInBtn = document.getElementById('zoomInBtn');
+const zoomOutBtn = document.getElementById('zoomOutBtn');
+const panModeBtn = document.getElementById('panModeBtn');
+
+/**
+ * Calcula a distância entre dois pontos de toque.
+ */
+function getTouchDistance(touch1, touch2) {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * Calcula o ponto médio entre dois toques.
+ */
+function getMidPoint(touch1, touch2) {
+    return {
+        x: (touch1.clientX + touch2.clientX) / 2,
+        y: (touch1.clientY + touch2.clientY) / 2,
+    };
+}
+
+// --- MANIPULADORES DE EVENTOS DE TOQUE (TOUCH EVENTS) ---
+
+// CÓDIGO ANTIGO (COM O PROBLEMA)
+// =================================================================
+// --- BLOCO 'TOUCHSTART' CORRIGIDO COM LÓGICA DE SELEÇÃO ---
+// =================================================================
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const currentPage = flyerData.pages[flyerData.currentPageIndex];
+    if (!currentPage) return;
+
+    // Se houver dois toques, a prioridade é o zoom de pinça
+    if (e.touches.length === 2) {
+        isPanning = false;
+        initialPinchDistance = getTouchDistance(e.touches[0], e.touches[1]);
+        return; // Interrompe a função para não processar como clique
+    }
+
+    // Se for um toque com um dedo
+    if (e.touches.length === 1) {
+        const touch = e.touches[0];
+
+        // Se o modo de navegação estiver ATIVO, inicia o pan
+        if (panModeActive) {
+            isPanning = true;
+            lastPanPoint = { x: touch.clientX, y: touch.clientY };
+        } 
+        // Se o modo de navegação estiver DESATIVADO, trata como um clique de seleção
+        else {
+            isPanning = false;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const canvasX = (touch.clientX - rect.left) * scaleX;
+            const canvasY = (touch.clientY - rect.top) * scaleY;
+
+            const worldX = (canvasX - viewTransform.origin.x) / viewTransform.scale;
+            const worldY = (canvasY - viewTransform.origin.y) / viewTransform.scale;
+
+            const clickedSlot = productSlots.find(slot =>
+                worldX >= slot.x && worldX <= slot.x + slot.width &&
+                worldY >= slot.y && worldY <= slot.y + slot.height
+            );
+
+            if (clickedSlot && clickedSlot.productIndex < currentPage.products.length) {
+                const productIndex = clickedSlot.productIndex;
+
+                // Limpa a seleção anterior e seleciona o novo produto
+                selectedProductIndices.clear();
+                selectedProductIndices.add(productIndex);
+
+                // Abre o painel de imagens e trava
+                openControlPanel('panel-images');
+                isPanelLocked = true;
+                menuBackdrop.style.pointerEvents = 'none';
+
+            } else {
+                // Se tocar fora de um produto, limpa a seleção
+                selectedProductIndices.clear();
+                isPanelLocked = false;
+                menuBackdrop.style.pointerEvents = 'auto';
+                if(activePanelId === 'panel-images'){
+                    closeControlPanel();
+                }
+            }
+
+            syncImagePanelSelection();
+            redrawCanvas();
+        }
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    // Lógica para arrastar com um dedo (pan)
+    if (isPanning && e.touches.length === 1) {
+        const touch = e.touches[0];
+        const dx = touch.clientX - lastPanPoint.x;
+        const dy = touch.clientY - lastPanPoint.y;
+        viewTransform.origin.x += dx;
+        viewTransform.origin.y += dy;
+        lastPanPoint = { x: touch.clientX, y: touch.clientY };
+        redrawCanvas();
+    }
+    // Lógica para zoom com dois dedos (pinch)
+    else if (e.touches.length === 2 && initialPinchDistance) {
+        const currentPinchDistance = getTouchDistance(e.touches[0], e.touches[1]);
+        const zoomFactor = currentPinchDistance / initialPinchDistance;
+
+        const oldScale = viewTransform.scale;
+        let newScale = oldScale * zoomFactor;
+        newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+
+        const midPoint = getMidPoint(e.touches[0], e.touches[1]);
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const mouseX = (midPoint.x - rect.left) * scaleX;
+        const mouseY = (midPoint.y - rect.top) * scaleY;
+
+        const worldX = (mouseX - viewTransform.origin.x) / oldScale;
+        const worldY = (mouseY - viewTransform.origin.y) / oldScale;
+
+        viewTransform.origin.x = mouseX - worldX * newScale;
+        viewTransform.origin.y = mouseY - worldY * newScale;
+        viewTransform.scale = newScale;
+
+        initialPinchDistance = currentPinchDistance; // Atualiza a distância para o próximo movimento
+        redrawCanvas();
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+    // Reseta os estados ao final do toque
+    isPanning = false;
+    initialPinchDistance = null;
+});
+
+
+// --- LÓGICA DOS NOVOS BOTÕES FLUTUANTES ---
+
+/**
+ * Função auxiliar para aplicar zoom incremental com os botões.
+ */
+function applyButtonZoom(factor) {
+    const oldScale = viewTransform.scale;
+    let newScale = oldScale * factor;
+    newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+
+    // Centraliza o zoom no meio da tela
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const worldX = (centerX - viewTransform.origin.x) / oldScale;
+    const worldY = (centerY - viewTransform.origin.y) / oldScale;
+
+    viewTransform.origin.x = centerX - worldX * newScale;
+    viewTransform.origin.y = centerY - worldY * newScale;
+    viewTransform.scale = newScale;
+
+    redrawCanvas();
+}
+
+zoomInBtn.addEventListener('click', () => applyButtonZoom(1.2));
+zoomOutBtn.addEventListener('click', () => applyButtonZoom(1 / 1.2));
+
+panModeBtn.addEventListener('click', () => {
+    panModeActive = !panModeActive;
+    if (panModeActive) {
+        panModeBtn.classList.remove('bg-purple-700', 'hover:bg-purple-600');
+        panModeBtn.classList.add('bg-green-500', 'hover:bg-green-400');
+        canvas.style.cursor = 'move';
+        // A linha do alerta foi removida daqui
+    } else {
+        panModeBtn.classList.remove('bg-green-500', 'hover:bg-green-400');
+        panModeBtn.classList.add('bg-purple-700', 'hover:bg-purple-600');
+        canvas.style.cursor = 'default';
+    }
+});
+
+// =================================================================
+// --- FIM DO NOVO BLOCO ---
+// =================================================================
+
+
+// =================================================================
+// --- NOVA LÓGICA PARA OS BOTÕES DE CONTROLE NUMÉRICO (+) E (-) ---
+// =================================================================
+controlPanelContainer.addEventListener('click', (e) => {
+    // Verifica se o elemento clicado é um botão de controle
+    if (!e.target.matches('.number-control-btn')) {
+        return;
+    }
+
+    const button = e.target;
+    const action = button.dataset.action; // 'increment' ou 'decrement'
+    const targetInputId = button.dataset.target; // O ID do campo a ser alterado
+    const targetInput = document.getElementById(targetInputId);
+
+    if (!targetInput) {
+        return;
+    }
+
+    let currentValue = parseFloat(targetInput.value) || 0;
+    const step = parseFloat(targetInput.step) || 1; // Respeita o passo do input, se houver
+
+    if (action === 'increment') {
+        currentValue += step;
+    } else if (action === 'decrement') {
+        currentValue -= step;
+    }
+
+    // Garante que o valor não seja menor que o mínimo permitido
+    const min = parseFloat(targetInput.min);
+    if (!isNaN(min) && currentValue < min) {
+        currentValue = min;
+    }
+
+    targetInput.value = currentValue;
+
+    // ESSENCIAL: Dispara o evento 'input' para que o sistema
+    // reconheça a mudança e atualize o encarte, como se você tivesse digitado.
+    targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+});
+		
 		
     </script>
 </body>
