@@ -21,6 +21,59 @@
 <style>
 
 
+
+/* ▼▼▼ SUBSTITUA O BLOCO ANTERIOR POR ESTE ▼▼▼ */
+@media (max-width: 767px) and (orientation: portrait) {
+    /* Alinha o conteúdo principal ao topo em telas de celular */
+    #mainContent {
+        align-items: flex-start;
+        padding-top: 1rem; /* Adiciona um pequeno espaço no topo */
+    }
+
+    /* Transforma o container dos botões em uma barra horizontal */
+    .floating-buttons-container.mobile-layout {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap; /* Permite que os botões quebrem a linha se não couberem */
+        justify-content: center;
+        gap: 0.5rem; /* Espaço entre os grupos de botões */
+        padding: 0.5rem;
+        background-color: rgba(17, 24, 39, 0.9); /* Fundo escuro com transparência */
+        backdrop-filter: blur(4px);
+        border-top: 1px solid #4b5567;
+        z-index: 100;
+        overflow-x: auto; /* Permite rolar horizontalmente se necessário */
+    }
+
+    /* Ajusta os grupos de botões para ficarem lado a lado */
+    .floating-buttons-container.mobile-layout > div {
+        flex-direction: row; /* Coloca os botões de cada grupo em linha */
+        align-items: center;
+        padding: 0.25rem;
+        gap: 0.25rem;
+    }
+
+    /* Remove o título de cada grupo de botões */
+    .floating-buttons-container.mobile-layout span[class*="text-center"] {
+        display: none;
+    }
+}
+/* ▲▲▲ FIM DO BLOCO ▲▲▲ */
+
+#simulation-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform-origin: top left;
+            overflow: hidden;
+            background-color: #111827; /* Cor de fundo escura para preencher as bordas */
+        }
+
+
 .number-input-wrapper {
     display: flex;
     align-items: center;
@@ -786,6 +839,12 @@
     </div>
     <div class="hidden space-y-4 pt-4 ..." id="image-controls-container">
         <h4 class="text-md font-semibold -mb-2 text-blue-400">Controle de Imagem</h4>
+		<div class="p-2 bg-gray-100 dark:bg-gray-900 rounded-lg">
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input id="imageGridToggle" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <span class="text-sm font-medium">Dividir em 2 linhas (para 4+ imagens)</span>
+            </label>
+        </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium mb-1" for="imageRepetitions">Repetições</label>
@@ -2220,6 +2279,14 @@ Produto B, 5.50" rows="5"></textarea>
             <span class="text-[8px] leading-tight">Resetar</span>
         </button>
 		
+		<button id="tabletModeBtn" class="flex flex-col items-center p-1 rounded-lg text-white bg-indigo-700 hover:bg-indigo-600 w-14" title="Ativar/Desativar Modo Tablet">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-px" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5h3m-6.75 0h10.5c.621 0 1.125-.504 1.125-1.125v-13.5c0-.621-.504-1.125-1.125-1.125h-10.5c-.621 0-1.125.504-1.125 1.125v13.5c0 .621.504 1.125 1.125 1.125z" />
+            </svg>
+            <span class="text-[8px] leading-tight">Tablet</span>
+        </button>
+     
+		
     </div>
 
     <div class="p-1.5 bg-gray-800 bg-opacity-60 backdrop-blur-sm rounded-xl flex flex-col gap-1">
@@ -3074,30 +3141,30 @@ function applyMasterSettingsToSelectedPages() {
         if (confirmed) {
             showSpinner(true);
             
-            // Cria uma cópia completa e segura das configurações e do layout da página de origem
             const settingsTemplate = JSON.parse(JSON.stringify(sourcePage.settings));
-            const manualLayoutTemplate = JSON.parse(JSON.stringify(sourcePage.manualLayout));
+            // const manualLayoutTemplate = JSON.parse(JSON.stringify(sourcePage.manualLayout)); // LINHA REMOVIDA
 
             targetPageIndexes.forEach(targetIndex => {
                 const targetPage = flyerData.pages[targetIndex];
                 if (targetPage) {
-                    // Preserva os produtos e o fundo da página de destino
                     const originalProducts = targetPage.products;
                     const originalBackgroundImage = targetPage.backgroundImage;
                     const originalBackgroundImageSrc = targetPage.backgroundImageSrc;
+                    
+                    // A linha abaixo preserva o layout original, pois não o sobrescrevemos mais
+                    const originalManualLayout = targetPage.manualLayout;
 
-                    // Aplica as novas configurações e layouts
                     targetPage.settings = JSON.parse(JSON.stringify(settingsTemplate));
-                    targetPage.manualLayout = JSON.parse(JSON.stringify(manualLayoutTemplate));
+                    // targetPage.manualLayout = JSON.parse(JSON.stringify(manualLayoutTemplate)); // LINHA REMOVIDA
 
-                    // Restaura os produtos e fundo originais
+                    // Restauramos os dados originais, incluindo o layout que agora é preservado
                     targetPage.products = originalProducts;
                     targetPage.backgroundImage = originalBackgroundImage;
                     targetPage.backgroundImageSrc = originalBackgroundImageSrc;
+                    targetPage.manualLayout = originalManualLayout;
                 }
             });
 
-            // Atualiza a interface e redesenha o canvas
             applyPageSettingsToUI(flyerData.pages[flyerData.currentPageIndex]);
             redrawCanvas();
             showSpinner(false);
@@ -3105,7 +3172,6 @@ function applyMasterSettingsToSelectedPages() {
         }
     });
 }
-
 function generateAutoLayout(productCount) {
     if (productCount <= 0) return [];
     let layout = [];
@@ -4943,12 +5009,6 @@ function drawPriceBalloon3DReference(ctx, x, y, w, h, details, styleSettings, is
 
 
 function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeight) {
-    // ==================================================================
-    // ▼▼▼ CONTROLE O ESPAÇO ENTRE AS DUAS IMAGENS AQUI ▼▼▼
-    const DUAL_IMAGE_GAP = -10; // Valor em pixels. Aumente para mais espaço, diminua para menos.
-    // ==================================================================
-
-    // Garante que a estrutura de dados para múltiplas imagens exista
     if (!product.activeImageIndices) {
         product.activeImageIndices = [product.activeImageIndex || 0];
     }
@@ -5021,24 +5081,53 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
             }
         };
 
-        if (imagesToDraw.length >= 2) {
-            // --- NOVA LÓGICA PARA CENTRALIZAR O BLOCO DE DUAS IMAGENS ---
-            const subAreaWidth = (imgAreaW - DUAL_IMAGE_GAP) / 2;
+        const horizontalGap = 5; // Espaço horizontal entre as imagens
+        const useGrid = product.useImageGrid && imagesToDraw.length >= 4;
 
-            // Desenha a primeira imagem na metade esquerda da área
-            drawSingleImageWithEffects(imagesToDraw[0], imgAreaX, imageAreaY, subAreaWidth, imageAreaHeight);
+        if (useGrid) {
+            // ▼▼▼ ALTERAÇÃO APLICADA AQUI ▼▼▼
+            const verticalGap = -35; // Espaço vertical. Use um valor negativo para aproximar as linhas.
+            // ▲▲▲ FIM DA ALTERAÇÃO ▲▲▲
+
+            const numRows = 2;
+            const subAreaHeight = (imageAreaHeight - verticalGap) / numRows;
             
-            // Desenha a segunda imagem na metade direita da área
-            drawSingleImageWithEffects(imagesToDraw[1], imgAreaX + subAreaWidth + DUAL_IMAGE_GAP, imageAreaY, subAreaWidth, imageAreaHeight);
-            
+            const halfwayIndex = Math.ceil(imagesToDraw.length / 2);
+            const topRowImages = imagesToDraw.slice(0, halfwayIndex);
+            const bottomRowImages = imagesToDraw.slice(halfwayIndex);
+
+            // Desenha a linha de cima
+            const numImagesTop = topRowImages.length;
+            const totalGapWidthTop = (numImagesTop - 1) * horizontalGap;
+            const subAreaWidthTop = (imgAreaW - totalGapWidthTop) / numImagesTop;
+            for (let i = 0; i < numImagesTop; i++) {
+                const currentX = imgAreaX + i * (subAreaWidthTop + horizontalGap);
+                drawSingleImageWithEffects(topRowImages[i], currentX, imageAreaY, subAreaWidthTop, subAreaHeight);
+            }
+
+            // Desenha a linha de baixo
+            const numImagesBottom = bottomRowImages.length;
+            const totalGapWidthBottom = (numImagesBottom - 1) * horizontalGap;
+            const subAreaWidthBottom = (imgAreaW - totalGapWidthBottom) / numImagesBottom;
+            const bottomRowY = imageAreaY + subAreaHeight + verticalGap;
+            for (let i = 0; i < numImagesBottom; i++) {
+                const currentX = imgAreaX + i * (subAreaWidthBottom + horizontalGap);
+                drawSingleImageWithEffects(bottomRowImages[i], currentX, bottomRowY, subAreaWidthBottom, subAreaHeight);
+            }
+
         } else {
-            // Lógica para UMA imagem (usa a área total)
-            drawSingleImageWithEffects(imagesToDraw[0], imgAreaX, imageAreaY, imgAreaW, imageAreaHeight);
+            // Lógica para 1 linha
+            const numImages = imagesToDraw.length;
+            const totalGapWidth = (numImages - 1) * horizontalGap;
+            const subAreaWidth = (imgAreaW - totalGapWidth) / numImages;
+            for (let i = 0; i < numImages; i++) {
+                const currentX = imgAreaX + i * (subAreaWidth + horizontalGap);
+                drawSingleImageWithEffects(imagesToDraw[i], currentX, imageAreaY, subAreaWidth, imageAreaHeight);
+            }
         }
         
         ctx.restore();
     } else {
-        // Lógica do placeholder se nenhuma imagem estiver disponível
         ctx.fillStyle = '#E5E7EB';
         ctx.fillRect(imgAreaX, imageAreaY, imgAreaW, imageAreaHeight);
         ctx.fillStyle = '#4A5568';
@@ -6675,42 +6764,35 @@ function updateProductListUI() {
     productListDiv.innerHTML = currentPage.products.length === 0 ? `<p class="text-gray-500 text-sm">Nenhum produto adicionado.</p>` : '';
 
     currentPage.products.forEach((p, index) => {
-        // Assegura que a estrutura de múltiplas imagens exista
         if (!p.images) p.images = [];
         if (!p.srcs) p.srcs = [];
-        if (p.image && p.images.length === 0) { // Converte formato antigo
+        if (p.image && p.images.length === 0) {
             p.images.push(p.image);
             p.srcs.push(p.src);
         }
-        if (!p.activeImageIndex) p.activeImageIndex = 0;
+        if (typeof p.activeImageIndex !== 'number') p.activeImageIndex = 0;
+        if (!p.activeImageIndices) p.activeImageIndices = [0];
 
 
+        // 1. Contêiner principal do CARD, agora com layout em coluna (flex-col)
         const item = document.createElement('div');
-        item.className = 'product-list-item bg-gray-100 dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center gap-3';
-        item.draggable = true;
+        item.className = 'product-list-item bg-gray-100 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-600 flex flex-col gap-2';
         item.dataset.index = index;
 
-        const handle = document.createElement('div');
-        handle.className = 'drag-handle cursor-move flex-shrink-0';
-        handle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>`;
+        // 2. Linha de cima: Imagem + Inputs de Texto
+        const topRow = document.createElement('div');
+        topRow.className = 'flex items-center gap-3 w-full';
 
         const imageContainer = document.createElement('div');
-        imageContainer.className = 'flex-shrink-0 relative group'; // Adicionado 'group' para o contador
+        imageContainer.className = 'flex-shrink-0 relative group';
         const imgPreview = document.createElement('img');
-        imgPreview.className = 'w-16 h-16 object-cover rounded-md bg-gray-200 cursor-pointer';
+        imgPreview.className = 'w-14 h-14 object-cover rounded-md bg-gray-200 cursor-pointer';
         
-        
-        // Mostra a primeira imagem ativa, ou a primeira da galeria, ou um placeholder
-const activeImg = p.images[p.activeImageIndices[0]] || p.images[0];        imgPreview.src = activeImg ? activeImg.src : 'https://placehold.co/64x64/e2e8f0/adb5bd?text=Sem+Foto';
-
-        // ** A MUDANÇA PRINCIPAL ESTÁ AQUI **
-        // O clique na imagem agora abre o modal da galeria
-                        imgPreview.addEventListener('click', () => openImageGalleryModal(index));
-
-        
+        const activeImg = p.images[p.activeImageIndices[0]] || p.images[0];
+        imgPreview.src = activeImg ? activeImg.src : 'https://placehold.co/64x64/e2e8f0/adb5bd?text=Sem+Foto';
+        imgPreview.addEventListener('click', () => openImageGalleryModal(index));
         imageContainer.appendChild(imgPreview);
         
-        // Adiciona um contador de imagens se houver mais de uma
         if (p.images.length > 1) {
             const imageCountBadge = document.createElement('div');
             imageCountBadge.className = 'absolute -bottom-1 -right-1 bg-blue-600 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-gray-100 dark:border-gray-700';
@@ -6719,47 +6801,70 @@ const activeImg = p.images[p.activeImageIndices[0]] || p.images[0];        imgPr
         }
 
         const inputsContainer = document.createElement('div');
-        inputsContainer.className = 'flex-grow space-y-1 min-w-0';
+        inputsContainer.className = 'flex-grow flex flex-col gap-1 min-w-0';
 
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.value = p.name;
         nameInput.dataset.index = index;
-        nameInput.className = 'edit-name w-full bg-white dark:bg-gray-800 border rounded p-1 text-sm';
+        nameInput.className = 'edit-name w-full bg-white dark:bg-gray-700 border rounded p-1.5 text-sm';
         inputsContainer.appendChild(nameInput);
-
-        const bottomRow = document.createElement('div');
-        bottomRow.className = 'flex items-center gap-2';
 
         const priceInput = document.createElement('input');
         priceInput.type = 'number';
         priceInput.value = p.price;
         priceInput.step = '0.01';
         priceInput.dataset.index = index;
-        priceInput.className = 'edit-price w-full bg-white dark:bg-gray-800 border rounded p-1 text-sm flex-grow';
-        bottomRow.appendChild(priceInput);
+        priceInput.className = 'edit-price w-full bg-white dark:bg-gray-700 border rounded p-1.5 text-sm';
+        inputsContainer.appendChild(priceInput);
+        
+        topRow.appendChild(imageContainer);
+        topRow.appendChild(inputsContainer);
+
+        // 3. Linha de baixo: Barra de Ferramentas com TODOS os botões
+        const bottomRow = document.createElement('div');
+        bottomRow.className = 'flex items-center justify-around w-full pt-2 mt-1 border-t border-gray-200 dark:border-gray-700';
+
+        const handle = document.createElement('div');
+        handle.className = 'drag-handle cursor-move p-2';
+        handle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>`;
+        item.draggable = true; // Habilita o arrastar no item inteiro
+        
+        const upButton = document.createElement('button');
+        upButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" /></svg>`;
+        upButton.className = 'move-up-btn p-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600';
+        upButton.dataset.index = index;
+        if (index === 0) upButton.disabled = true;
+
+        const downButton = document.createElement('button');
+        downButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>`;
+        downButton.className = 'move-down-btn p-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600';
+        downButton.dataset.index = index;
+        if (index === currentPage.products.length - 1) downButton.disabled = true;
 
         const colorLabel = document.createElement('label');
-        colorLabel.className = 'flex-shrink-0 cursor-pointer p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600';
+        colorLabel.className = 'flex-shrink-0 cursor-pointer p-1 rounded-md';
         const colorInput = document.createElement('input');
         colorInput.type = 'color';
         colorInput.value = p.backgroundColor || '#FFFFFF';
         colorInput.dataset.index = index;
-        colorInput.className = 'edit-bgcolor h-6 w-8 rounded border-none cursor-pointer';
+        colorInput.className = 'edit-bgcolor h-7 w-10 rounded border-none cursor-pointer';
         colorLabel.appendChild(colorInput);
-        bottomRow.appendChild(colorLabel);
-
-        inputsContainer.appendChild(bottomRow);
-
+        
         const deleteBtn = document.createElement('button');
         deleteBtn.innerHTML = '&times;';
         deleteBtn.dataset.index = index;
-        deleteBtn.className = 'remove-btn text-red-500 hover:text-red-700 font-bold text-2xl h-8 w-8 flex-shrink-0';
+        deleteBtn.className = 'remove-btn text-red-500 hover:text-red-700 font-bold text-3xl p-2';
 
-        item.appendChild(handle);
-        item.appendChild(imageContainer);
-        item.appendChild(inputsContainer);
-        item.appendChild(deleteBtn);
+        bottomRow.appendChild(handle);
+        bottomRow.appendChild(upButton);
+        bottomRow.appendChild(downButton);
+        bottomRow.appendChild(colorLabel);
+        bottomRow.appendChild(deleteBtn);
+
+        // 4. Monta o card final
+        item.appendChild(topRow);
+        item.appendChild(bottomRow);
 
         productListDiv.appendChild(item);
     });
@@ -6767,8 +6872,43 @@ const activeImg = p.images[p.activeImageIndices[0]] || p.images[0];        imgPr
     addDragListeners();
     populateImageMultiSelect();
 }
-
 // ▲▲▲ FIM DO BLOCO DE SUBSTITUIÇÃO ▲▲▲
+
+
+
+// ▼▼▼ ADICIONE ESTE BLOCO DE CÓDIGO NOVO ▼▼▼
+
+/**
+ * Move um produto uma posição para cima na lista.
+ * @param {number} index - O índice atual do produto a ser movido.
+ */
+function moveProductUp(index) {
+    const page = flyerData.pages[flyerData.currentPageIndex];
+    if (index > 0) {
+        // Troca o item na posição 'index' com o item na posição 'index - 1'
+        [page.products[index - 1], page.products[index]] = [page.products[index], page.products[index - 1]];
+        updateProductListUI(); // Atualiza a lista na tela
+        redrawCanvas(); // Redesenha o encarte para refletir a nova ordem
+    }
+}
+
+/**
+ * Move um produto uma posição para baixo na lista.
+ * @param {number} index - O índice atual do produto a ser movido.
+ */
+function moveProductDown(index) {
+    const page = flyerData.pages[flyerData.currentPageIndex];
+    if (index < page.products.length - 1) {
+        // Troca o item na posição 'index' com o item na posição 'index + 1'
+        [page.products[index + 1], page.products[index]] = [page.products[index], page.products[index + 1]];
+        updateProductListUI(); // Atualiza a lista na tela
+        redrawCanvas(); // Redesenha o encarte para refletir a nova ordem
+    }
+}
+
+// ▲▲▲ FIM DO BLOCO NOVO ▲▲▲
+
+
 
 // ▲▲▲ FIM DO BLOCO ▲▲▲
 		
@@ -6790,65 +6930,43 @@ function addDragListeners() {
         d.addEventListener('dragenter', dragEnter);
         d.addEventListener('dragleave', dragLeave);
     });
+
     document.querySelectorAll('.remove-btn').forEach(btn => btn.addEventListener('click', e => {
-        flyerData.pages[flyerData.currentPageIndex].products.splice(parseInt(e.target.dataset.index), 1);
+        flyerData.pages[flyerData.currentPageIndex].products.splice(parseInt(e.currentTarget.dataset.index), 1);
         updateProductListUI();
         redrawCanvas();
     }));
+
+    // ▼▼▼ INÍCIO DA ADIÇÃO: Eventos para os novos botões ▼▼▼
+    document.querySelectorAll('.move-up-btn').forEach(btn => btn.addEventListener('click', e => {
+        moveProductUp(parseInt(e.currentTarget.dataset.index));
+    }));
+
+    document.querySelectorAll('.move-down-btn').forEach(btn => btn.addEventListener('click', e => {
+        moveProductDown(parseInt(e.currentTarget.dataset.index));
+    }));
+    // ▲▲▲ FIM DA ADIÇÃO ▲▲▲
+
     document.querySelectorAll('.edit-name').forEach(input => input.addEventListener('input', e => {
         flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].name = e.target.value;
         redrawCanvas();
-        populateImageMultiSelect(); // Corrigido de populateImageSelect para o novo nome
+        populateImageMultiSelect();
     }));
+
     document.querySelectorAll('.edit-price').forEach(input => input.addEventListener('input', e => {
         flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].price = e.target.value;
         redrawCanvas();
     }));
+
     document.querySelectorAll('.edit-bgcolor').forEach(input => input.addEventListener('input', e => {
         flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].backgroundColor = e.target.value;
         redrawCanvas();
     }));
-    
-    // ==========================================================
-    // --- A LÓGICA DE SALVAR NO BANCO DE DADOS FOI ADICIONADA AQUI ---
-    // ==========================================================
-    document.querySelectorAll('input[type="file"][id^="edit-image-"]').forEach(input => input.addEventListener('change', e => {
-        const index = parseInt(e.target.dataset.index);
-        
-        handleSingleImageUpload(e, img => {
-            const productInFlyer = flyerData.pages[flyerData.currentPageIndex].products[index];
-            if (!productInFlyer) return;
-
-            // 1. Atualiza a imagem no encarte (como antes)
-            productInFlyer.image = img;
-            productInFlyer.src = img.src;
-
-            // 2. (NOVO) Adiciona/Atualiza o produto no banco de dados local
-            const productName = productInFlyer.name;
-            const productPrice = productInFlyer.price;
-            
-            productDatabase[productName] = {
-                name: productName,
-                price: productPrice,
-                src: img.src // O 'src' aqui é a imagem em base64
-            };
-
-            // 3. (NOVO) Marca o banco de dados como "não sincronizado"
-            isDatabaseSynced = false;
-            updateSyncStatusUI();
-
-            // 4. Redesenha tudo e avisa o usuário
-            redrawCanvas();
-            updateProductListUI();
-            
-            // Avisa o usuário que ele precisa sincronizar
-            showAlert(`Imagem de "${productName}" atualizada. Lembre-se de ir ao painel 'Estoque' e sincronizar com a nuvem para salvar permanentemente.`);
-        });
-    }));
+}
     // ==========================================================
     // --- FIM DA NOVA LÓGICA ---
     // ==========================================================
-}
+
 		
 		
         function handleSingleImageUpload(e, callback) { const file = e.target.files[0]; if (file) { const reader = new FileReader; reader.onload = event => { const img = new Image; img.onload = () => callback(img); img.src = event.target.result }; reader.readAsDataURL(file) } }
@@ -6920,7 +7038,7 @@ function populateGalleryThumbnails(searchKeyword) {
     // --- SEÇÃO 1: Imagens que já estão no produto ---
     const currentImagesContainer = document.createElement('div');
     currentImagesContainer.className = 'col-span-full border-b-2 border-gray-300 dark:border-gray-600 pb-4 mb-4';
-    currentImagesContainer.innerHTML = `<h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Imagens Atuais no Produto</h4>`;
+    currentImagesContainer.innerHTML = `<h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Imagens Atuais no Produto (Selecione até 5)</h4>`;
     const currentImagesGrid = document.createElement('div');
     currentImagesGrid.className = 'grid grid-cols-4 md:grid-cols-5 gap-3';
     currentImagesContainer.appendChild(currentImagesGrid);
@@ -6935,6 +7053,7 @@ function populateGalleryThumbnails(searchKeyword) {
             const isActive = product.activeImageIndices.includes(index);
             thumbWrapper.classList.toggle('border-blue-500', isActive);
             thumbWrapper.classList.toggle('bg-blue-100', isActive);
+            thumbWrapper.classList.toggle('dark:bg-blue-900/50', isActive);
             thumbWrapper.classList.toggle('border-transparent', !isActive);
 
             const thumbImg = new Image();
@@ -6958,9 +7077,13 @@ function populateGalleryThumbnails(searchKeyword) {
 
             thumbWrapper.onclick = () => {
                 const activeIndexPosition = product.activeImageIndices.indexOf(index);
-                if (activeIndexPosition > -1) product.activeImageIndices.splice(activeIndexPosition, 1);
-                else if (product.activeImageIndices.length < 2) product.activeImageIndices.push(index);
-                else showAlert("Você pode selecionar no máximo 2 imagens.");
+                if (activeIndexPosition > -1) {
+                    product.activeImageIndices.splice(activeIndexPosition, 1);
+                } else if (product.activeImageIndices.length < 10) { // ALTERAÇÃO AQUI: Limite aumentado para 5
+                    product.activeImageIndices.push(index);
+                } else {
+                    showAlert("Você pode selecionar no máximo 10 imagens."); // ALTERAÇÃO AQUI: Mensagem atualizada
+                }
                 populateGalleryThumbnails(searchKeyword);
                 updateProductListUI();
                 redrawCanvas();
@@ -7013,15 +7136,9 @@ function populateGalleryThumbnails(searchKeyword) {
         thumbImg.src = dbProduct.src;
         thumbImg.className = 'w-full h-20 object-contain';
 
-        // ==========================================================
-        // ===== A CORREÇÃO ESTÁ AQUI DENTRO =====
-        // ==========================================================
         thumbWrapper.onclick = () => {
             const newImg = new Image();
-            
-            // LINHA DA CORREÇÃO:
-            newImg.crossOrigin = "anonymous"; // <-- Adicionamos esta linha crucial!
-            
+            newImg.crossOrigin = "anonymous";
             newImg.onload = () => {
                 product.images.push(newImg);
                 product.srcs.push(newImg.src);
@@ -7029,11 +7146,8 @@ function populateGalleryThumbnails(searchKeyword) {
                 updateProductListUI();
                 redrawCanvas();
             };
-            newImg.src = dbProduct.src; // O src é definido DEPOIS do crossOrigin
+            newImg.src = dbProduct.src;
         };
-        // ==========================================================
-        // ===== FIM DA CORREÇÃO =====
-        // ==========================================================
 
         thumbWrapper.appendChild(thumbImg);
         suggestionsGrid.appendChild(thumbWrapper);
@@ -7720,6 +7834,9 @@ function updateImageControlsUI() {
     const firstProduct = currentPage.products[selectedIndices[0]];
     imageControlsContainer.classList.remove('hidden');
 
+    // ▼▼▼ ADICIONE ESTA LINHA ▼▼▼
+    document.getElementById('imageGridToggle').checked = firstProduct.useImageGrid || false;
+
     // Controles de Imagem
     imageRepetitionsInput.value = firstProduct.imageRepetitions || 1;
     imageRepetitionDirectionSelect.value = firstProduct.imageRepetitionDirection || 'horizontal';
@@ -7737,6 +7854,11 @@ function updateImageControlsUI() {
     document.getElementById('priceScaleX').value = firstProduct.priceScaleX || 100;
     document.getElementById('priceScaleY').value = firstProduct.priceScaleY || 100;
 }
+
+// Adicione o listener para o novo checkbox
+document.getElementById('imageGridToggle').addEventListener('change', e => {
+    applyChangeToSelectedProducts('useImageGrid', e.target.checked);
+});
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 
 	
@@ -9668,6 +9790,45 @@ function updateSyncStatusUI() {
 // ▲▲▲ FIM DO BLOCO ▲▲▲
 
 
+// ▼▼▼ COLE ESTE BLOCO NO SEU SCRIPT ▼▼▼
+
+/**
+ * Ajusta o layout para dispositivos móveis, movendo os botões flutuantes
+ * para fora da área principal e aplicando uma classe especial.
+ */
+function handleMobileLayout() {
+    const floatingButtons = document.querySelector('.floating-buttons-container');
+    const mainContent = document.getElementById('mainContent');
+    const body = document.body;
+
+    // Verifica a largura da tela
+    if (window.innerWidth <= 767) {
+        // Se for um celular:
+        // 1. Adiciona a classe que ativa o CSS que acabamos de criar.
+        floatingButtons.classList.add('mobile-layout');
+        // 2. Move os botões para serem um filho direto do 'body',
+        //    para que fiquem fixos na parte de baixo da tela.
+        if (floatingButtons.parentElement !== body) {
+            body.appendChild(floatingButtons);
+        }
+    } else {
+        // Se for um desktop:
+        // 1. Remove a classe de layout móvel.
+        floatingButtons.classList.remove('mobile-layout');
+        // 2. Devolve os botões para dentro da área de conteúdo principal.
+        if (floatingButtons.parentElement !== mainContent) {
+            mainContent.appendChild(floatingButtons);
+        }
+    }
+}
+
+// Executa a função quando a página carrega
+window.addEventListener('load', handleMobileLayout);
+// Executa a função toda vez que a tela for redimensionada (ex: girar o celular)
+window.addEventListener('resize', handleMobileLayout);
+
+// ▲▲▲ FIM DO BLOCO ▲▲▲
+
 
 async function initialize() {
     showSpinner(true);
@@ -9709,6 +9870,20 @@ async function initialize() {
     
     switchPage(0, false);
     showSpinner(false);
+	
+	// --- LÓGICA PARA ATIVAR O MODO TABLET AUTOMATICAMENTE NO CELULAR ---
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        // Atraso de 100 milissegundos para garantir que a interface esteja pronta
+        setTimeout(() => {
+            // Verifica se o modo tablet já não está ativo antes de chamar a função
+            if (!isTabletMode) {
+                toggleTabletMode();
+            }
+        }, 100);
+    }
+	
 }
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 
@@ -11012,6 +11187,86 @@ if (clearAllPagesProductListBtn) {
 
 // ▲▲▲ FIM DO BLOCO ▲▲▲
 
+// ▼▼▼ COLE TODO ESTE BLOCO DE CÓDIGO NO SEU SCRIPT ▼▼▼
+
+// ▼▼▼ COLE TODO ESTE BLOCO DE CÓDIGO NO LUGAR DO ANTERIOR ▼▼▼
+// ▼▼▼ COLE TODO ESTE BLOCO DE CÓDIGO NO LUGAR DO ANTERIOR ▼▼▼
+
+// --- LÓGICA PARA O MODO DE SIMULAÇÃO DE TABLET (VERSÃO 3.0 - RESPONSIVA À ROTAÇÃO) ---
+const tabletModeBtn = document.getElementById('tabletModeBtn');
+let isTabletMode = false;
+const SIMULATED_WIDTH = 800; // Largura em pixels que queremos simular
+
+/**
+ * Esta função aplica os estilos de escala e tamanho.
+ * Ela será chamada ao ativar o modo e sempre que a tela girar.
+ */
+function applyTabletStyles() {
+    // Garante que a função só execute se o modo tablet estiver ativo
+    if (!isTabletMode) return;
+
+    const mainContainer = document.querySelector('div.relative.h-screen.w-screen.flex');
+    if (!mainContainer) return;
+
+    // Recalcula a escala e altura com base nas dimensões ATUAIS da tela
+    const scale = window.innerWidth / SIMULATED_WIDTH;
+    const simulatedHeight = window.innerHeight / scale;
+
+    mainContainer.style.width = `${SIMULATED_WIDTH}px`;
+    mainContainer.style.height = `${simulatedHeight}px`;
+    mainContainer.style.transform = `scale(${scale})`;
+    mainContainer.style.transformOrigin = 'top left';
+    mainContainer.style.overflow = 'hidden';
+}
+
+/**
+ * Esta função remove todos os estilos de simulação.
+ */
+function removeTabletStyles() {
+    const mainContainer = document.querySelector('div.relative.h-screen.w-screen.flex');
+    if (!mainContainer) return;
+    
+    mainContainer.style.width = '';
+    mainContainer.style.height = '';
+    mainContainer.style.transform = '';
+    mainContainer.style.transformOrigin = '';
+    mainContainer.style.overflow = '';
+}
+
+/**
+ * Função principal que ativa ou desativa o modo tablet.
+ */
+function toggleTabletMode() {
+    isTabletMode = !isTabletMode;
+
+    if (isTabletMode) {
+        // --- Ativando o modo Tablet ---
+        applyTabletStyles(); // Aplica os estilos imediatamente
+        
+        // Adiciona um "ouvinte" que irá chamar a função de estilo sempre que a tela for redimensionada (girada)
+        window.addEventListener('resize', applyTabletStyles);
+
+        // Muda a cor do botão para indicar que está ativo
+        tabletModeBtn.classList.remove('bg-indigo-700', 'hover:bg-indigo-600');
+        tabletModeBtn.classList.add('bg-green-500', 'hover:bg-green-400');
+
+    } else {
+        // --- Desativando o modo Tablet ---
+        
+        // IMPORTANTE: Remove o "ouvinte" para que os cálculos parem de ser feitos
+        window.removeEventListener('resize', applyTabletStyles);
+        
+        removeTabletStyles(); // Remove todos os estilos customizados
+
+        // Restaura a cor original do botão
+        tabletModeBtn.classList.add('bg-indigo-700', 'hover:bg-indigo-600');
+        tabletModeBtn.classList.remove('bg-green-500', 'hover:bg-green-400');
+    }
+}
+
+tabletModeBtn.addEventListener('click', toggleTabletMode);
+
+// ▲▲▲ FIM DO BLOCO CORRIGIDO ▲▲▲
 
 
 window.onload = initialize;
