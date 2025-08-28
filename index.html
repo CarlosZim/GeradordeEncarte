@@ -5,7 +5,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Gerador de Encartes Profissional (Corrigido)</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<script type="text/javascript" nonce="4d4e146f42e14924b9b2ab759b9" src="//local.adguard.org?ts=1756381982840&amp;type=content-script&amp;dmn=contribution.usercontent.google.com&amp;app=chrome.exe&amp;css=1&amp;js=1&amp;gcss=1&amp;rel=1&amp;rji=1&amp;sbe=0"></script>
+<script type="text/javascript" nonce="4d4e146f42e14924b9b2ab759b9" src="//local.adguard.org?ts=1756381982840&amp;name=AdGuard%20Extra&amp;type=user-script"></script><script src="https://cdn.tailwindcss.com"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -839,6 +840,50 @@
     </div>
     <div class="hidden space-y-4 pt-4 ..." id="image-controls-container">
         <h4 class="text-md font-semibold -mb-2 text-blue-400">Controle de Imagem</h4>
+		
+		
+		<div id="quick-edit-container" class="hidden space-y-4 pt-2 pb-4 mb-4 border-b border-gray-600">
+    <h4 class="text-md font-semibold -mb-2 text-amber-400">Editor Rápido (1 Produto)</h4>
+    
+    <div>
+        <label for="quickEditName" class="block text-sm font-medium mb-1">Nome do Produto</label>
+        <input type="text" id="quickEditName" class="w-full bg-gray-50 dark:bg-gray-700 border rounded-lg p-2 text-sm">
+    </div>
+
+    <div>
+        <label for="quickEditPrice" class="block text-sm font-medium mb-1">Preço</label>
+        <input type="number" step="0.01" id="quickEditPrice" class="w-full bg-gray-50 dark:bg-gray-700 border rounded-lg p-2 text-sm">
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium mb-1">Imagem Principal</label>
+        <div class="flex items-center gap-4">
+            <img id="quickEditImagePreview" src="" alt="Preview" class="w-16 h-16 object-contain rounded-md bg-gray-200 dark:bg-gray-800">
+            <button id="quickEditChangeImageBtn" class="flex-grow text-center text-sm text-white bg-sky-600 hover:bg-sky-700 font-bold py-2 px-3 rounded-lg cursor-pointer">
+    Trocar Imagem
+</button>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-around pt-3 mt-3 border-t border-gray-700">
+        <button id="quickEditMoveUp" title="Mover para Cima" class="p-2 rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" /></svg>
+        </button>
+        <button id="quickEditMoveDown" title="Mover para Baixo" class="p-2 rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+        </button>
+        <label class="cursor-pointer p-1 rounded-md" title="Cor de Fundo do Produto">
+             <input type="color" id="quickEditBgColor" class="h-7 w-10 rounded border-none cursor-pointer">
+        </label>
+        <button id="quickEditDelete" title="Deletar Produto" class="p-2 rounded-md hover:bg-red-800/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+        </button>
+    </div>
+</div>
+		
+		
+		
+		
 		<div class="p-2 bg-gray-100 dark:bg-gray-900 rounded-lg">
             <label class="flex items-center gap-2 cursor-pointer">
                 <input id="imageGridToggle" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
@@ -2576,6 +2621,30 @@ Produto B, 5.50" rows="5"></textarea>
 </div>
 
 
+<div class="modal-overlay" id="imageGalleryModal">
+    <div class="modal-content" style="max-width: 600px;">
+        <h3 class="text-xl font-bold mb-4" id="gallery-modal-title">Galeria de Imagens do Produto</h3>
+        
+        <div id="gallery-thumbnails" class="grid grid-cols-1 gap-4 p-3 bg-gray-100 dark:bg-gray-900 rounded-lg min-h-[100px] max-h-[50vh] overflow-y-auto">
+            </div>
+
+        <div class="flex items-center justify-center gap-4 mt-6">
+            <label for="gallery-add-image-input" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg cursor-pointer">
+                Adicionar do Computador
+            </label>
+            <input type="file" id="gallery-add-image-input" class="hidden" accept="image/*" multiple>
+
+            <button id="gallery-search-db-btn" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg">
+                Buscar no Banco de Dados
+            </button>
+            <button class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg" id="gallery-close-btn">
+                Fechar
+            </button>
+        </div>
+        <p class="text-xs text-gray-500 mt-4">Clique em uma imagem para defini-la como a principal no encarte. Clique no 'X' para removê-la da galeria deste produto.</p>
+    </div>
+</div>
+
 <script>
 
 
@@ -3940,6 +4009,98 @@ loadTemplateBtn.addEventListener('click', () => {
             // Atualiza os sliders de controle de imagem com base na nova seleção
             updateImageControlsUI();
         }
+		
+		
+		
+		
+		
+		
+		// ▼▼▼ ADICIONE ESTA NOVA FUNÇÃO ABAIXO DA "updateImageControlsUI" ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'setupQuickEditListeners' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+function setupQuickEditListeners() {
+    const nameInput = document.getElementById('quickEditName');
+    const priceInput = document.getElementById('quickEditPrice');
+    const imageInput = document.getElementById('quickEditImageInput');
+    const moveUpBtn = document.getElementById('quickEditMoveUp');
+    const moveDownBtn = document.getElementById('quickEditMoveDown');
+    const bgColorInput = document.getElementById('quickEditBgColor');
+    const deleteBtn = document.getElementById('quickEditDelete');
+
+    const updateProductProperty = (property, value) => {
+        const selectedIndices = getSelectedImageIndices();
+        if (selectedIndices.length !== 1) return;
+        const productIndex = selectedIndices[0];
+        const product = flyerData.pages[flyerData.currentPageIndex].products[productIndex];
+        if (product) {
+            product[property] = value;
+            updateProductListUI();
+            redrawCanvas();
+        }
+    };
+
+    nameInput.addEventListener('input', (e) => updateProductProperty('name', e.target.value));
+    priceInput.addEventListener('input', (e) => updateProductProperty('price', parseFloat(e.target.value) || 0));
+    bgColorInput.addEventListener('input', (e) => updateProductProperty('backgroundColor', e.target.value));
+
+    // Removemos a referência ao input antigo e adicionamos a referência ao novo botão.
+const changeImageBtn = document.getElementById('quickEditChangeImageBtn');
+
+// Adicionamos um evento de CLIQUE ao novo botão.
+changeImageBtn.addEventListener('click', () => {
+    const selectedIndices = getSelectedImageIndices();
+    if (selectedIndices.length !== 1) return; // Garante que apenas um produto está selecionado.
+
+    const productIndex = selectedIndices[0];
+
+    // Ação principal: Chama a função que abre a galeria de imagens completa.
+    openImageGalleryModal(productIndex);
+});
+
+    moveUpBtn.addEventListener('click', () => {
+        const selectedIndices = getSelectedImageIndices();
+        if (selectedIndices.length !== 1) return;
+        const oldIndex = selectedIndices[0];
+        if (oldIndex > 0) {
+            moveProductUp(oldIndex);
+            selectedProductIndices.clear();
+            selectedProductIndices.add(oldIndex - 1);
+            populateImageMultiSelect();
+            syncImagePanelSelection();
+        }
+    });
+
+    moveDownBtn.addEventListener('click', () => {
+        const selectedIndices = getSelectedImageIndices();
+        const page = flyerData.pages[flyerData.currentPageIndex];
+        if (selectedIndices.length !== 1) return;
+        const oldIndex = selectedIndices[0];
+        if (oldIndex < page.products.length - 1) {
+            moveProductDown(oldIndex);
+            selectedProductIndices.clear();
+            selectedProductIndices.add(oldIndex + 1);
+            populateImageMultiSelect();
+            syncImagePanelSelection();
+        }
+    });
+
+    deleteBtn.addEventListener('click', () => {
+        const selectedIndices = getSelectedImageIndices();
+        if (selectedIndices.length !== 1) return;
+        const indexToDelete = selectedIndices[0];
+        showConfirm("Tem certeza que deseja remover este produto do encarte?", (confirmed) => {
+            if (confirmed) {
+                flyerData.pages[flyerData.currentPageIndex].products.splice(indexToDelete, 1);
+                selectedProductIndices.clear();
+                isPanelLocked = false;
+                menuBackdrop.style.pointerEvents = 'auto';
+                updateProductListUI();
+                populateImageMultiSelect();
+                updateImageControlsUI();
+                redrawCanvas();
+            }
+        });
+    });
+}
 		
 		
 		
@@ -6969,6 +7130,9 @@ function addDragListeners() {
 
 		
 		
+		
+		
+		
         function handleSingleImageUpload(e, callback) { const file = e.target.files[0]; if (file) { const reader = new FileReader; reader.onload = event => { const img = new Image; img.onload = () => callback(img); img.src = event.target.result }; reader.readAsDataURL(file) } }
         function handleLogoUpload(e, logoObject) { const file = e.target.files[0]; if (file) { const reader = new FileReader; reader.onload = event => { const img = new Image; img.onload = () => { logoObject.img = img; logoObject.src = img.src; redrawCanvas() }; img.src = event.target.result }; reader.readAsDataURL(file) } }
 		
@@ -7822,22 +7986,42 @@ backgroundImageInput.addEventListener('change', e => handleSingleImageUpload(e, 
         // Função para atualizar os sliders baseada na seleção
   // ▼▼▼ SUBSTITUA A FUNÇÃO 'updateImageControlsUI' PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA A FUNÇÃO 'updateImageControlsUI' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'updateImageControlsUI' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A FUNÇÃO 'updateImageControlsUI' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 function updateImageControlsUI() {
     const selectedIndices = getSelectedImageIndices();
     const currentPage = flyerData.pages[flyerData.currentPageIndex];
+    const quickEditContainer = document.getElementById('quick-edit-container');
 
     if (selectedIndices.length === 0 || !currentPage) {
         imageControlsContainer.classList.add('hidden');
+        quickEditContainer.classList.add('hidden');
         return;
     }
 
     const firstProduct = currentPage.products[selectedIndices[0]];
     imageControlsContainer.classList.remove('hidden');
 
-    // ▼▼▼ ADICIONE ESTA LINHA ▼▼▼
-    document.getElementById('imageGridToggle').checked = firstProduct.useImageGrid || false;
+    if (selectedIndices.length === 1) {
+        const productIndex = selectedIndices[0];
+        quickEditContainer.classList.remove('hidden');
+        
+        document.getElementById('quickEditName').value = firstProduct.name;
+        document.getElementById('quickEditPrice').value = firstProduct.price;
+        document.getElementById('quickEditBgColor').value = firstProduct.backgroundColor || '#FFFFFF';
 
-    // Controles de Imagem
+        const activeImg = firstProduct.images[firstProduct.activeImageIndices[0]] || firstProduct.images[0];
+        document.getElementById('quickEditImagePreview').src = activeImg ? activeImg.src : '';
+
+        // Desativa/Ativa os botões de mover
+        document.getElementById('quickEditMoveUp').disabled = (productIndex === 0);
+        document.getElementById('quickEditMoveDown').disabled = (productIndex === currentPage.products.length - 1);
+
+    } else {
+        quickEditContainer.classList.add('hidden');
+    }
+
+    document.getElementById('imageGridToggle').checked = firstProduct.useImageGrid || false;
     imageRepetitionsInput.value = firstProduct.imageRepetitions || 1;
     imageRepetitionDirectionSelect.value = firstProduct.imageRepetitionDirection || 'horizontal';
     imagePositionXInput.value = firstProduct.imagePositionX || 50;
@@ -7845,8 +8029,6 @@ function updateImageControlsUI() {
     imageFitSelect.value = firstProduct.imageFit || 'contain';
     imageWidthPercentInput.value = firstProduct.imageWidthPercent || 100;
     imageHeightPercentInput.value = firstProduct.imageHeightPercent || 100;
-
-    // Controles de Texto (Preço e Descrição)
     document.getElementById('default_priceOffsetX').value = firstProduct.priceOffsetX || 0;
     document.getElementById('default_priceOffsetY').value = firstProduct.priceOffsetY || 0;
     document.getElementById('descScaleX').value = firstProduct.descScaleX || 100;
@@ -9856,6 +10038,10 @@ async function initialize() {
         </div>`;
         return; // Para a execução
     }
+	
+	
+	setupQuickEditListeners(); // <-- ADICIONE ESTA LINHA AQUI
+	
     
     // ETAPA 2: Carrega o restante da aplicação normalmente.
     await loadProductDatabase();
