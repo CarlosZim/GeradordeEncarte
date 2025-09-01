@@ -12769,89 +12769,90 @@ function getMidPoint(touch1, touch2) {
 // =================================================================
 // --- BLOCO 'TOUCHSTART' CORRIGIDO COM LÓGICA DE SELEÇÃO ---
 // =================================================================
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'touchstart' POR ESTA ▼▼▼
 canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
     const currentPage = flyerData.pages[flyerData.currentPageIndex];
     if (!currentPage) return;
 
-    // Se houver dois toques, a prioridade é o zoom de pinça
     if (e.touches.length === 2) {
         isPanning = false;
         initialPinchDistance = getTouchDistance(e.touches[0], e.touches[1]);
-        return; // Interrompe a função para não processar como clique
+        return;
     }
 
-    // Se for um toque com um dedo
     if (e.touches.length === 1) {
         const touch = e.touches[0];
+        lastPanPoint = { x: touch.clientX, y: touch.clientY }; // Guarda o ponto inicial
 
-        // Se o modo de navegação estiver ATIVO, inicia o pan
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const canvasX = (touch.clientX - rect.left) * scaleX;
+        const canvasY = (touch.clientY - rect.top) * scaleY;
+        const worldX = (canvasX - viewTransform.origin.x) / viewTransform.scale;
+        const worldY = (canvasY - viewTransform.origin.y) / viewTransform.scale;
+
         if (panModeActive) {
-            isPanning = true;
-            lastPanPoint = { x: touch.clientX, y: touch.clientY };
-        } 
-        // Se o modo de navegação estiver DESATIVADO, trata como um clique de seleção
-        else {
-            isPanning = false;
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const canvasX = (touch.clientX - rect.left) * scaleX;
-            const canvasY = (touch.clientY - rect.top) * scaleY;
-
-            const worldX = (canvasX - viewTransform.origin.x) / viewTransform.scale;
-            const worldY = (canvasY - viewTransform.origin.y) / viewTransform.scale;
-
-            const clickedSlot = productSlots.find(slot =>
-                worldX >= slot.x && worldX <= slot.x + slot.width &&
-                worldY >= slot.y && worldY <= slot.y + slot.height
-            );
-
-            if (clickedSlot && clickedSlot.productIndex < currentPage.products.length) {
-                const productIndex = clickedSlot.productIndex;
-
-                // Limpa a seleção anterior e seleciona o novo produto
-                selectedProductIndices.clear();
-                selectedProductIndices.add(productIndex);
-
-                // Abre o painel de imagens e trava
-                openControlPanel('panel-images');
-                isPanelLocked = true;
-                menuBackdrop.style.pointerEvents = 'none';
-
-            } else {
-                // Se tocar fora de um produto, limpa a seleção
-                selectedProductIndices.clear();
-                isPanelLocked = false;
-                menuBackdrop.style.pointerEvents = 'auto';
-                if(activePanelId === 'panel-images'){
-                    closeControlPanel();
-                }
-            }
-
-            syncImagePanelSelection();
-            redrawCanvas();
+            mouseAction = 'panning';
+            return;
         }
+
+        // ==========================================================
+        // ===== INÍCIO DA CORREÇÃO: LÓGICA DE DRAG ADICIONADA =====
+        // ==========================================================
+        // Verifica se o toque foi no selo de validade ANTES de verificar os produtos
+        const hvSettings = currentPage.settings.headerValidity;
+        if (hvSettings && hvSettings.enabled) {
+            const sealHeight = hvSettings.width / 1.05;
+            if (worldX >= hvSettings.x && worldX <= hvSettings.x + hvSettings.width &&
+                worldY >= hvSettings.y && worldY <= hvSettings.y + sealHeight) {
+
+                mouseAction = 'draggingHeader'; // Define a ação como arrastar o selo
+                validityOffsetX = worldX - hvSettings.x;
+                validityOffsetY = worldY - hvSettings.y;
+                return; // Interrompe a função, pois a ação já foi definida
+            }
+        }
+        // ========================================================
+        // ===== FIM DA CORREÇÃO =====
+        // ========================================================
+
+        // Se não foi no selo nem está em modo pan, trata como seleção de produto
+        mouseAction = 'selecting';
+        const clickedSlot = productSlots.find(slot =>
+            worldX >= slot.x && worldX <= slot.x + slot.width &&
+            worldY >= slot.y && worldY <= slot.y + slot.height
+        );
+
+        if (clickedSlot && clickedSlot.productIndex < currentPage.products.length) {
+            const productIndex = clickedSlot.productIndex;
+            selectedProductIndices.clear();
+            selectedProductIndices.add(productIndex);
+            openControlPanel('panel-images');
+            isPanelLocked = true;
+            menuBackdrop.style.pointerEvents = 'none';
+        } else {
+            selectedProductIndices.clear();
+            isPanelLocked = false;
+            menuBackdrop.style.pointerEvents = 'auto';
+            if(activePanelId === 'panel-images'){
+                closeControlPanel();
+            }
+        }
+        syncImagePanelSelection();
+        redrawCanvas();
     }
 }, { passive: false });
 
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'touchmove' POR ESTA ▼▼▼
 canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
-    // Lógica para arrastar com um dedo (pan)
-    if (isPanning && e.touches.length === 1) {
-        const touch = e.touches[0];
-        const dx = touch.clientX - lastPanPoint.x;
-        const dy = touch.clientY - lastPanPoint.y;
-        viewTransform.origin.x += dx;
-        viewTransform.origin.y += dy;
-        lastPanPoint = { x: touch.clientX, y: touch.clientY };
-        redrawCanvas();
-    }
+
     // Lógica para zoom com dois dedos (pinch)
-    else if (e.touches.length === 2 && initialPinchDistance) {
+    if (e.touches.length === 2 && initialPinchDistance) {
         const currentPinchDistance = getTouchDistance(e.touches[0], e.touches[1]);
         const zoomFactor = currentPinchDistance / initialPinchDistance;
-
         const oldScale = viewTransform.scale;
         let newScale = oldScale * zoomFactor;
         newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
@@ -12870,8 +12871,40 @@ canvas.addEventListener('touchmove', (e) => {
         viewTransform.origin.y = mouseY - worldY * newScale;
         viewTransform.scale = newScale;
 
-        initialPinchDistance = currentPinchDistance; // Atualiza a distância para o próximo movimento
+        initialPinchDistance = currentPinchDistance;
         redrawCanvas();
+        return; // Sai da função após o zoom
+    }
+
+    // Lógica para arrastar com um dedo
+    if (e.touches.length === 1 && mouseAction !== 'none') {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const canvasX = (touch.clientX - rect.left) * scaleX;
+        const canvasY = (touch.clientY - rect.top) * scaleY;
+        const worldX = (canvasX - viewTransform.origin.x) / viewTransform.scale;
+        const worldY = (canvasY - viewTransform.origin.y) / viewTransform.scale;
+
+        switch (mouseAction) {
+            case 'draggingHeader':
+                const hvSettings = flyerData.pages[flyerData.currentPageIndex].settings.headerValidity;
+                hvSettings.x = worldX - validityOffsetX;
+                hvSettings.y = worldY - validityOffsetY;
+                document.getElementById('headerValidityX').value = Math.round(hvSettings.x);
+                document.getElementById('headerValidityY').value = Math.round(hvSettings.y);
+                redrawCanvas();
+                break;
+            case 'panning':
+                const dx = touch.clientX - lastPanPoint.x;
+                const dy = touch.clientY - lastPanPoint.y;
+                viewTransform.origin.x += dx;
+                viewTransform.origin.y += dy;
+                lastPanPoint = { x: touch.clientX, y: touch.clientY };
+                redrawCanvas();
+                break;
+        }
     }
 }, { passive: false });
 
@@ -12879,6 +12912,8 @@ canvas.addEventListener('touchend', (e) => {
     // Reseta os estados ao final do toque
     isPanning = false;
     initialPinchDistance = null;
+	    mouseAction = 'none'; // <-- ADICIONE ESTA LINHA
+
 });
 
 
