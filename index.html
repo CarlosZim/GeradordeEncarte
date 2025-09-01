@@ -23,9 +23,10 @@
 
 
 
-/* ▼▼▼ ADICIONE ESTE NOVO BLOCO DE CÓDIGO DENTRO DA SUA TAG <style> ▼▼▼ */
-/* Corrige o menu flutuante em telas de tablet na horizontal (paisagem) */
-@media (min-width: 768px) and (orientation: landscape) {
+/* ▼▼▼ SUBSTITUA o bloco de código para tablet/landscape QUE VOCÊ ADICIONOU ANTERIORMENTE POR ESTE NOVO BLOCO ▼▼▼ */
+
+/* Aplica a rolagem ao menu flutuante em QUALQUER tela com altura limitada (tablets, monitores pequenos, etc.) */
+@media (max-height: 750px) {
   .floating-buttons-container {
     /* Define uma altura máxima para o painel não ultrapassar a tela */
     max-height: 85vh; /* Limita a altura a 85% da altura da tela */
@@ -54,7 +55,7 @@
     border: 2px solid rgba(17, 24, 39, 0.9);
   }
 }
-/* ▲▲▲ FIM DO NOVO BLOCO ▲▲▲ */
+/* ▲▲▲ FIM DO BLOCO DE SUBSTITUIÇÃO ▲▲▲ */
 
 
 
