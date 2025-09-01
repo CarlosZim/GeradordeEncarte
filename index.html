@@ -181,23 +181,25 @@
     
 	
 	/* ▼▼▼ COLE ESTE BLOCO PARA AJUSTAR OS BOTÕES NO CELULAR ▼▼▼ */
-/* ▼▼▼ SUBSTITUA A REGRA ANTERIOR POR ESTA ▼▼▼ */
-/* ▼▼▼ SUBSTITUA A REGRA ANTERIOR POR ESTA ▼▼▼ */
+
+
+/* Bloco Corrigido para a Barra de Rolagem dos Botões Flutuantes em Celulares/Tablets */
 @media (max-width: 767px) {
   .floating-buttons-container {
-    /* Define uma altura máxima para o painel não sair da tela */
-    max-height: 90vh; /* O painel pode ter no máximo 90% da altura da tela */
+    /* Define uma altura máxima para o painel não sair da tela. */
+    max-height: 90vh; /* O painel pode ocupar no máximo 90% da altura da tela. */
 
-    /* Ativa a barra de rolagem vertical APENAS se o conteúdo for maior que a altura máxima */
-    overflow-y: auto; 
+    /* Ativa a barra de rolagem vertical APENAS se o conteúdo for maior que a altura máxima. */
+    overflow-y: auto;
 
-    /* Estilos para deixar a barra de rolagem fina e discreta em navegadores (Chrome, Safari, etc) */
+    /* Estilos para a barra de rolagem no Firefox. */
     scrollbar-width: thin;
     scrollbar-color: #6b7280 #1f2937;
   }
 
+  /* Estilos para a barra de rolagem em navegadores WebKit (Chrome, Safari, Edge). */
   .floating-buttons-container::-webkit-scrollbar {
-    width: 5px;
+    width: 8px; /* Aumentei um pouco a largura para facilitar o toque no celular */
   }
 
   .floating-buttons-container::-webkit-scrollbar-track {
@@ -208,16 +210,9 @@
   .floating-buttons-container::-webkit-scrollbar-thumb {
     background-color: #6b7280;
     border-radius: 10px;
+    border: 2px solid rgba(17, 24, 39, 0.9); /* Adiciona uma pequena borda para melhor visualização */
   }
 }
-/* ▲▲▲ FIM DO BLOCO ▲▲▲ */
-
-  .floating-buttons-container::-webkit-scrollbar-thumb {
-    background-color: #6b7280;
-    border-radius: 10px;
-  }
-}
-/* ▲▲▲ FIM DO BLOCO ▲▲▲ */
 	
 		
 		/* ▼▼▼ COLE ESTE BLOCO NO FINAL DA SUA TAG <style> ▼▼▼ */
