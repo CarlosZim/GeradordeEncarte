@@ -23,6 +23,43 @@
 
 
 
+/* ▼▼▼ ADICIONE ESTE NOVO BLOCO DE CÓDIGO DENTRO DA SUA TAG <style> ▼▼▼ */
+/* Corrige o menu flutuante em telas de tablet na horizontal (paisagem) */
+@media (min-width: 768px) and (orientation: landscape) {
+  .floating-buttons-container {
+    /* Define uma altura máxima para o painel não ultrapassar a tela */
+    max-height: 85vh; /* Limita a altura a 85% da altura da tela */
+
+    /* Ativa a barra de rolagem vertical APENAS se os botões não couberem */
+    overflow-y: auto;
+
+    /* Estilos para a barra de rolagem (consistência com o modo celular) */
+    scrollbar-width: thin;
+    scrollbar-color: #6b7280 #1f2937;
+  }
+
+  /* Estilos da barra de rolagem para Chrome, Safari, etc. */
+  .floating-buttons-container::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .floating-buttons-container::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+  }
+
+  .floating-buttons-container::-webkit-scrollbar-thumb {
+    background-color: #6b7280;
+    border-radius: 10px;
+    border: 2px solid rgba(17, 24, 39, 0.9);
+  }
+}
+/* ▲▲▲ FIM DO NOVO BLOCO ▲▲▲ */
+
+
+
+
+
 /* ▼▼▼ SUBSTITUA O BLOCO ANTERIOR POR ESTE ▼▼▼ */
 @media (max-width: 767px) and (orientation: portrait) {
     /* Alinha o conteúdo principal ao topo em telas de celular */
@@ -214,6 +251,10 @@
   }
 }
 	
+		
+		
+		
+		
 		
 		/* ▼▼▼ COLE ESTE BLOCO NO FINAL DA SUA TAG <style> ▼▼▼ */
 .number-control-btn {
