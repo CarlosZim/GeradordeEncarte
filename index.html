@@ -1859,8 +1859,18 @@
     </div>
 </div>
 <div class="panel hidden space-y-6" id="panel-add-product">
+
+<div class="space-y-4 pt-4 border-t">
+    <h3 class="text-xl font-bold">Sincronizar Encarte com Lista</h3>
+    <p class="text-sm text-gray-500">
+        Cole uma nova lista de produtos para substituir TODOS os produtos do encarte atual. O sistema manterá o estilo de cada página, mas irá reordenar os produtos, recalcular os layouts e adicionar/remover páginas conforme necessário.
+    </p>
+    <textarea class="w-full bg-gray-50 dark:bg-gray-700 border rounded-lg p-2.5" id="syncFlyerTextarea" placeholder="Cole a nova lista completa aqui..." rows="5"></textarea>
+    <button class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg" id="syncFlyerBtn">Sincronizar Encarte com a Nova Lista</button>
+</div>
+
 <div class="space-y-4 pb-4 border-b">
-<h3 class="text-xl font-bold" id="productDbLabel">Busca Inteligente no Banco de Dados</h3>
+<h3 class="text-xl font-bold" id="productDbLabel">Gerar Pagina Atual</h3>
 <p class="text-sm text-gray-500">Digite um ou mais nomes de produtos (um por linha) e clique em buscar. O sistema encontrará o produto mesmo com variações no nome.</p>
 <textarea class="w-full bg-gray-50 dark:bg-gray-700 border rounded-lg p-2.5" id="productSearchTextarea" placeholder="OVOS CARTELA 30UNDS
 PEITO DE FRANGO KG
@@ -1873,6 +1883,9 @@ PEITO DE FRANGO KG
 Produto B, 5.50" rows="5"></textarea>
     <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg" id="bulkAddBtn">Gerar Post Para Instagram</button>
 </div>
+
+
+
 <div class="space-y-4 pt-4 border-t">
 <h3 class="text-xl font-bold">Adicionar (Individual)</h3>
 <label class="block text-sm font-medium">Nome do Produto</label>
@@ -2774,7 +2787,7 @@ function loadImageWithCors(url) {
 
 async function loadProductDatabase() {
     const productDbLabel = document.getElementById('productDbLabel');
-    if(productDbLabel) productDbLabel.innerHTML = 'Carregando Banco de Dados (Nuvem) ☁️...';
+    if(productDbLabel) productDbLabel.innerHTML = 'Gerar Pagina Atual';
     try {
         // A CORREÇÃO CRÍTICA ESTÁ AQUI: Adicionamos .limit(5000) para buscar mais produtos
         const { data, error } = await supabaseClient
@@ -8950,9 +8963,10 @@ function applyPageSettingsToUI(page) {
         function updatePageUI() { pageListContainer.innerHTML = ''; flyerData.pages.forEach((e, t) => { const o = document.createElement('button'); o.textContent = `Página ${t + 1}`; o.dataset.index = t; const n = 'w-full text-left p-2 rounded-md', a = 'bg-blue-600 text-white', l = 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'; o.className = `${n} ${t === flyerData.currentPageIndex ? a : l}`; o.addEventListener('click', () => switchPage(t)); pageListContainer.appendChild(o) }); useFirstPageBgContainer.classList.toggle('hidden', !(flyerData.pages.length > 0 && flyerData.pages[0].backgroundImage)) }
         
 		// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'switchPage' INTEIRA PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'switchPage' INTEIRA POR ESTA VERSÃO CORRIGIDA ▼▼▼
 function switchPage(pageIndex, saveCurrent = true) {
     if (pageIndex < 0 || pageIndex >= flyerData.pages.length) {
-        return; // Não faz nada se o índice for inválido
+        return;
     }
 
     if (saveCurrent) {
@@ -8963,12 +8977,24 @@ function switchPage(pageIndex, saveCurrent = true) {
     const currentPage = flyerData.pages[pageIndex];
 
     applyPageSettingsToUI(currentPage);
-    setCanvasSize();
+
+    // ==========================================================
+    // ===== INÍCIO DA CORREÇÃO =====
+    // ==========================================================
+    // Adicionamos um pequeno atraso para garantir que a interface e os dados
+    // sejam totalmente processados pelo navegador ANTES de redesenhar o canvas.
+    setTimeout(() => {
+        setCanvasSize(); // Esta função interna já chama o redrawCanvas()
+    }, 10); // Um atraso mínimo de 10 milissegundos é suficiente.
+    // ========================================================
+    // ===== FIM DA CORREÇÃO =====
+    // ========================================================
+
     updatePageUI();
     updateProductListUI();
-    
-    updateNavButtonStates(); // <--- ESTA É A LINHA CRÍTICA QUE RESOLVE O PROBLEMA
+    updateNavButtonStates();
 }
+// ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
 		
 		
 		
@@ -13038,7 +13064,150 @@ controlPanelContainer.addEventListener('click', (e) => {
     // reconheça a mudança e atualize o encarte, como se você tivesse digitado.
     targetInput.dispatchEvent(new Event('input', { bubbles: true }));
 });
-		
+	
+
+
+// ▼▼▼ COLE TODO ESTE BLOCO DE CÓDIGO NO FINAL DO SEU SCRIPT ▼▼▼
+
+// --- LÓGICA PARA SINCRONIZAR O ENCARTE COM UMA NOVA LISTA ---
+
+const syncFlyerBtn = document.getElementById('syncFlyerBtn');
+const syncFlyerTextarea = document.getElementById('syncFlyerTextarea');
+
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO BOTÃO 'syncFlyerBtn' POR ESTE BLOCO COMPLETO ▼▼▼
+syncFlyerBtn.addEventListener('click', async () => {
+    const text = syncFlyerTextarea.value.trim();
+    if (!text) {
+        showAlert("Por favor, cole a nova lista de produtos na área de texto.");
+        return;
+    }
+
+    const originalPageCount = flyerData.pages.length;
+    if (originalPageCount === 0) {
+        showAlert("Não há um encarte para sincronizar. Use 'Gerar Para Instagram' para criar um novo primeiro.");
+        return;
+    }
+
+    const confirmationMessage = `Isso irá substituir TODOS os produtos do encarte atual pela nova lista. O layout será recalculado e páginas extras serão adicionadas ou removidas conforme necessário. As configurações de fundo, logos e data de cada página serão mantidas. Deseja continuar?`;
+
+    // Salva o índice da página atual ANTES de qualquer alteração
+    const originalPageIndex = flyerData.currentPageIndex;
+
+    showConfirm(confirmationMessage, async (confirmed) => {
+        if (!confirmed) return;
+
+        showSpinner(true);
+        showAlert("Sincronizando encarte...");
+
+        try {
+            // ETAPA 1: Processar a nova lista
+            const lines = text.split('\n').filter(line => line.trim());
+            const pagesFromFile = [];
+            let currentPageLines = [];
+
+            for (const line of lines) {
+                if (/^p\s*\d+/i.test(line)) {
+                    if (currentPageLines.length > 0) pagesFromFile.push(currentPageLines);
+                    currentPageLines = [];
+                } else {
+                    currentPageLines.push(line);
+                }
+            }
+            if (currentPageLines.length > 0) pagesFromFile.push(currentPageLines);
+
+            // ETAPA 2: Buscar todos os produtos e suas imagens
+            const allProductPromises = pagesFromFile.flat().map(line => new Promise(async (resolve) => {
+                const parts = line.split(';');
+                const nameFromList = parts[0].trim();
+                let pricePart = '0.00';
+                if (parts.length > 1) {
+                    const parsedPrice = parseFloat(parts[1].trim().replace(',', '.'));
+                    if (!isNaN(parsedPrice)) pricePart = parsedPrice.toFixed(2);
+                }
+
+                const bestMatchName = findBestMatchInDb(nameFromList);
+                const productData = bestMatchName ? productDatabase[bestMatchName] : null;
+
+                if (productData && productData.src) {
+                    const img = await loadImageWithCors(productData.src);
+                    resolve({ name: nameFromList, price: pricePart, src: productData.src, image: img });
+                } else {
+                    resolve({ name: nameFromList, price: pricePart, src: null, image: null });
+                }
+            }));
+
+            const allResolvedProducts = await Promise.all(allProductPromises);
+
+            let productReadIndex = 0;
+            const newPageCount = pagesFromFile.length;
+
+            // ETAPA 3: Atualizar páginas existentes e criar novas
+            for (let i = 0; i < newPageCount; i++) {
+                const productsForThisPage = allResolvedProducts.slice(productReadIndex, productReadIndex + pagesFromFile[i].length);
+                productReadIndex += pagesFromFile[i].length;
+
+                if (i < originalPageCount) {
+                    // ATUALIZA UMA PÁGINA EXISTENTE
+                    const pageToUpdate = flyerData.pages[i];
+                    pageToUpdate.products = productsForThisPage.map(p => ({ ...p, ...calculateSmartImageDefaults(p.image) }));
+                    pageToUpdate.manualLayout = generateAutoLayout(pageToUpdate.products.length);
+                    pageToUpdate.settings.predefinedLayout = 'manual';
+                } else {
+                    // CRIA UMA NOVA PÁGINA
+                    const templatePage = flyerData.pages[originalPageCount - 1];
+                    const newPage = createDefaultPage();
+                    newPage.settings = JSON.parse(JSON.stringify(templatePage.settings));
+
+                    newPage.backgroundImage = templatePage.backgroundImage;
+                    newPage.backgroundImageSrc = templatePage.backgroundImageSrc;
+
+                    newPage.products = productsForThisPage.map(p => ({ ...p, ...calculateSmartImageDefaults(p.image) }));
+                    newPage.manualLayout = generateAutoLayout(newPage.products.length);
+                    newPage.settings.predefinedLayout = 'manual';
+
+                    flyerData.pages.push(newPage);
+                }
+            }
+
+            // ETAPA 4: Remove páginas extras
+            if (newPageCount < originalPageCount) {
+                flyerData.pages.splice(newPageCount);
+            }
+
+            // ETAPA 5: Finaliza e atualiza a interface
+            // ==========================================================
+            // ===== INÍCIO DA CORREÇÃO APLICADA AQUI =====
+            // ==========================================================
+            let targetPageIndex = originalPageIndex;
+
+            // Se a página original foi deletada (porque a nova lista é mais curta)...
+            if (targetPageIndex >= flyerData.pages.length) {
+                targetPageIndex = Math.max(0, flyerData.pages.length - 1); // ...vá para a nova última página.
+            }
+
+            // Atualiza a visualização para a página correta, forçando o redraw do canvas.
+            switchPage(targetPageIndex, false); 
+            // ========================================================
+            // ===== FIM DA CORREÇÃO =====
+            // ========================================================
+
+            showAlert(`Encarte sincronizado! O projeto agora tem ${flyerData.pages.length} página(s).`);
+
+        } catch (error) {
+            console.error("Erro ao sincronizar encarte:", error);
+            showAlert("Ocorreu um erro inesperado durante a sincronização.");
+        } finally {
+            syncFlyerTextarea.value = '';
+            showSpinner(false);
+        }
+    });
+});
+
+// ▲▲▲ FIM DO BLOCO DE SUBSTITUIÇÃO ▲▲▲
+
+// ▲▲▲ FIM DO BLOCO ▲▲▲
+
+	
 		
     </script>
 </body>
