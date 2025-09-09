@@ -581,6 +581,12 @@
         <option value="dashed-rounded">Pontilhada Arredondada</option>
         <option value="none">Sem Borda</option>
     </select>
+	
+	
+    
+	
+	
+	
 </div>
 <div id="manual-layout-controls">
 <label class="block text-sm font-medium mb-2">Estrutura das Linhas (Manual)</label>
@@ -626,6 +632,38 @@
 <label class="block text-sm font-medium mb-1" for="slotColor">Cor da Borda</label>
 <input class="w-full h-10 p-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer" id="slotColor" type="color" value="#007c11"/>
 </div>
+
+
+<div class="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+    <div class="flex items-center gap-2">
+        <input class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="enableInnerSlotBorder" type="checkbox" checked/>
+        <label class="text-sm font-medium" for="enableInnerSlotBorder">Ativar Borda Interna do Produto</label>
+    </div>
+    <div class="hidden space-y-2" id="inner-slot-border-options">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-1" for="innerSlotBorderColor">Cor da Borda Interna</label>
+                <input class="w-full h-10 p-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer" id="innerSlotBorderColor" type="color" value="#007c11"/>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1" for="innerSlotBorderWidth">Espessura (px)</label>
+                <div class="number-input-wrapper">
+                    <button type="button" class="side-control-btn" data-action="decrement" data-target="innerSlotBorderWidth">-</button>
+                    <input id="innerSlotBorderWidth" min="1" type="number" value="3">
+                    <button type="button" class="side-control-btn" data-action="increment" data-target="innerSlotBorderWidth">+</button>
+                </div>
+            </div>
+			
+			
+			
+			
+			
+        </div>
+    </div>
+</div>
+
+
+
 </div>
 <div class="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
 <h4 class="text-lg font-semibold -mb-2">Fundo do Produto</h4>
@@ -909,6 +947,14 @@
         <button id="quickEditMoveDown" title="Mover para Baixo" class="p-2 rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
         </button>
+		
+		<div class="flex items-center gap-1" title="Ativar Borda Interna">
+        <input type="checkbox" id="quickEditInnerBorder" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer">
+        <label for="quickEditInnerBorder" class="text-sm font-semibold text-teal-400 cursor-pointer">Ativar Borda Interna</label>
+    </div>
+		
+		
+		
         <label class="cursor-pointer p-1 rounded-md" title="Cor de Fundo do Produto">
              <input type="color" id="quickEditBgColor" class="h-7 w-10 rounded border-none cursor-pointer">
         </label>
@@ -3696,71 +3742,136 @@ activePanelId = null; menuItems.forEach(i => i.classList.remove('bg-blue-600'));
                 lineBgSrc: null, lineBgImg: null,
                 isTwoLineLayout: false,
                 secondLineProducts: 6,
+				    innerBorderEnabled: false, // <-- ADICIONE ESTA LINHA
+
                 ...lineData 
             };
 
             // HTML atualizado com a opção "Pontilhada Arredondada"
             newLine.innerHTML = `
-                <div class="flex justify-between items-center mb-2">
-                    <label class="line-label text-sm font-bold text-white bg-blue-500 px-2 py-1 rounded-md">Linha ${lineIndex + 1}:</label>
-                    <button class="remove-line-btn text-red-500 hover:text-red-700 font-bold p-1 text-2xl">&times;</button>
-                </div>
-                <div class="grid grid-cols-2 gap-x-4 gap-y-2">
-                    <div><label class="text-xs block">Produtos (1ª Linha)</label><input type="number" class="line-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.products}" min="1"></div>
-                    <div>
-                        <label class="text-xs block">Borda</label>
-                        <select class="line-border-style-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm">
-                            <option value="straight" ${data.borderStyle === 'straight' ? 'selected' : ''}>Reta</option>
-                            <option value="rounded" ${data.borderStyle === 'rounded' ? 'selected' : ''}>Arredondada</option>
-                            <option value="dashed" ${data.borderStyle === 'dashed' ? 'selected' : ''}>Pontilhada Reta</option>
-                            <option value="dashed-rounded" ${data.borderStyle === 'dashed-rounded' ? 'selected' : ''}>Pontilhada Arredondada</option>
-                            <option value="none" ${data.borderStyle === 'none' ? 'selected' : ''}>Sem Borda</option>
-                        </select>
-                    </div>
-                    <div class="col-span-2 grid grid-cols-2 gap-2">
-                        <div><label class="text-xs block">Esp. Slots</label><input type="number" class="line-col-spacing-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.colSpacing}" min="0"></div>
-                        <div><label class="text-xs block">Esp. Abaixo</label><input type="number" class="line-row-spacing-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.rowSpacing}" min="0"></div>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600 space-y-3">
-                    <div class="flex items-center gap-2"><input type="checkbox" class="line-title-toggle h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${data.useFirstSlotAsTitle ? 'checked' : ''}><label class="text-sm font-medium">Usar 1º item como título de oferta</label></div>
-                    <div class="line-title-controls ${data.useFirstSlotAsTitle ? '' : 'hidden'} space-y-3">
-                        
-                        <div>
-                            <label class="text-xs block">Estilo do Bloco de Título</label>
-                            <select class="line-title-style-select w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm">
-                                <option value="individual" ${data.titleStyle === 'individual' ? 'selected' : ''}>Slots Separados</option>
-                                <option value="unified" ${data.titleStyle === 'unified' ? 'selected' : ''}>Bloco Único</option>
-                            </select>
-                        </div>
-                        
-                        <div class="two-line-controls ${data.titleStyle === 'unified' ? '' : 'hidden'} space-y-3 pt-3 border-t border-gray-600">
-                            <div class="flex items-center gap-2">
-                                <input type="checkbox" class="line-two-line-toggle h-4 w-4 rounded" ${data.isTwoLineLayout ? 'checked' : ''}>
-                                <label class="text-sm font-medium">Ativar layout de 2 linhas</label>
-                            </div>
-                            <div class="second-line-options ${data.isTwoLineLayout ? '' : 'hidden'}">
-                                <label class="text-xs block">Produtos na 2ª Linha</label>
-                                <input type="number" class="line-second-line-products w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.secondLineProducts}" min="1">
-                            </div>
-                        </div>
+    <div class="flex justify-between items-center mb-2">
+        <label class="line-label text-sm font-bold text-white bg-blue-500 px-2 py-1 rounded-md">Linha ${lineIndex + 1}:</label>
+        <button class="remove-line-btn text-red-500 hover:text-red-700 font-bold p-1 text-2xl">&times;</button>
+    </div>
+    
+<div class="grid grid-cols-2 gap-x-4 gap-y-2">
+   
+    
+    <div><label class="text-xs block">Produtos (1ª Linha)</label><input type="number" class="line-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.products}" min="1"></div>
+    <div>
+        <label class="text-xs block">Borda</label>
+        <select class="line-border-style-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm">
+            <option value="straight" ${data.borderStyle === 'straight' ? 'selected' : ''}>Reta</option>
+            <option value="rounded" ${data.borderStyle === 'rounded' ? 'selected' : ''}>Arredondada</option>
+            <option value="dashed" ${data.borderStyle === 'dashed' ? 'selected' : ''}>Pontilhada Reta</option>
+            <option value="dashed-rounded" ${data.borderStyle === 'dashed-rounded' ? 'selected' : ''}>Pontilhada Arredondada</option>
+            <option value="none" ${data.borderStyle === 'none' ? 'selected' : ''}>Sem Borda</option>
+        </select>
+    </div>
+    <div class="col-span-2 grid grid-cols-2 gap-2">
+        <div><label class="text-xs block">Esp. Slots</label><input type="number" class="line-col-spacing-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.colSpacing}" min="0"></div>
+        <div><label class="text-xs block">Esp. Abaixo</label><input type="number" class="line-row-spacing-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.rowSpacing}" min="0"></div>
+    </div>
+    
+    <div class="col-span-2 flex items-center gap-2 mt-2 pt-2 border-t border-gray-600">
+        <input type="checkbox" class="line-inner-border-toggle h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" ${data.innerBorderEnabled ? 'checked' : ''}>
+        <label class="text-sm font-medium text-teal-400">Ativar Borda Interna (nesta linha)</label>
+    </div>
+    </div>
+	
+	
+    <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600 space-y-3">
+        <div class="flex items-center gap-2"><input type="checkbox" class="line-title-toggle h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${data.useFirstSlotAsTitle ? 'checked' : ''}><label class="text-sm font-medium">Usar 1º item como título de oferta</label></div>
+        <div class="line-title-controls ${data.useFirstSlotAsTitle ? '' : 'hidden'} space-y-3">
 
-                        <input type="text" class="line-title-text w-full bg-gray-50 dark:bg-gray-700 border rounded p-1 text-sm" value="${data.titleText}" placeholder="Título da Oferta">
-                        <div><label class="text-xs block">Tamanho da Fonte do Título</label><input type="number" class="line-title-font-size w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.titleFontSize}" min="10"></div>
-                        <label class="block w-full text-center text-xs text-white bg-indigo-600 hover:bg-indigo-700 font-bold py-2 px-4 rounded-lg cursor-pointer">Adicionar Logo <input type="file" class="line-title-logo-input hidden" accept="image/*"></label>
-                        
-                        <label class="line-bg-upload-label ${data.titleStyle === 'unified' ? '' : 'hidden'} block w-full text-center text-xs text-white bg-teal-600 hover:bg-teal-700 font-bold py-2 px-4 rounded-lg cursor-pointer">
-                            Fundo do Bloco <input type="file" class="line-bg-image-input hidden" accept="image/*">
-                        </label>
+            <div>
+                <label class="text-xs block">Estilo do Bloco de Título</label>
+                <select class="line-title-style-select w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm">
+                    <option value="individual" ${data.titleStyle === 'individual' ? 'selected' : ''}>Slots Separados</option>
+                    <option value="unified" ${data.titleStyle === 'unified' ? 'selected' : ''}>Bloco Único</option>
+                </select>
+            </div>
 
-                        <div class="flex items-center gap-2"><input type="checkbox" class="line-title-bg-toggle h-4 w-4 rounded" ${data.titleBgEnabled ? 'checked' : ''}><label class="text-sm font-medium">Cor Fundo Título</label><input type="color" class="line-title-bg-color w-8 h-8 p-0" value="${data.titleBgColor}"></div>
-                        <div><label class="text-xs block">Ajuste da Imagem do Título</label><select class="line-title-aspect-ratio w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm"><option value="fill" ${data.titleAspectRatio === 'fill' ? 'selected' : ''}>Distorcer</option><option value="contain" ${data.titleAspectRatio === 'contain' ? 'selected' : ''}>Manter Proporção</option></select></div>
-                        <div><label class="text-xs block">Largura Título (%)</label><input type="range" class="line-title-width w-full" min="10" max="200" value="${data.titleWidthPercent}"></div>
-                        <div><label class="text-xs block">Altura Título (%)</label><input type="range" class="line-title-height w-full" min="10" max="200" value="${data.titleHeightPercent}"></div>
-                    </div>
-                </div>`;
+            <div class="two-line-controls ${data.titleStyle === 'unified' ? '' : 'hidden'} space-y-3 pt-3 border-t border-gray-600">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" class="line-two-line-toggle h-4 w-4 rounded" ${data.isTwoLineLayout ? 'checked' : ''}>
+                    <label class="text-sm font-medium">Ativar layout de 2 linhas</label>
+                </div>
+                <div class="second-line-options ${data.isTwoLineLayout ? '' : 'hidden'}">
+                    <label class="text-xs block">Produtos na 2ª Linha</label>
+                    <input type="number" class="line-second-line-products w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.secondLineProducts}" min="1">
+                </div>
+            </div>
+
+            <input type="text" class="line-title-text w-full bg-gray-50 dark:bg-gray-700 border rounded p-1 text-sm" value="${data.titleText}" placeholder="Título da Oferta">
+            <div><label class="text-xs block">Tamanho da Fonte do Título</label><input type="number" class="line-title-font-size w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.titleFontSize}" min="10"></div>
+            <label class="block w-full text-center text-xs text-white bg-indigo-600 hover:bg-indigo-700 font-bold py-2 px-4 rounded-lg cursor-pointer">Adicionar Logo <input type="file" class="line-title-logo-input hidden" accept="image/*"></label>
+
+            <label class="line-bg-upload-label ${data.titleStyle === 'unified' ? '' : 'hidden'} block w-full text-center text-xs text-white bg-teal-600 hover:bg-teal-700 font-bold py-2 px-4 rounded-lg cursor-pointer">
+                Fundo do Bloco <input type="file" class="line-bg-image-input hidden" accept="image/*">
+            </label>
+
+            <div class="flex items-center gap-2"><input type="checkbox" class="line-title-bg-toggle h-4 w-4 rounded" ${data.titleBgEnabled ? 'checked' : ''}><label class="text-sm font-medium">Cor Fundo Título</label><input type="color" class="line-title-bg-color w-8 h-8 p-0" value="${data.titleBgColor}"></div>
+            <div><label class="text-xs block">Ajuste da Imagem do Título</label><select class="line-title-aspect-ratio w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm"><option value="fill" ${data.titleAspectRatio === 'fill' ? 'selected' : ''}>Distorcer</option><option value="contain" ${data.titleAspectRatio === 'contain' ? 'selected' : ''}>Manter Proporção</option></select></div>
+            <div><label class="text-xs block">Largura Título (%)</label><input type="range" class="line-title-width w-full" min="10" max="200" value="${data.titleWidthPercent}"></div>
+            <div><label class="text-xs block">Altura Título (%)</label><input type="range" class="line-title-height w-full" min="10" max="200" value="${data.titleHeightPercent}"></div>
+        </div>
+    </div>`;
+
             
             lineLayoutContainer.appendChild(newLine);
+			
+			
+			
+			// ▼▼▼ COLE ESTE BLOCO DE CÓDIGO NO FINAL DA SUA FUNÇÃO addNewLine ▼▼▼
+
+// Pega a referência do checkbox que acabamos de criar dentro da nova linha
+const innerBorderToggle = newLine.querySelector('.line-inner-border-toggle');
+
+// Adiciona um "ouvinte" que será acionado toda vez que o checkbox for clicado
+innerBorderToggle.addEventListener('change', (e) => {
+    // Pega o estado atual do checkbox (marcado = true, desmarcado = false)
+    const isChecked = e.target.checked;
+    
+    // Encontra o elemento da linha inteira para descobrir seu índice
+    const lineElement = e.target.closest('.line-definition');
+    const clickedLineIndex = parseInt(lineElement.dataset.lineIndex, 10);
+    
+    // Pega a estrutura atual do layout e a página atual
+    const currentLayout = getLayoutFromInputs();
+    const currentPage = flyerData.pages[flyerData.currentPageIndex];
+
+    // --- Lógica para descobrir quais produtos pertencem a esta linha ---
+    let productStartIndex = 0;
+    // Soma a quantidade de produtos das linhas anteriores para encontrar o início
+    for (let i = 0; i < clickedLineIndex; i++) {
+        productStartIndex += currentLayout[i].products;
+    }
+    // Pega a quantidade de produtos na linha que foi clicada
+    const productsOnThisLine = currentLayout[clickedLineIndex].products;
+    const productEndIndex = productStartIndex + productsOnThisLine;
+    // ----------------------------------------------------------------
+
+    // Itera apenas sobre os produtos que estão na linha clicada
+    for (let i = productStartIndex; i < productEndIndex; i++) {
+        // Verifica se o produto existe para evitar erros
+        if (currentPage.products[i]) {
+            // Define o estado da borda interna do produto para ser IGUAL ao do checkbox da linha
+            currentPage.products[i].innerBorderEnabled = isChecked;
+        }
+    }
+
+    // Atualiza o painel "No Encarte" para mostrar os checkboxes "B.I." marcados/desmarcados
+    updateProductListUI();
+    // Redesenha o encarte para mostrar o resultado visual
+    redrawCanvas();
+});
+
+// ▲▲▲ FIM DO BLOCO PARA COLAR ▲▲▲
+			
+			
+			
+			
             
             flyerData.pages[flyerData.currentPageIndex].lineObjects[lineIndex] = { 
                 titleLogoImg: data.titleLogoImg, titleLogoSrc: data.titleLogoSrc,
@@ -3824,6 +3935,9 @@ activePanelId = null; menuItems.forEach(i => i.classList.remove('bg-blue-600'));
                 // Lendo e salvando as novas propriedades de 2 linhas
                 isTwoLineLayout: def.querySelector('.line-two-line-toggle')?.checked || false,
                 secondLineProducts: parseInt(def.querySelector('.line-second-line-products')?.value, 10) || 6,
+				       innerBorderEnabled: def.querySelector('.line-inner-border-toggle').checked,
+ 
+
                 // ---
                 titleLogoSrc: flyerData.pages[flyerData.currentPageIndex].lineObjects[index]?.titleLogoSrc || null,
                 titleLogoImg: flyerData.pages[flyerData.currentPageIndex].lineObjects[index]?.titleLogoImg || null,
@@ -4075,6 +4189,11 @@ function setupQuickEditListeners() {
     const moveDownBtn = document.getElementById('quickEditMoveDown');
     const bgColorInput = document.getElementById('quickEditBgColor');
     const deleteBtn = document.getElementById('quickEditDelete');
+// ▼▼▼ ADICIONE ESTE BLOCO DE CÓDIGO AQUI ▼▼▼
+const innerBorderCheckbox = document.getElementById('quickEditInnerBorder');
+innerBorderCheckbox.addEventListener('change', (e) => {
+    applyChangeToSelectedProducts('innerBorderEnabled', e.target.checked);
+});
 
     const updateProductProperty = (property, value) => {
         const selectedIndices = getSelectedImageIndices();
@@ -5350,6 +5469,10 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
 }
 
 
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'drawProduct' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProduct POR ESTA ▼▼▼
+// ▼▼▼ APAGUE SUA FUNÇÃO drawProduct ANTIGA E COLE ESTA NO LUGAR ▼▼▼
+
 function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFirstRow, line, isPredefined = false) {
     const pageSettings = flyerData.pages[flyerData.currentPageIndex].settings;
     const balloonStyle = isFirstRow ? pageSettings.balloons.firstLine : pageSettings.balloons.otherLines;
@@ -5367,18 +5490,63 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         productName: product.name, price: product.price, integerPart, decimalPart,
         scaleX: priceScaleX, scaleY: priceScaleY,
         descScaleX: descScaleX, descScaleY: descScaleY,
-        priceOffsetX: priceOffsetX, // Passa o deslocamento X
-        priceOffsetY: priceOffsetY  // Passa o deslocamento Y
+        priceOffsetX: priceOffsetX,
+        priceOffsetY: priceOffsetY
     };
 
     const padding = 15;
-
     const isUnifiedHighlight = isFirstRow && pageSettings.highlight.enabled && pageSettings.highlight.style === 'unified';
+
     if (!isUnifiedHighlight) {
         const defaultSlotRgbaColor = pageSettings.slotBackground.enabled ? hexToRgba(pageSettings.slotBackground.color, pageSettings.slotBackground.opacity) : 'transparent';
         const finalBackgroundColor = product.backgroundColor || backgroundColor || defaultSlotRgbaColor;
-        if (finalBackgroundColor && finalBackgroundColor !== "transparent") { ctx.fillStyle = finalBackgroundColor; if (line.borderStyle === "rounded" || line.borderStyle === "dashed-rounded") { pathRoundedRect(ctx, x, y, cellWidth, cellHeight, 20); ctx.fill(); } else { ctx.fillRect(x, y, cellWidth, cellHeight); } }
+        if (finalBackgroundColor && finalBackgroundColor !== "transparent") {
+            ctx.fillStyle = finalBackgroundColor;
+            if (line.borderStyle === "rounded" || line.borderStyle === "dashed-rounded") {
+                pathRoundedRect(ctx, x, y, cellWidth, cellHeight, 20);
+                ctx.fill();
+            } else {
+                ctx.fillRect(x, y, cellWidth, cellHeight);
+            }
+        }
     }
+
+    // =================================================================
+    // ▼▼▼ LÓGICA HÍBRIDA DA BORDA INTERNA (A PARTE IMPORTANTE) ▼▼▼
+    // =================================================================
+    const innerBorderSettings = pageSettings.innerSlotBorder;
+    
+    // Passo 1: Verifica se o interruptor GLOBAL e o do PRODUTO (B.I.) estão ligados.
+    const baseCondition = innerBorderSettings && innerBorderSettings.enabled && product.innerBorderEnabled;
+    
+    // Passo 2: Verifica a condição específica do layout.
+    // - Para Layout Manual, checa o botão da LINHA.
+    // - Para Grades Pré-definidas, ignora o botão da linha (sempre permite).
+    const layoutCondition = !isPredefined ? line.innerBorderEnabled : true;
+
+    // A borda só aparece se AMBAS as condições (base e layout) forem verdadeiras.
+    if (baseCondition && layoutCondition) {
+        ctx.save();
+        ctx.strokeStyle = innerBorderSettings.color;
+        ctx.lineWidth = innerBorderSettings.width;
+        const inset = (ctx.lineWidth / 2) + 5;
+        const innerX = x + inset;
+        const innerY = y + inset;
+        const innerW = cellWidth - inset * 2;
+        const innerH = cellHeight - inset * 2;
+
+        if (line.borderStyle === "rounded" || line.borderStyle === "dashed-rounded") {
+            const innerRadius = Math.max(0, 20 - inset);
+            pathRoundedRect(ctx, innerX, innerY, innerW, innerH, innerRadius);
+            ctx.stroke();
+        } else {
+            ctx.strokeRect(innerX, innerY, innerW, innerH);
+        }
+        ctx.restore();
+    }
+    // ▲▲▲ FIM DA LÓGICA ▲▲▲
+    // =================================================================
+
     const imageAreaScale = (pageSettings.imageAreaScale || 100) / 100;
     const imageAreaW = cellWidth * imageAreaScale;
     const imageAreaHeight = cellHeight * imageAreaScale;
@@ -5397,7 +5565,7 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         else { ctx.strokeRect(x, y, cellWidth, cellHeight); }
         ctx.restore();
     }
-
+    
     const stylesWithOwnDescription = ['yellow-tag', 'desc-left-red-tag', 'desc-left-3d-tag', 'gigante-tag', 'text-outline', 'desc-left-custom-balloon'];
     let needsDefaultDescription = !stylesWithOwnDescription.includes(balloonStyle);
 
@@ -5473,24 +5641,23 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
             case 'circle-model':
                 drawPriceBalloonCircleModel(ctx, x + (cellWidth - (cellWidth * 0.85)) / 2, balloonY, cellWidth * 0.85, balloonHeight, priceDetails);
                 break;
-            // ▼▼▼ SUBSTITUA O CASE 'rectangle' DENTRO DA FUNÇÃO drawProduct ▼▼▼
-case 'rectangle':
-    const settings = pageSettings.balloonStyles.default;
-    drawPriceBalloonRectangle(ctx, x + (cellWidth - (cellWidth * 0.85)) / 2, balloonY, cellWidth * 0.85, balloonHeight, { color: settings.color });
-    ctx.save();
-    const textCenterX = x + (cellWidth / 2) + (product.priceOffsetX || 0); // Corrigido para 'product'
-    const textCenterY = balloonY + balloonHeight / 2 + (product.priceOffsetY || 0); // Corrigido para 'product'
-    ctx.translate(textCenterX, textCenterY);
-    ctx.scale(priceScaleX, priceScaleY);
-    const priceFontSize = balloonHeight * .6;
-    ctx.font = `bold ${priceFontSize}px '${settings.price.family || 'Anton'}'`;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const fullPriceText = `R$ ${integerPart},${decimalPart}`;
-    ctx.fillText(fullPriceText, 0, 0);
-    ctx.restore();
-    break;
+            case 'rectangle':
+                const settings = pageSettings.balloonStyles.default;
+                drawPriceBalloonRectangle(ctx, x + (cellWidth - (cellWidth * 0.85)) / 2, balloonY, cellWidth * 0.85, balloonHeight, { color: settings.color });
+                ctx.save();
+                const textCenterX = x + (cellWidth / 2) + (product.priceOffsetX || 0);
+                const textCenterY = balloonY + balloonHeight / 2 + (product.priceOffsetY || 0);
+                ctx.translate(textCenterX, textCenterY);
+                ctx.scale(priceScaleX, priceScaleY);
+                const priceFontSize = balloonHeight * .6;
+                ctx.font = `bold ${priceFontSize}px '${settings.price.family || 'Anton'}'`;
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                const fullPriceText = `R$ ${integerPart},${decimalPart}`;
+                ctx.fillText(fullPriceText, 0, 0);
+                ctx.restore();
+                break;
             case 'yellow-tag':
                 const fontSettings = pageSettings.fonts.yellowTag;
                 const priceSettings = pageSettings.balloonStyles.yellowTag;
@@ -5530,6 +5697,8 @@ function drawPredefinedGrid(layoutName, productGridTopY, productGridBottomY) {
     let productIndex = 0;
     const currentPage = flyerData.pages[flyerData.currentPageIndex];
     const pageSettings = currentPage.settings;
+	    const isInnerBorderEnabledForGrid = pageSettings.predefinedGridInnerBorder || false;
+
     const lateralMargin = pageSettings.margins.lateral;
     const w = canvas.width - 2 * lateralMargin;
     const h = productGridBottomY - productGridTopY;
@@ -5539,7 +5708,15 @@ function drawPredefinedGrid(layoutName, productGridTopY, productGridBottomY) {
 
     const drawSlot = (pIndex, x, y, pW, pH, isHighlight = false) => {
         productSlots.push({ x: x + lateralMargin, y: y, width: pW, height: pH, productIndex: pIndex });
-        const lineStyle = { borderStyle: borderStyle, descAlignment: 'center', priceAlignment: 'center' };
+        
+		const lineStyle = { 
+            borderStyle: borderStyle, 
+            descAlignment: 'center', 
+            priceAlignment: 'center',
+            innerBorderEnabled: isInnerBorderEnabledForGrid // Adiciona a propriedade aqui
+        };
+		
+		
         if (pIndex < currentPage.products.length) {
             drawProduct(currentPage.products[pIndex], x + lateralMargin, y, pW, pH, isHighlight ? highlightColor : null, isHighlight, lineStyle, true);
         } else {
@@ -6927,11 +7104,15 @@ function redrawCanvas() {
 		
 		
         
-        function drawPlaceholderSlot(x, y, w, h, borderStyle) {
+        // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'drawPlaceholderSlot' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+// VERSÃO NOVA E CORRIGIDA (COPIE E COLE ESTA FUNÇÃO INTEIRA)
+function drawPlaceholderSlot(x, y, w, h, lineStyle) {
     ctx.save();
     const pageSettings = flyerData.pages[flyerData.currentPageIndex].settings;
-    const defaultSlotRgbaColor = pageSettings.slotBackground.enabled ? hexToRgba(pageSettings.slotBackground.color, pageSettings.slotBackground.opacity) : 'transparent';
+    const borderStyle = lineStyle.borderStyle;
     
+    const defaultSlotRgbaColor = pageSettings.slotBackground.enabled ? hexToRgba(pageSettings.slotBackground.color, pageSettings.slotBackground.opacity) : 'transparent';
+
     if ("transparent" !== defaultSlotRgbaColor) {
         ctx.fillStyle = defaultSlotRgbaColor;
         if (borderStyle === "rounded" || borderStyle === "dashed-rounded") {
@@ -6942,15 +7123,17 @@ function redrawCanvas() {
         }
     }
 
+    // O bloco da borda interna foi removido daqui.
+
     if (borderStyle !== 'none') {
         const borderColor = pageSettings.slotBorder.customColorEnabled ? pageSettings.slotBorder.color : '#007c11';
         ctx.strokeStyle = borderColor;
         ctx.lineWidth = 1.5;
-        
+
         if (borderStyle === 'dashed' || borderStyle === 'dashed-rounded') {
             ctx.setLineDash([6, 3]);
         }
-        
+
         if (borderStyle === 'rounded' || borderStyle === 'dashed-rounded') {
             pathRoundedRect(ctx, x, y, w, h, 20);
             ctx.stroke();
@@ -6958,7 +7141,7 @@ function redrawCanvas() {
             ctx.strokeRect(x, y, w, h);
         }
     }
-    
+
     ctx.restore();
 }
         // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO updateProductListUI PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
@@ -6975,6 +7158,12 @@ function updateProductListUI() {
     productListDiv.innerHTML = currentPage.products.length === 0 ? `<p class="text-gray-500 text-sm">Nenhum produto adicionado.</p>` : '';
 
     currentPage.products.forEach((p, index) => {
+        // Assegura que a propriedade existe para compatibilidade com projetos antigos
+        if (p.innerBorderEnabled === undefined) {
+            p.innerBorderEnabled = false;
+        }
+
+        // O resto do código da imagem continua o mesmo...
         if (!p.images) p.images = [];
         if (!p.srcs) p.srcs = [];
         if (p.image && p.images.length === 0) {
@@ -6984,43 +7173,36 @@ function updateProductListUI() {
         if (typeof p.activeImageIndex !== 'number') p.activeImageIndex = 0;
         if (!p.activeImageIndices) p.activeImageIndices = [0];
 
-
-        // 1. Contêiner principal do CARD, agora com layout em coluna (flex-col)
         const item = document.createElement('div');
         item.className = 'product-list-item bg-gray-100 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-600 flex flex-col gap-2';
         item.dataset.index = index;
 
-        // 2. Linha de cima: Imagem + Inputs de Texto
         const topRow = document.createElement('div');
         topRow.className = 'flex items-center gap-3 w-full';
 
+        // ... (código da imagem e dos inputs de nome/preço continua o mesmo)
         const imageContainer = document.createElement('div');
         imageContainer.className = 'flex-shrink-0 relative group';
         const imgPreview = document.createElement('img');
         imgPreview.className = 'w-14 h-14 object-cover rounded-md bg-gray-200 cursor-pointer';
-        
         const activeImg = p.images[p.activeImageIndices[0]] || p.images[0];
         imgPreview.src = activeImg ? activeImg.src : 'https://placehold.co/64x64/e2e8f0/adb5bd?text=Sem+Foto';
         imgPreview.addEventListener('click', () => openImageGalleryModal(index));
         imageContainer.appendChild(imgPreview);
-        
         if (p.images.length > 1) {
             const imageCountBadge = document.createElement('div');
             imageCountBadge.className = 'absolute -bottom-1 -right-1 bg-blue-600 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-gray-100 dark:border-gray-700';
             imageCountBadge.textContent = p.images.length;
             imageContainer.appendChild(imageCountBadge);
         }
-
         const inputsContainer = document.createElement('div');
         inputsContainer.className = 'flex-grow flex flex-col gap-1 min-w-0';
-
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.value = p.name;
         nameInput.dataset.index = index;
         nameInput.className = 'edit-name w-full bg-white dark:bg-gray-700 border rounded p-1.5 text-sm';
         inputsContainer.appendChild(nameInput);
-
         const priceInput = document.createElement('input');
         priceInput.type = 'number';
         priceInput.value = p.price;
@@ -7028,18 +7210,16 @@ function updateProductListUI() {
         priceInput.dataset.index = index;
         priceInput.className = 'edit-price w-full bg-white dark:bg-gray-700 border rounded p-1.5 text-sm';
         inputsContainer.appendChild(priceInput);
-        
         topRow.appendChild(imageContainer);
         topRow.appendChild(inputsContainer);
 
-        // 3. Linha de baixo: Barra de Ferramentas com TODOS os botões
         const bottomRow = document.createElement('div');
         bottomRow.className = 'flex items-center justify-around w-full pt-2 mt-1 border-t border-gray-200 dark:border-gray-700';
 
         const handle = document.createElement('div');
         handle.className = 'drag-handle cursor-move p-2';
         handle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>`;
-        item.draggable = true; // Habilita o arrastar no item inteiro
+        item.draggable = true;
         
         const upButton = document.createElement('button');
         upButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" /></svg>`;
@@ -7062,6 +7242,27 @@ function updateProductListUI() {
         colorInput.className = 'edit-bgcolor h-7 w-10 rounded border-none cursor-pointer';
         colorLabel.appendChild(colorInput);
         
+        // ▼▼▼ NOVO CHECKBOX DE BORDA INTERNA ADICIONADO AQUI ▼▼▼
+        const innerBorderContainer = document.createElement('div');
+        innerBorderContainer.className = 'flex items-center gap-1 p-2';
+        const innerBorderCheckbox = document.createElement('input');
+        innerBorderCheckbox.type = 'checkbox';
+        innerBorderCheckbox.checked = p.innerBorderEnabled;
+        innerBorderCheckbox.id = `inner-border-toggle-${index}`;
+        innerBorderCheckbox.className = 'h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer';
+        innerBorderCheckbox.addEventListener('change', (e) => {
+            p.innerBorderEnabled = e.target.checked;
+            redrawCanvas();
+        });
+        const innerBorderLabel = document.createElement('label');
+        innerBorderLabel.htmlFor = `inner-border-toggle-${index}`;
+        innerBorderLabel.textContent = 'B.I.'; // Abreviação para "Borda Interna"
+        innerBorderLabel.title = 'Ativar Borda Interna';
+        innerBorderLabel.className = 'text-xs font-semibold text-teal-400 cursor-pointer';
+        innerBorderContainer.appendChild(innerBorderCheckbox);
+        innerBorderContainer.appendChild(innerBorderLabel);
+        // ▲▲▲ FIM DO NOVO CHECKBOX ▲▲▲
+
         const deleteBtn = document.createElement('button');
         deleteBtn.innerHTML = '&times;';
         deleteBtn.dataset.index = index;
@@ -7070,10 +7271,10 @@ function updateProductListUI() {
         bottomRow.appendChild(handle);
         bottomRow.appendChild(upButton);
         bottomRow.appendChild(downButton);
+        bottomRow.appendChild(innerBorderContainer); // Adiciona o novo controle
         bottomRow.appendChild(colorLabel);
         bottomRow.appendChild(deleteBtn);
 
-        // 4. Monta o card final
         item.appendChild(topRow);
         item.appendChild(bottomRow);
 
@@ -7722,6 +7923,8 @@ function addProductWithDefaults(productData) {
         // Padrões de imagem e de layout
         ...smartDefaults,
         backgroundColor: null,
+		        innerBorderEnabled: false, // <-- ADICIONE ESTA LINHA
+
         descScaleX: 100,
         descScaleY: 100,
         priceScaleX: 100,
@@ -8059,6 +8262,7 @@ function updateImageControlsUI() {
         document.getElementById('quickEditName').value = firstProduct.name;
         document.getElementById('quickEditPrice').value = firstProduct.price;
         document.getElementById('quickEditBgColor').value = firstProduct.backgroundColor || '#FFFFFF';
+    document.getElementById('quickEditInnerBorder').checked = firstProduct.innerBorderEnabled || false;
 
         const activeImg = firstProduct.images[firstProduct.activeImageIndices[0]] || firstProduct.images[0];
         document.getElementById('quickEditImagePreview').src = activeImg ? activeImg.src : '';
@@ -8109,6 +8313,8 @@ function applyChangeToSelectedProducts(property, value) {
             currentPage.products[index][property] = value;
         }
     });
+	    updateProductListUI(); // <-- ADICIONE ESTA LINHA
+
     redrawCanvas();
 }
 	   
@@ -8375,6 +8581,10 @@ function createDefaultPage() {
 
 slogan: { enabled: false, text: 'OFERTAS ARRASADORAS', fontSize: 60, color: '#e63946', borderEnabled: false, borderColor: '#000000', fontFamily: 'Anton', borderWidth: 4, positionX: 540, positionY: 150 },
             slotBorder: { customColorEnabled: false, color: '#007c11' },
+			
+			innerSlotBorder: { enabled: true, color: '#007c11', width: 3 },
+
+			
             highlight: { enabled: false, color: '#FFFF00', noBorder: false, highlightHeightMultiplier: 1.4, style: 'individual' },
             slotBackground: { enabled: true, color: '#FFFFFF', opacity: 100 },
             imageAreaScale: 100,
@@ -8533,6 +8743,8 @@ const cleanLogoSettings = {
         pageSize: pageSizeSelect.value,
         backgroundImageSrc: currentPage ? currentPage.backgroundImageSrc : null,
         predefinedLayout: predefinedLayoutSelect.value,
+		        
+
         predefinedBorderStyle: document.getElementById('predefinedBorderStyle').value,
         customWidth: parseInt(customWidthInput.value) || 1080,
         customHeight: parseInt(customHeightInput.value) || 1350,
@@ -8544,6 +8756,15 @@ const cleanLogoSettings = {
         logos: cleanLogoSettings,
         slogan: { enabled: enableSloganCheckbox.checked, text: sloganTextInput.value, fontSize: parseInt(sloganFontSizeInput.value) || 60, color: sloganColorInput.value, borderEnabled: enableSloganBorderCheckbox.checked, borderColor: sloganBorderColorInput.value, fontFamily: document.getElementById('sloganFontFamily').value, borderWidth: parseInt(document.getElementById('sloganBorderWidth').value, 10) || 4, positionX: parseInt(document.getElementById('sloganPositionX').value, 10) || 540, positionY: parseInt(document.getElementById('sloganPositionY').value, 10) || 150 },
         slotBorder: { customColorEnabled: enableSlotBorderCheckbox.checked, color: slotColorInput.value },
+		
+		// ▼▼▼ ADICIONE ESTA NOVA PROPRIEDADE ▼▼▼
+innerSlotBorder: {
+    enabled: document.getElementById('enableInnerSlotBorder').checked,
+    color: document.getElementById('innerSlotBorderColor').value,
+    width: parseInt(document.getElementById('innerSlotBorderWidth').value, 10) || 3
+},
+// ▲▲▲ FIM DA ADIÇÃO ▲▲▲
+		
         highlight: { enabled: highlightFirstLineCheckbox.checked, color: highlightColorInput.value, noBorder: document.getElementById('highlightNoBorder')?.checked || false, highlightHeightMultiplier: parseFloat(document.getElementById('highlightHeightMultiplier').value) || 1.4, style: document.getElementById('highlightStyleSelect').value },
         slotBackground: { enabled: enableSlotBackgroundCheckbox.checked, color: slotBackgroundColorInput.value, opacity: parseInt(slotBackgroundOpacityInput.value) || 100 },
         imageAreaScale: parseInt(document.getElementById('imageAreaScale').value, 10) || 100,
@@ -8699,6 +8920,8 @@ function applyPageSettingsToUI(page) {
     const isManualLayout = settings.predefinedLayout === 'manual';
     manualLayoutControls.classList.toggle('hidden', !isManualLayout);
     document.getElementById('predefined-border-style-container').classList.toggle('hidden', isManualLayout);
+	    
+
     document.getElementById('predefinedBorderStyle').value = settings.predefinedBorderStyle || 'straight';
 
     topMarginInput.value = settings.margins.top;
@@ -8906,6 +9129,26 @@ function applyPageSettingsToUI(page) {
     footerPositionYInput.value = footerSettings.positionY;
     const autoPosCheckbox = document.getElementById('footerAutoPosition');
     if (autoPosCheckbox) autoPosCheckbox.checked = footerSettings.autoPosition ?? true;
+
+
+
+
+// ▼▼▼ COLE ESTE NOVO BLOCO DE CÓDIGO ▼▼▼
+const innerBorderSettings = settings.innerSlotBorder || { enabled: false, color: '#007c11', width: 3 };
+const enableInnerSlotBorderCheckbox = document.getElementById('enableInnerSlotBorder');
+const innerSlotBorderOptionsDiv = document.getElementById('inner-slot-border-options');
+
+enableInnerSlotBorderCheckbox.checked = innerBorderSettings.enabled;
+document.getElementById('innerSlotBorderColor').value = innerBorderSettings.color;
+document.getElementById('innerSlotBorderWidth').value = innerBorderSettings.width;
+innerSlotBorderOptionsDiv.classList.toggle('hidden', !innerBorderSettings.enabled);
+
+// Adiciona o listener para o checkbox aqui também para garantir que funcione
+enableInnerSlotBorderCheckbox.addEventListener('change', () => {
+    innerSlotBorderOptionsDiv.classList.toggle('hidden', !enableInnerSlotBorderCheckbox.checked);
+});
+// ▲▲▲ FIM DO BLOCO ▲▲▲
+
 
     sloganOptionsDiv.classList.toggle('hidden', !settings.slogan.enabled);
     sloganBorderColorContainer.classList.toggle('hidden', !settings.slogan.borderEnabled);
