@@ -927,8 +927,7 @@
 
     <div>
         <label for="quickEditPrice" class="block text-sm font-medium mb-1">Preço</label>
-        <input type="number" step="0.01" id="quickEditPrice" class="w-full bg-gray-50 dark:bg-gray-700 border rounded-lg p-2 text-sm">
-    </div>
+        <input type="text" inputmode="decimal" id="quickEditPrice" class="w-full bg-gray-50 dark:bg-gray-700 border rounded-lg p-2 text-sm">    </div>
 
     <div>
         <label class="block text-sm font-medium mb-1">Imagem Principal</label>
@@ -4195,20 +4194,26 @@ innerBorderCheckbox.addEventListener('change', (e) => {
     applyChangeToSelectedProducts('innerBorderEnabled', e.target.checked);
 });
 
-    const updateProductProperty = (property, value) => {
-        const selectedIndices = getSelectedImageIndices();
-        if (selectedIndices.length !== 1) return;
-        const productIndex = selectedIndices[0];
-        const product = flyerData.pages[flyerData.currentPageIndex].products[productIndex];
-        if (product) {
-            product[property] = value;
-            updateProductListUI();
-            redrawCanvas();
-        }
-    };
+    // Dentro da função setupQuickEditListeners
+
+const updateProductProperty = (property, value) => {
+    const selectedIndices = getSelectedImageIndices();
+    if (selectedIndices.length !== 1) return;
+    const productIndex = selectedIndices[0];
+    const product = flyerData.pages[flyerData.currentPageIndex].products[productIndex];
+    if (product) {
+        product[property] = value;
+        // updateProductListUI(); // LINHA REMOVIDA
+        redrawCanvas();
+    }
+};
 
     nameInput.addEventListener('input', (e) => updateProductProperty('name', e.target.value));
-    priceInput.addEventListener('input', (e) => updateProductProperty('price', parseFloat(e.target.value) || 0));
+    priceInput.addEventListener('input', (e) => {
+    // Converte a vírgula em ponto ANTES de transformar em número
+    const numericValue = parseFloat(e.target.value.replace(',', '.')) || 0;
+    updateProductProperty('price', numericValue);
+});
     bgColorInput.addEventListener('input', (e) => updateProductProperty('backgroundColor', e.target.value));
 
     // Removemos a referência ao input antigo e adicionamos a referência ao novo botão.
@@ -7204,11 +7209,12 @@ function updateProductListUI() {
         nameInput.className = 'edit-name w-full bg-white dark:bg-gray-700 border rounded p-1.5 text-sm';
         inputsContainer.appendChild(nameInput);
         const priceInput = document.createElement('input');
-        priceInput.type = 'number';
-        priceInput.value = p.price;
-        priceInput.step = '0.01';
-        priceInput.dataset.index = index;
-        priceInput.className = 'edit-price w-full bg-white dark:bg-gray-700 border rounded p-1.5 text-sm';
+priceInput.type = 'text'; // Alterado de 'number' para 'text'
+priceInput.inputMode = 'decimal'; // Adiciona o modo de input para teclados móveis
+priceInput.value = p.price;
+// priceInput.step não é mais necessário
+priceInput.dataset.index = index;
+priceInput.className = 'edit-price w-full bg-white dark:bg-gray-700 border rounded p-1.5 text-sm';
         inputsContainer.appendChild(priceInput);
         topRow.appendChild(imageContainer);
         topRow.appendChild(inputsContainer);
@@ -7333,6 +7339,8 @@ function moveProductDown(index) {
 		
 		// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'addDragListeners' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO addDragListeners POR ESTA ▼▼▼
+
 function addDragListeners() {
     document.querySelectorAll('.product-list-item').forEach(d => {
         d.addEventListener('dragstart', dragStart);
@@ -7349,7 +7357,6 @@ function addDragListeners() {
         redrawCanvas();
     }));
 
-    // ▼▼▼ INÍCIO DA ADIÇÃO: Eventos para os novos botões ▼▼▼
     document.querySelectorAll('.move-up-btn').forEach(btn => btn.addEventListener('click', e => {
         moveProductUp(parseInt(e.currentTarget.dataset.index));
     }));
@@ -7357,7 +7364,6 @@ function addDragListeners() {
     document.querySelectorAll('.move-down-btn').forEach(btn => btn.addEventListener('click', e => {
         moveProductDown(parseInt(e.currentTarget.dataset.index));
     }));
-    // ▲▲▲ FIM DA ADIÇÃO ▲▲▲
 
     document.querySelectorAll('.edit-name').forEach(input => input.addEventListener('input', e => {
         flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].name = e.target.value;
@@ -7366,7 +7372,12 @@ function addDragListeners() {
     }));
 
     document.querySelectorAll('.edit-price').forEach(input => input.addEventListener('input', e => {
-        flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].price = e.target.value;
+        // ▼▼▼ A CORREÇÃO ESTÁ AQUI ▼▼▼
+        // Converte o texto do input (ex: "10,99") para um número válido (10.99)
+        const numericValue = parseFloat(e.target.value.replace(',', '.')) || 0;
+        // Salva o NÚMERO no banco de dados do encarte, não mais o texto
+        flyerData.pages[flyerData.currentPageIndex].products[e.target.dataset.index].price = numericValue;
+        // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
         redrawCanvas();
     }));
 
