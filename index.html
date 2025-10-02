@@ -5343,11 +5343,15 @@ function drawPriceBalloon3DReference(ctx, x, y, w, h, details, styleSettings, is
 		
 
 
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO FINAL E CORRIGIDA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO FINAL E CORRIGIDA ABAIXO ▼▼▼
+
 function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeight) {
     if (!product.activeImageIndices) {
         product.activeImageIndices = [product.activeImageIndex || 0];
     }
-
     const imagesToDraw = product.activeImageIndices
         .map(index => (product.images && product.images.length > index) ? product.images[index] : null)
         .filter(Boolean);
@@ -5358,51 +5362,89 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
         ctx.rect(imgAreaX, imageAreaY, imgAreaW, imageAreaHeight);
         ctx.clip();
         
-        const drawSingleImageWithEffects = (img, x, y, w, h) => {
-            const repetitions = product.imageRepetitions || 1;
-            const direction = product.imageRepetitionDirection || 'horizontal';
-            const fit = product.imageFit || 'contain';
+        const drawImageGroup = (img, x, y, w, h) => {
+            
+            let repetitions;
+            let direction;
+            const imgAspectRatio = img.width / img.height;
+
+            // =============================================================
+            // ▼▼▼ INÍCIO DA LÓGICA HÍBRIDA FINAL (MANUAL + AUTOMÁTICO) ▼▼▼
+            // =============================================================
+
+            if (product.imageRepetitions && product.imageRepetitions > 1) {
+                // MODO MANUAL: O usuário definiu as repetições.
+                repetitions = product.imageRepetitions;
+                direction = product.imageRepetitionDirection || 'horizontal';
+            } else {
+                // MODO AUTOMÁTICO: O sistema decide. (Repetições = 1)
+                repetitions = 1;
+                direction = 'horizontal'; 
+                
+                if (imgAspectRatio > 0) {
+                    // Cenário 1: Quantas caberiam na HORIZONTAL?
+                    const singleImageWidthH = h * imgAspectRatio;
+                    const horizontalFit = singleImageWidthH > 0 ? Math.floor(w / singleImageWidthH) : 0;
+
+                    // Cenário 2: Quantas caberiam na VERTICAL?
+                    const singleImageHeightV = w / imgAspectRatio;
+                    const verticalFit = singleImageHeightV > 0 ? Math.floor(h / singleImageHeightV) : 0;
+                    
+                    // DECISÃO: Escolhe a direção que permite MAIS repetições.
+                    if (horizontalFit > 1 && horizontalFit > verticalFit) {
+                        direction = 'horizontal';
+                        repetitions = Math.min(3, horizontalFit); // Limita a 3 para não ficar muito pequeno
+                    } else if (verticalFit > 1 && verticalFit >= horizontalFit) {
+                        direction = 'vertical';
+                        repetitions = Math.min(3, verticalFit); // Limita a 3 também
+                    }
+                    // Se ambos os cenários resultarem em apenas 1 imagem, 'repetitions' continua 1.
+                }
+            }
+            // =============================================================
+            // ▲▲▲ FIM DA LÓGICA HÍBRIDA ▲▲▲
+            // =============================================================
+
             const widthPercent = (product.imageWidthPercent || 100) / 100;
             const heightPercent = (product.imageHeightPercent || 100) / 100;
             const positionXPercent = (product.imagePositionX || 50) / 100;
             const positionYPercent = (product.imagePositionY || 50) / 100;
 
             let tileW, tileH;
-            const imgAspectRatio = img.width / img.height;
-
+            
             if (repetitions > 1) {
-                if (fit === 'fill') {
-                    if (direction === 'horizontal') {
-                        tileW = (w * widthPercent) / repetitions;
-                        tileH = h * heightPercent;
-                    } else {
-                        tileW = w * widthPercent;
-                        tileH = (h * heightPercent) / repetitions;
-                    }
-                } else {
-                    if (direction === 'horizontal') {
-                        tileH = h * heightPercent;
-                        tileW = tileH * imgAspectRatio;
-                    } else {
-                        tileW = w * widthPercent;
+                // Lógica de cálculo para imagens repetidas
+                if (direction === 'horizontal') {
+                    tileH = h * heightPercent;
+                    tileW = tileH * imgAspectRatio;
+                    if (tileW * repetitions > w * widthPercent) {
+                        const newTotalWidth = w * widthPercent;
+                        tileW = newTotalWidth / repetitions;
                         tileH = tileW / imgAspectRatio;
+                    }
+                } else { // 'vertical'
+                    tileW = w * widthPercent;
+                    tileH = tileW / imgAspectRatio;
+                    if (tileH * repetitions > h * heightPercent) {
+                        const newTotalHeight = h * heightPercent;
+                        tileH = newTotalHeight / repetitions;
+                        tileW = tileH * imgAspectRatio;
                     }
                 }
             } else {
-                tileW = w * widthPercent;
-                tileH = h * heightPercent;
-                const areaAspectRatio = w / h;
-                if (fit === "contain") {
-                    if (imgAspectRatio > areaAspectRatio) tileH = tileW / imgAspectRatio;
-                    else tileW = tileH * imgAspectRatio;
-                } else if (fit === "cover") {
-                    if (imgAspectRatio > areaAspectRatio) tileW = tileH * imgAspectRatio;
-                    else tileH = tileW / imgAspectRatio;
+                // Lógica de cálculo para UMA ÚNICA imagem (melhor ajuste 'contain')
+                const slotAspectRatio = w / h;
+                if (imgAspectRatio > slotAspectRatio) {
+                    tileW = w * widthPercent;
+                    tileH = tileW / imgAspectRatio;
+                } else {
+                    tileH = h * heightPercent;
+                    tileW = tileH * imgAspectRatio;
                 }
             }
             
-            const totalWidth = direction === "horizontal" ? tileW * repetitions : tileW;
-            const totalHeight = direction === "vertical" ? tileH * repetitions : tileH;
+            const totalWidth = (direction === 'horizontal' && repetitions > 1) ? tileW * repetitions : tileW;
+            const totalHeight = (direction === 'vertical' && repetitions > 1) ? tileH * repetitions : tileH;
             
             let startX = x + (w - totalWidth) * positionXPercent;
             let startY = y + (h - totalHeight) * positionYPercent;
@@ -5410,57 +5452,50 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
             for (let i = 0; i < repetitions; i++) {
                 let currentX = startX;
                 let currentY = startY;
-                if (direction === "horizontal") currentX += i * tileW;
-                else currentY += i * tileH;
+                if (direction === "horizontal" && repetitions > 1) {
+                    currentX += i * tileW;
+                } else if (direction === "vertical" && repetitions > 1) {
+                    currentY += i * tileH;
+                }
                 ctx.drawImage(img, currentX, currentY, tileW, tileH);
             }
         };
 
-        const horizontalGap = 5; // Espaço horizontal entre as imagens
+        const horizontalGap = 5;
         const useGrid = product.useImageGrid && imagesToDraw.length >= 4;
-
+        
         if (useGrid) {
-            // ▼▼▼ ALTERAÇÃO APLICADA AQUI ▼▼▼
-            const verticalGap = -35; // Espaço vertical. Use um valor negativo para aproximar as linhas.
-            // ▲▲▲ FIM DA ALTERAÇÃO ▲▲▲
+             const verticalGap = -35;
+             const numRows = 2;
+             const subAreaHeight = (imageAreaHeight - verticalGap) / numRows;
+             const halfwayIndex = Math.ceil(imagesToDraw.length / 2);
+             const topRowImages = imagesToDraw.slice(0, halfwayIndex);
+             const bottomRowImages = imagesToDraw.slice(halfwayIndex);
 
-            const numRows = 2;
-            const subAreaHeight = (imageAreaHeight - verticalGap) / numRows;
-            
-            const halfwayIndex = Math.ceil(imagesToDraw.length / 2);
-            const topRowImages = imagesToDraw.slice(0, halfwayIndex);
-            const bottomRowImages = imagesToDraw.slice(halfwayIndex);
-
-            // Desenha a linha de cima
-            const numImagesTop = topRowImages.length;
-            const totalGapWidthTop = (numImagesTop - 1) * horizontalGap;
-            const subAreaWidthTop = (imgAreaW - totalGapWidthTop) / numImagesTop;
-            for (let i = 0; i < numImagesTop; i++) {
-                const currentX = imgAreaX + i * (subAreaWidthTop + horizontalGap);
-                drawSingleImageWithEffects(topRowImages[i], currentX, imageAreaY, subAreaWidthTop, subAreaHeight);
-            }
-
-            // Desenha a linha de baixo
-            const numImagesBottom = bottomRowImages.length;
-            const totalGapWidthBottom = (numImagesBottom - 1) * horizontalGap;
-            const subAreaWidthBottom = (imgAreaW - totalGapWidthBottom) / numImagesBottom;
-            const bottomRowY = imageAreaY + subAreaHeight + verticalGap;
-            for (let i = 0; i < numImagesBottom; i++) {
-                const currentX = imgAreaX + i * (subAreaWidthBottom + horizontalGap);
-                drawSingleImageWithEffects(bottomRowImages[i], currentX, bottomRowY, subAreaWidthBottom, subAreaHeight);
-            }
-
+             const numImagesTop = topRowImages.length;
+             const totalGapWidthTop = (numImagesTop - 1) * horizontalGap;
+             const subAreaWidthTop = (imgAreaW - totalGapWidthTop) / numImagesTop;
+             for (let i = 0; i < numImagesTop; i++) {
+                 const currentX = imgAreaX + i * (subAreaWidthTop + horizontalGap);
+                 drawImageGroup(topRowImages[i], currentX, imageAreaY, subAreaWidthTop, subAreaHeight);
+             }
+             const numImagesBottom = bottomRowImages.length;
+             const totalGapWidthBottom = (numImagesBottom - 1) * horizontalGap;
+             const subAreaWidthBottom = (imgAreaW - totalGapWidthBottom) / numImagesBottom;
+             const bottomRowY = imageAreaY + subAreaHeight + verticalGap;
+             for (let i = 0; i < numImagesBottom; i++) {
+                 const currentX = imgAreaX + i * (subAreaWidthBottom + horizontalGap);
+                 drawImageGroup(bottomRowImages[i], currentX, bottomRowY, subAreaWidthBottom, subAreaHeight);
+             }
         } else {
-            // Lógica para 1 linha
             const numImages = imagesToDraw.length;
             const totalGapWidth = (numImages - 1) * horizontalGap;
             const subAreaWidth = (imgAreaW - totalGapWidth) / numImages;
             for (let i = 0; i < numImages; i++) {
                 const currentX = imgAreaX + i * (subAreaWidth + horizontalGap);
-                drawSingleImageWithEffects(imagesToDraw[i], currentX, imageAreaY, subAreaWidth, imageAreaHeight);
+                drawImageGroup(imagesToDraw[i], currentX, imageAreaY, subAreaWidth, imageAreaHeight);
             }
         }
-        
         ctx.restore();
     } else {
         ctx.fillStyle = '#E5E7EB';
@@ -5472,8 +5507,6 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
         ctx.fillText('Sem Imagem', imgAreaX + imgAreaW / 2, imageAreaY + imageAreaHeight / 2);
     }
 }
-
-
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'drawProduct' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProduct POR ESTA ▼▼▼
 // ▼▼▼ APAGUE SUA FUNÇÃO drawProduct ANTIGA E COLE ESTA NO LUGAR ▼▼▼
