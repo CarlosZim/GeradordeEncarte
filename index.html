@@ -3687,23 +3687,39 @@ if (window.innerWidth < 768) {
 		isPanelLocked = false;
 		controlPanelContainer.classList.add('-translate-x-full'); controlPanelContainer.style.width = '0'; menuBackdrop.classList.add('hidden');     document.body.classList.remove('panel-is-open');
 activePanelId = null; menuItems.forEach(i => i.classList.remove('bg-blue-600')); }
-       menuItems.forEach(item => {
+       // ▼▼▼ SUBSTITUA TODO O SEU BLOCO "menuItems.forEach" POR ESTE CÓDIGO CORRIGIDO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODO O SEU BLOCO "menuItems.forEach" PELA VERSÃO FINAL ABAIXO ▼▼▼
+
+menuItems.forEach(item => {
     item.addEventListener('click', e => {
         e.preventDefault();
         const targetPanelId = item.dataset.panel;
 
-        // Se o painel estiver travado, ignora o clique em qualquer outro ícone.
-        if (isPanelLocked && targetPanelId !== 'panel-images') {
-            return; // Não faz nada
+        // ==========================================================
+        // --- INÍCIO DA NOVA CORREÇÃO ---
+        // ==========================================================
+        // Verifica se o painel de imagens está ativo e se o clique foi em OUTRO menu.
+        if (activePanelId === 'panel-images' && targetPanelId !== 'panel-images') {
+            // Se sim, limpa a lista de produtos selecionados.
+            selectedProductIndices.clear();
+            // E redesenha o canvas para remover o destaque azul.
+            redrawCanvas();
+        }
+        // ==========================================================
+        // --- FIM DA NOVA CORREÇÃO ---
+        // ==========================================================
+
+        // Lógica anterior para destravar o painel (continua necessária)
+        if (isPanelLocked) {
+            isPanelLocked = false;
+            menuBackdrop.style.pointerEvents = 'auto';
         }
 
-        // A lógica original de abrir/fechar o painel.
-        // Agora, o ícone "Imagens" funciona como um botão para fechar e destravar.
+        // Lógica original para abrir/fechar o painel
         if (activePanelId === targetPanelId && !controlPanelContainer.classList.contains('-translate-x-full')) {
             closeControlPanel();
         } else {
-            // Se um novo painel for aberto, ele não deve ser travado.
-            isPanelLocked = false; 
             openControlPanel(targetPanelId);
             menuItems.forEach(i => i.classList.remove('bg-blue-600'));
             item.classList.add('bg-blue-600');
@@ -5348,7 +5364,19 @@ function drawPriceBalloon3DReference(ctx, x, y, w, h, details, styleSettings, is
 
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO FINAL E CORRIGIDA ABAIXO ▼▼▼
 
-function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeight) {
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO FINAL E CORRIGIDA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO FINAL E CORRIGIDA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO FINAL ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO FINAL ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO FINAL E UNIFICADA ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProductImage PELA VERSÃO FINAL ABAIXO ▼▼▼
+
+function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeight, productIndex) {
     if (!product.activeImageIndices) {
         product.activeImageIndices = [product.activeImageIndex || 0];
     }
@@ -5361,103 +5389,92 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
         ctx.beginPath();
         ctx.rect(imgAreaX, imageAreaY, imgAreaW, imageAreaHeight);
         ctx.clip();
-        
-        const drawImageGroup = (img, x, y, w, h) => {
-            
-            let repetitions;
-            let direction;
+
+        const drawImageWithFit = (img, x, y, w, h) => {
+            const repetitions = product.imageRepetitions || 1;
+            const direction = product.imageRepetitionDirection || 'horizontal';
+            const fit = product.imageFit || 'contain';
             const imgAspectRatio = img.width / img.height;
-
-            // =============================================================
-            // ▼▼▼ INÍCIO DA LÓGICA HÍBRIDA FINAL (MANUAL + AUTOMÁTICO) ▼▼▼
-            // =============================================================
-
-            if (product.imageRepetitions && product.imageRepetitions > 1) {
-                // MODO MANUAL: O usuário definiu as repetições.
-                repetitions = product.imageRepetitions;
-                direction = product.imageRepetitionDirection || 'horizontal';
-            } else {
-                // MODO AUTOMÁTICO: O sistema decide. (Repetições = 1)
-                repetitions = 1;
-                direction = 'horizontal'; 
-                
-                if (imgAspectRatio > 0) {
-                    // Cenário 1: Quantas caberiam na HORIZONTAL?
-                    const singleImageWidthH = h * imgAspectRatio;
-                    const horizontalFit = singleImageWidthH > 0 ? Math.floor(w / singleImageWidthH) : 0;
-
-                    // Cenário 2: Quantas caberiam na VERTICAL?
-                    const singleImageHeightV = w / imgAspectRatio;
-                    const verticalFit = singleImageHeightV > 0 ? Math.floor(h / singleImageHeightV) : 0;
-                    
-                    // DECISÃO: Escolhe a direção que permite MAIS repetições.
-                    if (horizontalFit > 1 && horizontalFit > verticalFit) {
-                        direction = 'horizontal';
-                        repetitions = Math.min(3, horizontalFit); // Limita a 3 para não ficar muito pequeno
-                    } else if (verticalFit > 1 && verticalFit >= horizontalFit) {
-                        direction = 'vertical';
-                        repetitions = Math.min(3, verticalFit); // Limita a 3 também
-                    }
-                    // Se ambos os cenários resultarem em apenas 1 imagem, 'repetitions' continua 1.
-                }
-            }
-            // =============================================================
-            // ▲▲▲ FIM DA LÓGICA HÍBRIDA ▲▲▲
-            // =============================================================
 
             const widthPercent = (product.imageWidthPercent || 100) / 100;
             const heightPercent = (product.imageHeightPercent || 100) / 100;
             const positionXPercent = (product.imagePositionX || 50) / 100;
             const positionYPercent = (product.imagePositionY || 50) / 100;
 
-            let tileW, tileH;
+            const viewBoxW = w * widthPercent;
+            const viewBoxH = h * heightPercent;
             
-            if (repetitions > 1) {
-                // Lógica de cálculo para imagens repetidas
+            let tileW, tileH;
+
+            // =============================================================
+            // --- INÍCIO DA CORREÇÃO DO ESPAÇAMENTO ---
+            // =============================================================
+            if (fit === 'fill') {
+                // Para 'Distorcer', os tiles simplesmente dividem o espaço, ignorando a proporção.
                 if (direction === 'horizontal') {
-                    tileH = h * heightPercent;
-                    tileW = tileH * imgAspectRatio;
-                    if (tileW * repetitions > w * widthPercent) {
-                        const newTotalWidth = w * widthPercent;
-                        tileW = newTotalWidth / repetitions;
-                        tileH = tileW / imgAspectRatio;
-                    }
-                } else { // 'vertical'
-                    tileW = w * widthPercent;
-                    tileH = tileW / imgAspectRatio;
-                    if (tileH * repetitions > h * heightPercent) {
-                        const newTotalHeight = h * heightPercent;
-                        tileH = newTotalHeight / repetitions;
-                        tileW = tileH * imgAspectRatio;
-                    }
+                    tileW = viewBoxW / repetitions;
+                    tileH = viewBoxH;
+                } else {
+                    tileW = viewBoxW;
+                    tileH = viewBoxH / repetitions;
                 }
             } else {
-                // Lógica de cálculo para UMA ÚNICA imagem (melhor ajuste 'contain')
-                const slotAspectRatio = w / h;
-                if (imgAspectRatio > slotAspectRatio) {
-                    tileW = w * widthPercent;
-                    tileH = tileW / imgAspectRatio;
-                } else {
-                    tileH = h * heightPercent;
+                // Para 'Conter' e 'Preencher', calculamos o tamanho do tile baseado na proporção da imagem
+                // para evitar espaços internos.
+                if (direction === 'horizontal') {
+                    tileH = viewBoxH;
                     tileW = tileH * imgAspectRatio;
+                } else { // vertical
+                    tileW = viewBoxW;
+                    tileH = tileW / imgAspectRatio;
                 }
             }
-            
-            const totalWidth = (direction === 'horizontal' && repetitions > 1) ? tileW * repetitions : tileW;
-            const totalHeight = (direction === 'vertical' && repetitions > 1) ? tileH * repetitions : tileH;
-            
-            let startX = x + (w - totalWidth) * positionXPercent;
-            let startY = y + (h - totalHeight) * positionYPercent;
 
+            // Agora, verificamos se o conjunto de tiles ultrapassa a área visível e ajustamos
+            let totalWidth = tileW * (direction === 'horizontal' ? repetitions : 1);
+            let totalHeight = tileH * (direction === 'vertical' ? repetitions : 1);
+
+            if (totalWidth > viewBoxW) {
+                const scale = viewBoxW / totalWidth;
+                tileW *= scale;
+                tileH *= scale; // Mantém a proporção
+                totalWidth = viewBoxW;
+                totalHeight *= scale;
+            }
+            if (totalHeight > viewBoxH) {
+                const scale = viewBoxH / totalHeight;
+                tileW *= scale;
+                tileH *= scale; // Mantém a proporção
+                totalHeight = viewBoxH;
+                totalWidth *= scale;
+            }
+            // =============================================================
+            // --- FIM DA CORREÇÃO DO ESPAÇAMENTO ---
+            // =============================================================
+            
+            const startX = x + (w - totalWidth) * positionXPercent;
+            const startY = y + (h - totalHeight) * positionYPercent;
+            
             for (let i = 0; i < repetitions; i++) {
-                let currentX = startX;
-                let currentY = startY;
-                if (direction === "horizontal" && repetitions > 1) {
-                    currentX += i * tileW;
-                } else if (direction === "vertical" && repetitions > 1) {
-                    currentY += i * tileH;
+                const currentX = startX + (direction === 'horizontal' ? i * tileW : 0);
+                const currentY = startY + (direction === 'vertical' ? i * tileH : 0);
+                
+                let sX = 0, sY = 0, sWidth = img.width, sHeight = img.height;
+                
+                // Apenas 'cover' precisa de um corte na imagem de origem.
+                // 'fill' e 'contain' são resolvidos pelo cálculo do tamanho do tile que fizemos acima.
+                if (fit === 'cover') {
+                    const tileRatio = tileW / tileH;
+                    if (imgAspectRatio > tileRatio) {
+                        sWidth = sHeight * tileRatio;
+                        sX = (img.width - sWidth) / 2;
+                    } else {
+                        sHeight = sWidth / tileRatio;
+                        sY = (img.height - sHeight) / 2;
+                    }
                 }
-                ctx.drawImage(img, currentX, currentY, tileW, tileH);
+                
+                ctx.drawImage(img, sX, sY, sWidth, sHeight, currentX, currentY, tileW, tileH);
             }
         };
 
@@ -5477,7 +5494,7 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
              const subAreaWidthTop = (imgAreaW - totalGapWidthTop) / numImagesTop;
              for (let i = 0; i < numImagesTop; i++) {
                  const currentX = imgAreaX + i * (subAreaWidthTop + horizontalGap);
-                 drawImageGroup(topRowImages[i], currentX, imageAreaY, subAreaWidthTop, subAreaHeight);
+                 drawImageWithFit(topRowImages[i], currentX, imageAreaY, subAreaWidthTop, subAreaHeight);
              }
              const numImagesBottom = bottomRowImages.length;
              const totalGapWidthBottom = (numImagesBottom - 1) * horizontalGap;
@@ -5485,7 +5502,7 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
              const bottomRowY = imageAreaY + subAreaHeight + verticalGap;
              for (let i = 0; i < numImagesBottom; i++) {
                  const currentX = imgAreaX + i * (subAreaWidthBottom + horizontalGap);
-                 drawImageGroup(bottomRowImages[i], currentX, bottomRowY, subAreaWidthBottom, subAreaHeight);
+                 drawImageWithFit(bottomRowImages[i], currentX, bottomRowY, subAreaWidthBottom, subAreaHeight);
              }
         } else {
             const numImages = imagesToDraw.length;
@@ -5493,7 +5510,7 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
             const subAreaWidth = (imgAreaW - totalGapWidth) / numImages;
             for (let i = 0; i < numImages; i++) {
                 const currentX = imgAreaX + i * (subAreaWidth + horizontalGap);
-                drawImageGroup(imagesToDraw[i], currentX, imageAreaY, subAreaWidth, imageAreaHeight);
+                drawImageWithFit(imagesToDraw[i], currentX, imageAreaY, subAreaWidth, imageAreaHeight);
             }
         }
         ctx.restore();
@@ -5511,7 +5528,90 @@ function drawProductImage(product, imgAreaX, imageAreaY, imgAreaW, imageAreaHeig
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProduct POR ESTA ▼▼▼
 // ▼▼▼ APAGUE SUA FUNÇÃO drawProduct ANTIGA E COLE ESTA NO LUGAR ▼▼▼
 
-function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFirstRow, line, isPredefined = false) {
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'calculateAndUpdateAutoRepetitions' PELA VERSÃO ABAIXO ▼▼▼
+/**
+ * Calcula se uma imagem deve ser repetida automaticamente e atualiza o objeto do produto.
+ * @param {object} product - O objeto do produto.
+ * @param {number} w - A largura do slot disponível.
+ * @param {number} h - A altura do slot disponível.
+ * @returns {boolean} - Retorna true se o número de repetições foi alterado.
+ */
+function calculateAndUpdateAutoRepetitions(product, w, h) {
+    // Se o usuário já definiu manualmente, não faz nada.
+    if (product.manualRepetitions) {
+        return false;
+    }
+
+    const initialRepetitions = product.imageRepetitions || 1;
+    let finalRepetitions = 1;
+    let finalDirection = 'horizontal';
+
+    const firstImage = product.images ? product.images[0] : null;
+    if (firstImage && firstImage.width > 0 && firstImage.height > 0) {
+        const imgAspectRatio = firstImage.width / firstImage.height;
+        
+        const availableWidth = w * ((product.imageWidthPercent || 100) / 100);
+        const availableHeight = h * ((product.imageHeightPercent || 100) / 100);
+
+        const singleImageWidthH = availableHeight * imgAspectRatio;
+        const horizontalFit = singleImageWidthH > 0 ? Math.floor(availableWidth / singleImageWidthH) : 0;
+        
+        const singleImageHeightV = availableWidth / imgAspectRatio;
+        const verticalFit = singleImageHeightV > 0 ? Math.floor(availableHeight / singleImageHeightV) : 0;
+
+        if (horizontalFit > 1 && horizontalFit > verticalFit) {
+            finalDirection = 'horizontal';
+            // =============================================================
+            // --- INÍCIO DA CORREÇÃO ---
+            // =============================================================
+            finalRepetitions = Math.min(5, horizontalFit); // Limita o máximo de repetições a 5
+            // =============================================================
+            // --- FIM DA CORREÇÃO ---
+            // =============================================================
+        } else if (verticalFit > 1 && verticalFit >= horizontalFit) {
+            finalDirection = 'vertical';
+            // =============================================================
+            // --- INÍCIO DA CORREÇÃO ---
+            // =============================================================
+            finalRepetitions = Math.min(5, verticalFit); // Limita o máximo de repetições a 5
+            // =============================================================
+            // --- FIM DA CORREÇÃO ---
+            // =============================================================
+        }
+    }
+
+    if (finalRepetitions !== initialRepetitions) {
+        product.imageRepetitions = finalRepetitions;
+        product.imageRepetitionDirection = finalDirection;
+        return true; // Indica que houve uma mudança
+    }
+
+    return false; // Nenhuma mudança
+}
+
+
+
+
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProduct PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProduct PELA VERSÃO ABAIXO ▼▼▼
+function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFirstRow, line, isPredefined = false, productIndex) {
+    // =============================================================
+    // --- INÍCIO DA CORREÇÃO PRINCIPAL ---
+    // =============================================================
+    // Roda a lógica de detecção automática ANTES de desenhar
+    const repetitionsChanged = calculateAndUpdateAutoRepetitions(product, cellWidth, cellHeight);
+    // Se a lógica alterou as repetições e este produto está selecionado, atualiza o painel
+    if (repetitionsChanged) {
+        const selectedIndices = getSelectedImageIndices();
+        if (selectedIndices.length === 1 && selectedIndices[0] === productIndex) {
+            updateImageControlsUI();
+        }
+    }
+    // =============================================================
+    // --- FIM DA CORREÇÃO ---
+    // =============================================================
+
     const pageSettings = flyerData.pages[flyerData.currentPageIndex].settings;
     const balloonStyle = isFirstRow ? pageSettings.balloons.firstLine : pageSettings.balloons.otherLines;
     const [integerPart, decimalPart] = parseFloat(product.price).toFixed(2).split('.');
@@ -5549,20 +5649,10 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         }
     }
 
-    // =================================================================
-    // ▼▼▼ LÓGICA HÍBRIDA DA BORDA INTERNA (A PARTE IMPORTANTE) ▼▼▼
-    // =================================================================
     const innerBorderSettings = pageSettings.innerSlotBorder;
-    
-    // Passo 1: Verifica se o interruptor GLOBAL e o do PRODUTO (B.I.) estão ligados.
     const baseCondition = innerBorderSettings && innerBorderSettings.enabled && product.innerBorderEnabled;
-    
-    // Passo 2: Verifica a condição específica do layout.
-    // - Para Layout Manual, checa o botão da LINHA.
-    // - Para Grades Pré-definidas, ignora o botão da linha (sempre permite).
     const layoutCondition = !isPredefined ? line.innerBorderEnabled : true;
 
-    // A borda só aparece se AMBAS as condições (base e layout) forem verdadeiras.
     if (baseCondition && layoutCondition) {
         ctx.save();
         ctx.strokeStyle = innerBorderSettings.color;
@@ -5582,15 +5672,14 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         }
         ctx.restore();
     }
-    // ▲▲▲ FIM DA LÓGICA ▲▲▲
-    // =================================================================
 
     const imageAreaScale = (pageSettings.imageAreaScale || 100) / 100;
     const imageAreaW = cellWidth * imageAreaScale;
     const imageAreaHeight = cellHeight * imageAreaScale;
     const imageAreaX = x + (cellWidth - imageAreaW) / 2;
     const imageAreaY = y + (cellHeight - imageAreaHeight) / 2;
-    drawProductImage(product, imageAreaX, imageAreaY, imageAreaW, imageAreaHeight);
+    
+    drawProductImage(product, imageAreaX, imageAreaY, imageAreaW, imageAreaHeight, productIndex);
 
     const shouldDrawBorder = !(isFirstRow && pageSettings.highlight.enabled && pageSettings.highlight.noBorder);
     if (shouldDrawBorder && line.borderStyle !== 'none') {
@@ -5641,6 +5730,7 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         const balloonY = y + cellHeight - balloonHeight - padding + highlightedOffsetY + globalOffsetY;
 
         switch (balloonStyle) {
+            // ... (o restante da função 'drawProduct' continua igual)
             case 'default':
             case 'red-tag-3d':
                 drawPriceBalloon3DReference(ctx, x + (cellWidth - (cellWidth * 0.85)) / 2, balloonY, cellWidth * 0.85, balloonHeight, priceDetails, pageSettings.balloonStyles.default, isFirstRow);
@@ -6972,6 +7062,7 @@ function drawPricePosterLayout(page) {
   
 // ▼▼▼ SUBSTITUA A FUNÇÃO 'redrawCanvas' INTEIRA POR ESTA VERSÃO CORRIGIDA ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'redrawCanvas' INTEIRA PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'redrawCanvas' PELA VERSÃO ABAIXO ▼▼▼
 function redrawCanvas() {
     if (!flyerData.pages[flyerData.currentPageIndex]) return;
 
@@ -6997,12 +7088,6 @@ function redrawCanvas() {
         ctx.drawImage(currentPage.backgroundImage, 0, 0, canvas.width, canvas.height);
     }
     
-    // ==========================================================
-    // ===== INÍCIO DA CORREÇÃO =====
-    // ==========================================================
-    // O bloco que desenha as LOGOS foi movido para ANTES do bloco que desenha a VALIDADE.
-
-    // 1. DESENHA AS LOGOS PRIMEIRO
     Object.keys(pageSettings.logos).forEach(logoKey => {
         const logoSettings = pageSettings.logos[logoKey];
         const globalLogo = flyerData.logos[logoKey];
@@ -7013,15 +7098,8 @@ function redrawCanvas() {
         }
     });
 
-    // 2. DESENHA O SELO DE VALIDADE DEPOIS (por cima das logos)
     drawHeaderValidity(ctx, pageSettings.headerValidity);
-
-    // ========================================================
-    // ===== FIM DA CORREÇÃO =====
-    // ========================================================
     
-    // CÓDIGO CORRIGIDO
-    // Bloco Novo e Corrigido
     ctx.save(); 
     if (pageSettings.slogan.enabled && pageSettings.slogan.text) {
         const sloganText = pageSettings.slogan.text;
@@ -7107,7 +7185,9 @@ function redrawCanvas() {
                     productSlots.push({ x, y: yOffset, width: colWidth, height: currentRowHeight, productIndex: productIndex });
                     let slotBg = (isLineHighlighted && pageSettings.highlight.style === 'individual') ? pageSettings.highlight.color : null;
                     if (productIndex < currentPage.products.length) { 
-                        drawProduct(currentPage.products[productIndex], x, yOffset, colWidth, currentRowHeight, slotBg, isLineHighlighted, line, false); 
+                        // ▼▼▼ LINHA MODIFICADA AQUI ▼▼▼
+                        drawProduct(currentPage.products[productIndex], x, yOffset, colWidth, currentRowHeight, slotBg, isLineHighlighted, line, false, productIndex); 
+                        // ▲▲▲ FIM DA MODIFICAÇÃO ▲▲▲
                     } 
                     else { 
                         drawPlaceholderSlot(x, yOffset, colWidth, currentRowHeight, line.borderStyle); 
@@ -7943,39 +8023,29 @@ canvas.addEventListener('mouseout', (e) => {
 // ▼▼▼ SUBSTITUA A SUA ANTIGA FUNÇÃO 'addProductWithDefaults' POR ESTA ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO "addProductWithDefaults" INTEIRA PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'addProductWithDefaults' PELA VERSÃO ABAIXO ▼▼▼
 function addProductWithDefaults(productData) {
-    // Pega os padrões inteligentes de repetição e tamanho
     const smartDefaults = calculateSmartImageDefaults(productData.image);
 
-    // Cria o objeto do novo produto com a estrutura de galeria correta desde o início
     const newProduct = {
-        // Informações básicas do produto
         name: productData.name,
         price: productData.price,
-        
-        // === A Estrutura Corrigida ===
-        // Propriedades antigas para compatibilidade imediata
         image: productData.image,
         src: productData.src,
-
-        // A NOVA estrutura de galeria, já inicializada corretamente
-        images: productData.image ? [productData.image] : [], // Cria um array com a imagem
-        srcs: productData.src ? [productData.src] : [],       // Cria um array com o src da imagem
-        activeImageIndex: 0,                                  // Propriedade antiga para compatibilidade
-        activeImageIndices: [0],                              // Nova propriedade para a galeria
-
-        // Padrões de imagem e de layout
+        images: productData.image ? [productData.image] : [],
+        srcs: productData.src ? [productData.src] : [],
+        activeImageIndex: 0,
+        activeImageIndices: [0],
         ...smartDefaults,
         backgroundColor: null,
-		        innerBorderEnabled: false, // <-- ADICIONE ESTA LINHA
-
+		innerBorderEnabled: false,
+        manualRepetitions: false, // <-- Propriedade adicionada para zerar o controle manual
         descScaleX: 100,
         descScaleY: 100,
         priceScaleX: 100,
         priceScaleY: 100
     };
 
-    // Adiciona o produto já no formato correto à página atual
     flyerData.pages[flyerData.currentPageIndex].products.push(newProduct);
 }
 // ▲▲▲ FIM DA SUBSTITUIÇÃO ▲▲▲
@@ -8345,6 +8415,8 @@ document.getElementById('imageGridToggle').addEventListener('change', e => {
 
         // Nova função centralizada para aplicar mudanças a todos os itens selecionados
         // ▼▼▼ SUBSTITUA A FUNÇÃO 'applyChangeToSelectedProducts' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'applyChangeToSelectedProducts' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'applyChangeToSelectedProducts' PELA VERSÃO ABAIXO ▼▼▼
 function applyChangeToSelectedProducts(property, value) {
     const selectedIndices = getSelectedImageIndices();
     const currentPage = flyerData.pages[flyerData.currentPageIndex];
@@ -8352,13 +8424,14 @@ function applyChangeToSelectedProducts(property, value) {
 
     selectedIndices.forEach(index => {
         if (currentPage.products[index]) {
-            // A linha abaixo é a correção.
-            // Usamos um nome de propriedade genérico para o deslocamento do preço.
             currentPage.products[index][property] = value;
+            // Se a propriedade alterada for 'imageRepetitions', marcamos que foi uma escolha manual.
+            if (property === 'imageRepetitions') {
+                currentPage.products[index].manualRepetitions = true;
+            }
         }
     });
-	    updateProductListUI(); // <-- ADICIONE ESTA LINHA
-
+	    updateProductListUI(); 
     redrawCanvas();
 }
 	   
