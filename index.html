@@ -2748,6 +2748,14 @@ let isPanning = false;
 let panModeActive = false;
 let initialPinchDistance = null;
 let lastPanPoint = { x: 0, y: 0 };
+
+let isDraggingSeal = false;
+let sealMouseDownPoint = { x: 0, y: 0 };
+const DRAG_THRESHOLD = 5; // Distância em pixels para considerar um arrasto
+
+let footerBoundingBox = null;
+
+
 // ▲▲▲ FIM DO BLOCO ▲▲▲
 
 
@@ -6330,8 +6338,10 @@ function drawHeaderValidity(ctx, settingsObj) {
 /**
  * Desenha o rodapé do encarte com base nas configurações, respeitando quebras de linha manuais.
  */
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawFooter' PELA VERSÃO ABAIXO ▼▼▼
 function drawFooter(ctx, footerSettings) {
     if (!footerSettings || !footerSettings.textEnabled) {
+        footerBoundingBox = null; // Zera a área clicável se o rodapé estiver desativado
         return;
     }
 
@@ -6344,8 +6354,6 @@ function drawFooter(ctx, footerSettings) {
     const footerX = lateralMargin;
     const footerWidth = canvasWidth - (2 * lateralMargin);
 
-    // --- INÍCIO DA CORREÇÃO ---
-    // 1. Processa o Texto Principal (respeitando "Enter")
     const manualMainTextLines = footerSettings.text.toUpperCase().split('\n');
     let finalMainTextLines = [];
     ctx.font = `bold ${footerSettings.fontSize}px '${footerSettings.fontFamily}'`;
@@ -6354,7 +6362,6 @@ function drawFooter(ctx, footerSettings) {
         finalMainTextLines.push(...wrappedSubLines.map(l => l.trim()));
     });
 
-    // 2. Processa o Subtexto (respeitando "Enter")
     const manualSubtextLines = footerSettings.footerSubtext.toUpperCase().split('\n');
     let finalSubtextLines = [];
     ctx.font = `bold ${footerSettings.footerSubtextFontSize}px '${footerSettings.subtextFontFamily}'`;
@@ -6362,11 +6369,9 @@ function drawFooter(ctx, footerSettings) {
         const { lines: wrappedSubLines } = getWrappedLines(ctx, manualLine, footerWidth * 0.95);
         finalSubtextLines.push(...wrappedSubLines.map(l => l.trim()));
     });
-    // --- FIM DA CORREÇÃO ---
 
     const mainTextHeight = finalMainTextLines.length * (footerSettings.fontSize * 1.2);
     const subtextHeight = finalSubtextLines.length * (footerSettings.footerSubtextFontSize * 1.2);
-
     const totalTextHeight = mainTextHeight + subtextHeight + (finalMainTextLines.length > 0 && finalSubtextLines.length > 0 ? footerSettings.textSpacing : 0);
     const backgroundHeight = totalTextHeight + (footerSettings.paddingY * 2);
 
@@ -6410,6 +6415,20 @@ function drawFooter(ctx, footerSettings) {
         ctx.fillText(line, footerX + footerWidth / 2, currentY);
         currentY += footerSettings.footerSubtextFontSize * 1.2;
     });
+
+    // ==========================================================
+    // --- INÍCIO DA ADIÇÃO ---
+    // ==========================================================
+    // Salva as coordenadas calculadas do rodapé na variável global
+    footerBoundingBox = {
+        x: footerX,
+        y: backgroundY,
+        width: footerWidth,
+        height: backgroundHeight
+    };
+    // ==========================================================
+    // --- FIM DA ADIÇÃO ---
+    // ==========================================================
 
     ctx.restore();
 }
@@ -7831,6 +7850,18 @@ canvas.addEventListener('wheel', (e) => {
 });
 
 // Inicia a ação: PAN (botão do meio), ARRASTAR ou SELECIONAR (botão esquerdo)
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'canvas.addEventListener('mousedown', ...)' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'canvas.addEventListener('mousedown', ...)' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'canvas.addEventListener('mousedown', ...)' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'canvas.addEventListener('mousedown', ...)' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'canvas.addEventListener('mousedown', ...)' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'canvas.addEventListener('mousedown', ...)' PELA VERSÃO ABAIXO ▼▼▼
+
 canvas.addEventListener('mousedown', (e) => {
     e.preventDefault();
     const currentPage = flyerData.pages[flyerData.currentPageIndex];
@@ -7840,60 +7871,88 @@ canvas.addEventListener('mousedown', (e) => {
     panStart.y = e.clientY;
 
     const rect = canvas.getBoundingClientRect();
-    // ===== INÍCIO DA CORREÇÃO DE ESCALA CSS =====
-    // Converte o clique na tela para as coordenadas internas do canvas
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     const canvasX = (e.clientX - rect.left) * scaleX;
     const canvasY = (e.clientY - rect.top) * scaleY;
-    // ===== FIM DA CORREÇÃO DE ESCALA CSS =====
-
-    // Usa as coordenadas corrigidas para calcular a posição no "mundo" do encarte
     const worldX = (canvasX - viewTransform.origin.x) / viewTransform.scale;
     const worldY = (canvasY - viewTransform.origin.y) / viewTransform.scale;
 
-    if (e.button === 1) { // Ação do BOTÃO DO MEIO (scroll): Navegar (Pan)
+    if (e.button === 1) { 
         mouseAction = 'panning';
         canvas.style.cursor = 'grabbing';
         return;
     }
 
-    if (e.button === 0) { // Ação do BOTÃO ESQUERDO: Arrastar objetos ou iniciar Seleção
-        for (const logo of Object.values(currentPage.settings.logos)) {
-            const globalLogo = flyerData.logos[logo.name];
+    if (e.button === 0) { 
+        for (const logoKey of Object.keys(currentPage.settings.logos)) {
+            const logo = currentPage.settings.logos[logoKey];
+            const globalLogo = flyerData.logos[logoKey];
             if (globalLogo && globalLogo.img) {
                 const logoW = logo.width;
                 const logoH = globalLogo.img.height * (logoW / globalLogo.img.width);
                 if (worldX > logo.x && worldX < logo.x + logoW && worldY > logo.y && worldY < logo.y + logoH) {
                     mouseAction = 'draggingLogo';
-                    activeDragObject = logo;
-                    activeDragObject.offsetX = worldX - logo.x;
-                    activeDragObject.offsetY = worldY - logo.y;
+                    activeDraggingLogoKey = logoKey;
+                    logoOffsetX = worldX - logo.x;
+                    logoOffsetY = worldY - logo.y;
                     return;
                 }
             }
         }
+        
         const hvSettings = currentPage.settings.headerValidity;
         if (hvSettings && hvSettings.enabled) {
             const sealHeight = hvSettings.width / 1.05;
             if (worldX >= hvSettings.x && worldX <= hvSettings.x + hvSettings.width &&
                 worldY >= hvSettings.y && worldY <= hvSettings.y + sealHeight) {
+                
+                // Apenas prepara a ação, sem abrir o painel
                 mouseAction = 'draggingHeader';
+                isDraggingSeal = false; 
+                sealMouseDownPoint = { x: e.clientX, y: e.clientY }; 
                 validityOffsetX = worldX - hvSettings.x;
                 validityOffsetY = worldY - hvSettings.y;
                 return;
             }
         }
+
+        if (footerBoundingBox &&
+            worldX >= footerBoundingBox.x && worldX <= footerBoundingBox.x + footerBoundingBox.width &&
+            worldY >= footerBoundingBox.y && worldY <= footerBoundingBox.y + footerBoundingBox.height) {
+            
+            // Apenas define um estado temporário para o clique no rodapé
+            mouseAction = 'footerClicked';
+            return;
+        }
+        
         mouseAction = 'selecting';
         canvas.style.cursor = 'crosshair';
     }
 });
-
 // Executa a ação enquanto o mouse se move
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'mousemove' INTEIRA PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'canvas.addEventListener('mousemove', ...)' PELA VERSÃO ABAIXO ▼▼▼
+
 canvas.addEventListener('mousemove', (e) => {
     e.preventDefault();
+
+    // ==========================================================
+    // --- INÍCIO DA CORREÇÃO ---
+    // ==========================================================
+    // Verifica se o mouse se moveu o suficiente para ser um arrasto
+    if (mouseAction === 'draggingHeader' && !isDraggingSeal) {
+        const dx = e.clientX - sealMouseDownPoint.x;
+        const dy = e.clientY - sealMouseDownPoint.y;
+        if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+            isDraggingSeal = true; // Confirma que é um arrasto
+        }
+    }
+    // ==========================================================
+    // --- FIM DA CORREÇÃO ---
+    // ==========================================================
+
     if (mouseAction === 'none') {
         canvas.style.cursor = 'grab';
         return;
@@ -7911,27 +7970,26 @@ canvas.addEventListener('mousemove', (e) => {
     switch (mouseAction) {
         case 'draggingLogo':
             if (activeDraggingLogoKey) {
-                // Pega uma referência fresca do objeto da logo e atualiza suas coordenadas
                 const logoSettings = flyerData.pages[flyerData.currentPageIndex].settings.logos[activeDraggingLogoKey];
                 if(logoSettings) {
                     logoSettings.x = worldX - logoOffsetX;
                     logoSettings.y = worldY - logoOffsetY;
-                    
-                    // ATUALIZA OS CAMPOS DA INTERFACE EM TEMPO REAL
                     document.getElementById(activeDraggingLogoKey + 'X').value = Math.round(logoSettings.x);
                     document.getElementById(activeDraggingLogoKey + 'Y').value = Math.round(logoSettings.y);
-
                     redrawCanvas();
                 }
             }
             break;
         case 'draggingHeader':
-            const hvSettings = flyerData.pages[flyerData.currentPageIndex].settings.headerValidity;
-            hvSettings.x = worldX - validityOffsetX;
-            hvSettings.y = worldY - validityOffsetY;
-            document.getElementById('headerValidityX').value = Math.round(hvSettings.x);
-            document.getElementById('headerValidityY').value = Math.round(hvSettings.y);
-            redrawCanvas();
+            // Só move se for confirmado que é um arrasto
+            if (isDraggingSeal) {
+                const hvSettings = flyerData.pages[flyerData.currentPageIndex].settings.headerValidity;
+                hvSettings.x = worldX - validityOffsetX;
+                hvSettings.y = worldY - validityOffsetY;
+                document.getElementById('headerValidityX').value = Math.round(hvSettings.x);
+                document.getElementById('headerValidityY').value = Math.round(hvSettings.y);
+                redrawCanvas();
+            }
             break;
         case 'panning':
             const dx = e.clientX - panStart.x;
@@ -7946,12 +8004,30 @@ canvas.addEventListener('mousemove', (e) => {
 });
 
 // Finaliza a ação ao soltar o botão do mouse
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'canvas.addEventListener('mouseup', ...)' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'canvas.addEventListener('mouseup', ...)' PELA VERSÃO ABAIXO ▼▼▼
+
 canvas.addEventListener('mouseup', (e) => {
     e.preventDefault();
 
+    // ==========================================================
+    // --- INÍCIO DA CORREÇÃO ---
+    // ==========================================================
+    // Se a ação era no selo do topo E NÃO foi um arrasto, então foi um clique.
+    if (mouseAction === 'draggingHeader' && !isDraggingSeal) {
+        openControlPanel('panel-header-validity'); // Abre o painel do topo
+    }
+    // Se a ação foi um clique no rodapé
+    if (mouseAction === 'footerClicked') {
+        openControlPanel('panel-validity'); // Abre o painel do rodapé
+    }
+    // ==========================================================
+    // --- FIM DA CORREÇÃO ---
+    // ==========================================================
+
     if (e.button === 0 && mouseAction === 'selecting') {
         const rect = canvas.getBoundingClientRect();
-        // ===== CORREÇÃO DE ESCALA CSS (A MAIS IMPORTANTE ESTÁ AQUI) =====
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
         const canvasX = (e.clientX - rect.left) * scaleX;
@@ -7999,8 +8075,10 @@ canvas.addEventListener('mouseup', (e) => {
         redrawCanvas();
     }
 
+    // Reseta todos os estados de ação do mouse
     mouseAction = 'none';
     activeDragObject = null;
+    isDraggingSeal = false;
     canvas.style.cursor = 'grab';
 });
 
