@@ -7082,6 +7082,8 @@ function drawPricePosterLayout(page) {
 // ▼▼▼ SUBSTITUA A FUNÇÃO 'redrawCanvas' INTEIRA POR ESTA VERSÃO CORRIGIDA ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'redrawCanvas' INTEIRA PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'redrawCanvas' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'redrawCanvas' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
 function redrawCanvas() {
     if (!flyerData.pages[flyerData.currentPageIndex]) return;
 
@@ -7185,6 +7187,9 @@ function redrawCanvas() {
             let productIndex = 0;
             let yOffset = topMargin;
 
+            // ==========================================================
+            // --- INÍCIO DA CORREÇÃO ---
+            // ==========================================================
             for (let i = 0; i < layout.length; i++) {
                 const line = layout[i];
                 const isLineHighlighted = isHighlightEnabled && (i === 0);
@@ -7199,22 +7204,45 @@ function redrawCanvas() {
                 const productsInRow = line.products;
                 const totalColSpacing = Math.max(0, productsInRow - 1) * line.colSpacing;
                 const colWidth = (contentWidth - totalColSpacing) / productsInRow;
-                for (let j = 0; j < productsInRow; j++) {
-                    const x = lateralMargin + j * (colWidth + line.colSpacing);
-                    productSlots.push({ x, y: yOffset, width: colWidth, height: currentRowHeight, productIndex: productIndex });
-                    let slotBg = (isLineHighlighted && pageSettings.highlight.style === 'individual') ? pageSettings.highlight.color : null;
-                    if (productIndex < currentPage.products.length) { 
-                        // ▼▼▼ LINHA MODIFICADA AQUI ▼▼▼
-                        drawProduct(currentPage.products[productIndex], x, yOffset, colWidth, currentRowHeight, slotBg, isLineHighlighted, line, false, productIndex); 
-                        // ▲▲▲ FIM DA MODIFICAÇÃO ▲▲▲
-                    } 
-                    else { 
-                        drawPlaceholderSlot(x, yOffset, colWidth, currentRowHeight, line.borderStyle); 
+
+                // Lógica para linha que USA o primeiro slot como título
+                if (line.useFirstSlotAsTitle && productsInRow > 0) {
+                    const titleX = lateralMargin;
+                    drawTitleSlot(ctx, line, titleX, yOffset, colWidth, currentRowHeight);
+
+                    // Desenha os produtos restantes na linha, começando do segundo slot (j=1)
+                    for (let j = 1; j < productsInRow; j++) {
+                        const x = lateralMargin + j * (colWidth + line.colSpacing);
+                        productSlots.push({ x, y: yOffset, width: colWidth, height: currentRowHeight, productIndex: productIndex });
+                        let slotBg = (isLineHighlighted && pageSettings.highlight.style === 'individual') ? pageSettings.highlight.color : null;
+                        
+                        if (productIndex < currentPage.products.length) {
+                            drawProduct(currentPage.products[productIndex], x, yOffset, colWidth, currentRowHeight, slotBg, isLineHighlighted, line, false, productIndex);
+                        } else {
+                            drawPlaceholderSlot(x, yOffset, colWidth, currentRowHeight, line);
+                        }
+                        productIndex++;
                     }
-                    productIndex++;
+                } else {
+                    // Lógica original para linha normal (sem título)
+                    for (let j = 0; j < productsInRow; j++) {
+                        const x = lateralMargin + j * (colWidth + line.colSpacing);
+                        productSlots.push({ x, y: yOffset, width: colWidth, height: currentRowHeight, productIndex: productIndex });
+                        let slotBg = (isLineHighlighted && pageSettings.highlight.style === 'individual') ? pageSettings.highlight.color : null;
+                        
+                        if (productIndex < currentPage.products.length) { 
+                            drawProduct(currentPage.products[productIndex], x, yOffset, colWidth, currentRowHeight, slotBg, isLineHighlighted, line, false, productIndex); 
+                        } else { 
+                            drawPlaceholderSlot(x, yOffset, colWidth, currentRowHeight, line); 
+                        }
+                        productIndex++;
+                    }
                 }
                 yOffset += currentRowHeight + line.rowSpacing;
             }
+            // ==========================================================
+            // --- FIM DA CORREÇÃO ---
+            // ==========================================================
         }
     }
 
@@ -9103,6 +9131,8 @@ innerSlotBorder: {
 // SUBSTITUA A FUNÇÃO INTEIRA PELA VERSÃO ABAIXO
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'applyPageSettingsToUI' PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'applyPageSettingsToUI' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'applyPageSettingsToUI' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
 function applyPageSettingsToUI(page) {
 
     const settings = page.settings;
@@ -9325,25 +9355,18 @@ function applyPageSettingsToUI(page) {
     const autoPosCheckbox = document.getElementById('footerAutoPosition');
     if (autoPosCheckbox) autoPosCheckbox.checked = footerSettings.autoPosition ?? true;
 
+    const innerBorderSettings = settings.innerSlotBorder || { enabled: false, color: '#007c11', width: 3 };
+    const enableInnerSlotBorderCheckbox = document.getElementById('enableInnerSlotBorder');
+    const innerSlotBorderOptionsDiv = document.getElementById('inner-slot-border-options');
 
+    enableInnerSlotBorderCheckbox.checked = innerBorderSettings.enabled;
+    document.getElementById('innerSlotBorderColor').value = innerBorderSettings.color;
+    document.getElementById('innerSlotBorderWidth').value = innerBorderSettings.width;
+    innerSlotBorderOptionsDiv.classList.toggle('hidden', !innerBorderSettings.enabled);
 
-
-// ▼▼▼ COLE ESTE NOVO BLOCO DE CÓDIGO ▼▼▼
-const innerBorderSettings = settings.innerSlotBorder || { enabled: false, color: '#007c11', width: 3 };
-const enableInnerSlotBorderCheckbox = document.getElementById('enableInnerSlotBorder');
-const innerSlotBorderOptionsDiv = document.getElementById('inner-slot-border-options');
-
-enableInnerSlotBorderCheckbox.checked = innerBorderSettings.enabled;
-document.getElementById('innerSlotBorderColor').value = innerBorderSettings.color;
-document.getElementById('innerSlotBorderWidth').value = innerBorderSettings.width;
-innerSlotBorderOptionsDiv.classList.toggle('hidden', !innerBorderSettings.enabled);
-
-// Adiciona o listener para o checkbox aqui também para garantir que funcione
-enableInnerSlotBorderCheckbox.addEventListener('change', () => {
-    innerSlotBorderOptionsDiv.classList.toggle('hidden', !enableInnerSlotBorderCheckbox.checked);
-});
-// ▲▲▲ FIM DO BLOCO ▲▲▲
-
+    enableInnerSlotBorderCheckbox.addEventListener('change', () => {
+        innerSlotBorderOptionsDiv.classList.toggle('hidden', !enableInnerSlotBorderCheckbox.checked);
+    });
 
     sloganOptionsDiv.classList.toggle('hidden', !settings.slogan.enabled);
     sloganBorderColorContainer.classList.toggle('hidden', !settings.slogan.borderEnabled);
@@ -9353,12 +9376,10 @@ enableInnerSlotBorderCheckbox.addEventListener('change', () => {
     highlightedBalloonControls.classList.toggle('hidden', !settings.highlight.enabled);
     footerTextOptionsDiv.classList.toggle('hidden', !settings.footer.textEnabled);
     
-    // ▼▼▼ LINHA CRÍTICA DA CORREÇÃO ▼▼▼
     const footerBackgroundOptionsDiv = document.getElementById('footer-background-options');
     if(footerBackgroundOptionsDiv) {
         footerBackgroundOptionsDiv.classList.toggle('hidden', !settings.footer.backgroundEnabled);
     }
-    // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
 
     slotBackgroundOptionsDiv.classList.toggle('hidden', !settings.slotBackground.enabled);
 
@@ -9375,8 +9396,20 @@ enableInnerSlotBorderCheckbox.addEventListener('change', () => {
         headerOptionsDiv.classList.toggle('hidden', !enableHeaderCheckbox.checked);
         document.getElementById('headerStartDate').value = hvSettings.startDate || '';
         document.getElementById('headerEndDate').value = hvSettings.endDate || '';
-        document.getElementById('headerStockText').value = hvSettings.stockText || 'OU ENQUANTO DURAREM OS ESTOQUES.';
-		document.getElementById('headerExtraText2').value = hvSettings.extraText2 || '';
+        
+        // ==========================================================
+        // --- INÍCIO DA CORREÇÃO ---
+        // ==========================================================
+        // A lógica "||" foi trocada por "??".
+        // Isso garante que uma string vazia intencional ("") seja mantida,
+        // em vez de ser substituída pelo texto padrão.
+        document.getElementById('headerStockText').value = hvSettings.stockText ?? 'OU ENQUANTO DURAREM OS ESTOQUES.';
+        document.getElementById('headerExtraText2').value = hvSettings.extraText2 ?? '';
+        document.getElementById('headerTitleText').value = hvSettings.titleText ?? '';
+        // ==========================================================
+        // --- FIM DA CORREÇÃO ---
+        // ==========================================================
+        
         document.getElementById('headerValidityX').value = hvSettings.x || 50;
         document.getElementById('headerValidityY').value = hvSettings.y || 50;
         document.getElementById('headerValidityWidth').value = hvSettings.width || 350;
