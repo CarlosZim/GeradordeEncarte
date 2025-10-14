@@ -600,6 +600,13 @@
 <label class="block text-sm font-medium mb-1" for="highlightColor">Cor do Destaque</label>
 <input class="w-full h-10 p-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer" id="highlightColor" type="color" value="#FFFF00"/>
 </div>
+
+ <div>
+        <label class="block text-sm font-medium mb-1" for="highlightDescriptionColor">Cor da Descrição (Destaque)</label>
+        <input class="w-full h-10 p-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer" id="highlightDescriptionColor" type="color" value="#111827">
+    </div>
+
+
 <div>
 <label class="block text-sm font-medium mb-1" for="highlightStyleSelect">Estilo do Destaque</label>
 <select class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2.5 text-sm" id="highlightStyleSelect">
@@ -1074,6 +1081,15 @@
                     <input id="productNameFontSize" type="number" value="42">
                     <button type="button" class="side-control-btn" data-action="increment" data-target="productNameFontSize">+</button>
                 </div>
+
+
+<div class="pt-2">
+                    <label class="block text-sm font-medium mb-1" for="productNameColor">Cor da Descrição</label>
+                    <input class="w-full h-10 p-1 bg-white dark:bg-gray-700 border rounded-lg cursor-pointer" id="productNameColor" type="color" value="#111827">
+                </div>
+
+
+
 
                 <label class="block text-sm font-medium mt-2 mb-1" for="descriptionStartY">Posição Y Inicial da Descrição (px)</label>
                 <div class="number-input-wrapper">
@@ -5603,22 +5619,16 @@ function calculateAndUpdateAutoRepetitions(product, w, h) {
 
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProduct PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProduct PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawProduct' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
 function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFirstRow, line, isPredefined = false, productIndex) {
-    // =============================================================
-    // --- INÍCIO DA CORREÇÃO PRINCIPAL ---
-    // =============================================================
-    // Roda a lógica de detecção automática ANTES de desenhar
     const repetitionsChanged = calculateAndUpdateAutoRepetitions(product, cellWidth, cellHeight);
-    // Se a lógica alterou as repetições e este produto está selecionado, atualiza o painel
     if (repetitionsChanged) {
         const selectedIndices = getSelectedImageIndices();
         if (selectedIndices.length === 1 && selectedIndices[0] === productIndex) {
             updateImageControlsUI();
         }
     }
-    // =============================================================
-    // --- FIM DA CORREÇÃO ---
-    // =============================================================
 
     const pageSettings = flyerData.pages[flyerData.currentPageIndex].settings;
     const balloonStyle = isFirstRow ? pageSettings.balloons.firstLine : pageSettings.balloons.otherLines;
@@ -5718,7 +5728,20 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         const descY = y + descriptionStartY + descriptionOffsetY;
         let productNameFontFamily = pageSettings.fonts.default.productName.family;
         let productNameFontSize = pageSettings.fonts.default.productName.size;
-        ctx.fillStyle = '#111827';
+        
+        // ==========================================================
+        // --- INÍCIO DA CORREÇÃO ---
+        // ==========================================================
+        // Verifica se o produto está na primeira linha e se o destaque está ativo
+        const isHighlighted = isFirstRow && pageSettings.highlight.enabled;
+        // Escolhe a cor correta com base na condição acima
+        ctx.fillStyle = isHighlighted
+            ? pageSettings.highlight.descriptionColor || '#111827' // Cor do destaque (com fallback para preto)
+            : pageSettings.fonts.default.productName.color || '#111827'; // Cor padrão (com fallback para preto)
+        // ==========================================================
+        // --- FIM DA CORREÇÃO ---
+        // ==========================================================
+
         ctx.font = `bold ${productNameFontSize}px '${productNameFontFamily}'`;
         const finalDescAlignment = line.descAlignment || 'center';
         let descX;
@@ -5738,7 +5761,6 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         const balloonY = y + cellHeight - balloonHeight - padding + highlightedOffsetY + globalOffsetY;
 
         switch (balloonStyle) {
-            // ... (o restante da função 'drawProduct' continua igual)
             case 'default':
             case 'red-tag-3d':
                 drawPriceBalloon3DReference(ctx, x + (cellWidth - (cellWidth * 0.85)) / 2, balloonY, cellWidth * 0.85, balloonHeight, priceDetails, pageSettings.balloonStyles.default, isFirstRow);
@@ -8813,7 +8835,7 @@ slogan: { enabled: false, text: 'OFERTAS ARRASADORAS', fontSize: 60, color: '#e6
             imageAreaScale: 100,
             fonts: {
                 default: {
-                    productName: { family: 'Inter', size: 14 },
+                    productName: { family: 'Inter', size: 14, color: '#111827' },
                     descriptionOffsetY: 0,
                     descriptionStartY: 25,
                     descScaleX: 100,
@@ -8988,12 +9010,23 @@ innerSlotBorder: {
 },
 // ▲▲▲ FIM DA ADIÇÃO ▲▲▲
 		
-        highlight: { enabled: highlightFirstLineCheckbox.checked, color: highlightColorInput.value, noBorder: document.getElementById('highlightNoBorder')?.checked || false, highlightHeightMultiplier: parseFloat(document.getElementById('highlightHeightMultiplier').value) || 1.4, style: document.getElementById('highlightStyleSelect').value },
+        highlight: {
+    enabled: highlightFirstLineCheckbox.checked,
+    color: highlightColorInput.value,
+    descriptionColor: document.getElementById('highlightDescriptionColor').value, // <-- LINHA ADICIONADA
+    noBorder: document.getElementById('highlightNoBorder')?.checked || false,
+    highlightHeightMultiplier: parseFloat(document.getElementById('highlightHeightMultiplier').value) || 1.4,
+    style: document.getElementById('highlightStyleSelect').value
+},
         slotBackground: { enabled: enableSlotBackgroundCheckbox.checked, color: slotBackgroundColorInput.value, opacity: parseInt(slotBackgroundOpacityInput.value) || 100 },
         imageAreaScale: parseInt(document.getElementById('imageAreaScale').value, 10) || 100,
         fonts: {
             default: {
-                productName: { family: productNameFontSelect.value, size: parseInt(productNameFontSizeInput.value) || 14 },
+                productName: { 
+    family: productNameFontSelect.value, 
+    size: parseInt(productNameFontSizeInput.value) || 14,
+    color: document.getElementById('productNameColor').value || '#111827' // <-- LINHA ADICIONADA
+},
                 descriptionOffsetY: parseInt(descriptionGlobalOffsetYInput.value) || 0,
                 descriptionStartY: parseInt(document.getElementById('descriptionStartY').value, 10) || 15,
                 descScaleX: parseInt(document.getElementById('descScaleX').value, 10) || 100,
@@ -9179,6 +9212,9 @@ function applyPageSettingsToUI(page) {
     const highlightSettings = settings.highlight || {};
     highlightFirstLineCheckbox.checked = highlightSettings.enabled;
     highlightColorInput.value = highlightSettings.color;
+	document.getElementById('highlightDescriptionColor').value = highlightSettings.descriptionColor || '#111827'; // <-- LINHA ADICIONADA
+
+	
     document.getElementById('highlightNoBorder').checked = highlightSettings.noBorder || false;
     document.getElementById('highlightStyleSelect').value = highlightSettings.style || 'individual';
 
@@ -9199,6 +9235,8 @@ function applyPageSettingsToUI(page) {
     const defaultFonts = settings.fonts.default;
     productNameFontSelect.value = defaultFonts.productName.family;
     productNameFontSizeInput.value = defaultFonts.productName.size;
+	document.getElementById('productNameColor').value = defaultFonts.productName.color || '#111827'; // <-- LINHA ADICIONADA
+
     descriptionGlobalOffsetYInput.value = defaultFonts.descriptionOffsetY || 0;
 	document.getElementById('descriptionStartY').value = defaultFonts.descriptionStartY || 15;
 	document.getElementById('descScaleX').value = defaultFonts.descScaleX || 100;
