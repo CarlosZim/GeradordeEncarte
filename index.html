@@ -3766,224 +3766,220 @@ menuItems.forEach(item => {
 
         // --- Manual Layout Logic ---
         function updateLineLabels() { document.querySelectorAll('.line-definition').forEach((line, index) => { const label = line.querySelector('label.line-label'); if (label) label.textContent = `Linha ${index + 1}:`; line.dataset.lineIndex = index; }); }
-        function addNewLine(lineData = {}) {
-            const lineIndex = lineLayoutContainer.children.length;
-            const newLine = document.createElement('div');
-            newLine.className = 'line-definition border-t pt-3 mt-3';
-            newLine.dataset.lineIndex = lineIndex;
-            
-            const data = { 
-                products: 4, rowSpacing: 0, colSpacing: 0, borderStyle: 'straight', 
-                useFirstSlotAsTitle: false, titleText: 'Título da Oferta', titleLogoSrc: null, titleLogoImg: null,
-                titleBgEnabled: false, titleBgColor: '#000000', titleWidthPercent: 100, titleHeightPercent: 100,
-                titleAspectRatio: 'fill', titleFontSize: 40,
-                titleStyle: 'individual', 
-                lineBgSrc: null, lineBgImg: null,
-                isTwoLineLayout: false,
-                secondLineProducts: 6,
-				    innerBorderEnabled: false, // <-- ADICIONE ESTA LINHA
+        // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'addNewLine' PELA VERSÃO ABAIXO ▼▼▼
 
-                ...lineData 
-            };
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'addNewLine' PELA VERSÃO ABAIXO ▼▼▼
 
-            // HTML atualizado com a opção "Pontilhada Arredondada"
-            newLine.innerHTML = `
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'addNewLine' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'addNewLine' PELA VERSÃO CORRIGIDA E COMPLETA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'addNewLine' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'addNewLine' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'addNewLine' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'addNewLine' PELA VERSÃO ABAIXO ▼▼▼
+function addNewLine(lineData = {}) {
+    const lineIndex = lineLayoutContainer.children.length;
+    const newLine = document.createElement('div');
+    newLine.className = 'line-definition border-t pt-3 mt-3';
+    newLine.dataset.lineIndex = lineIndex;
+    
+    const data = { 
+        products: 4, rowSpacing: 0, colSpacing: 0, borderStyle: 'straight', 
+        useFirstSlotAsTitle: false, titleText: 'Título da Oferta', titleLogoSrc: null, titleLogoImg: null,
+        titleBrandLogoSrc: null, titleBrandLogoImg: null,
+        titleLogoLayout: 'horizontal',
+        titleLogoSpacing: 10,
+        titleBgEnabled: false, 
+        titleBgColor: '#FFFF00',
+        titleOffsetY: 0,
+        titleBgImg: null, 
+        titleBgSrc: null, 
+        titleWidthPercent: 100, titleHeightPercent: 100,
+        titleAspectRatio: 'fill', titleFontSize: 40,
+        titleStyle: 'individual', 
+        lineBgSrc: null, lineBgImg: null,
+        isTwoLineLayout: false,
+        secondLineProducts: 6,
+        innerBorderEnabled: false,
+        ...lineData 
+    };
+
+    newLine.innerHTML = `
     <div class="flex justify-between items-center mb-2">
         <label class="line-label text-sm font-bold text-white bg-blue-500 px-2 py-1 rounded-md">Linha ${lineIndex + 1}:</label>
         <button class="remove-line-btn text-red-500 hover:text-red-700 font-bold p-1 text-2xl">&times;</button>
     </div>
-    
-<div class="grid grid-cols-2 gap-x-4 gap-y-2">
-   
-    
-    <div><label class="text-xs block">Produtos (1ª Linha)</label><input type="number" class="line-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.products}" min="1"></div>
-    <div>
-        <label class="text-xs block">Borda</label>
-        <select class="line-border-style-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm">
-            <option value="straight" ${data.borderStyle === 'straight' ? 'selected' : ''}>Reta</option>
-            <option value="rounded" ${data.borderStyle === 'rounded' ? 'selected' : ''}>Arredondada</option>
-            <option value="dashed" ${data.borderStyle === 'dashed' ? 'selected' : ''}>Pontilhada Reta</option>
-            <option value="dashed-rounded" ${data.borderStyle === 'dashed-rounded' ? 'selected' : ''}>Pontilhada Arredondada</option>
-            <option value="none" ${data.borderStyle === 'none' ? 'selected' : ''}>Sem Borda</option>
-        </select>
+    <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+        <div><label class="text-xs block">Produtos (1ª Linha)</label><input type="number" class="line-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.products}" min="1"></div>
+        <div>
+            <label class="text-xs block">Borda</label>
+            <select class="line-border-style-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm">
+                <option value="straight" ${data.borderStyle === 'straight' ? 'selected' : ''}>Reta</option>
+                <option value="rounded" ${data.borderStyle === 'rounded' ? 'selected' : ''}>Arredondada</option>
+                <option value="dashed" ${data.borderStyle === 'dashed' ? 'selected' : ''}>Pontilhada Reta</option>
+                <option value="dashed-rounded" ${data.borderStyle === 'dashed-rounded' ? 'selected' : ''}>Pontilhada Arredondada</option>
+                <option value="none" ${data.borderStyle === 'none' ? 'selected' : ''}>Sem Borda</option>
+            </select>
+        </div>
+        <div class="col-span-2 grid grid-cols-2 gap-2">
+            <div><label class="text-xs block">Esp. Slots</label><input type="number" class="line-col-spacing-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.colSpacing}" min="0"></div>
+            <div><label class="text-xs block">Esp. Abaixo</label><input type="number" class="line-row-spacing-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.rowSpacing}" min="0"></div>
+        </div>
+        <div class="col-span-2 flex items-center gap-2 mt-2 pt-2 border-t border-gray-600">
+            <input type="checkbox" class="line-inner-border-toggle h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" ${data.innerBorderEnabled ? 'checked' : ''}>
+            <label class="text-sm font-medium text-teal-400">Ativar Borda Interna (nesta linha)</label>
+        </div>
     </div>
-    <div class="col-span-2 grid grid-cols-2 gap-2">
-        <div><label class="text-xs block">Esp. Slots</label><input type="number" class="line-col-spacing-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.colSpacing}" min="0"></div>
-        <div><label class="text-xs block">Esp. Abaixo</label><input type="number" class="line-row-spacing-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.rowSpacing}" min="0"></div>
-    </div>
-    
-    <div class="col-span-2 flex items-center gap-2 mt-2 pt-2 border-t border-gray-600">
-        <input type="checkbox" class="line-inner-border-toggle h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" ${data.innerBorderEnabled ? 'checked' : ''}>
-        <label class="text-sm font-medium text-teal-400">Ativar Borda Interna (nesta linha)</label>
-    </div>
-    </div>
-	
-	
     <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600 space-y-3">
         <div class="flex items-center gap-2"><input type="checkbox" class="line-title-toggle h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${data.useFirstSlotAsTitle ? 'checked' : ''}><label class="text-sm font-medium">Usar 1º item como título de oferta</label></div>
         <div class="line-title-controls ${data.useFirstSlotAsTitle ? '' : 'hidden'} space-y-3">
-
-            <div>
-                <label class="text-xs block">Estilo do Bloco de Título</label>
-                <select class="line-title-style-select w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm">
-                    <option value="individual" ${data.titleStyle === 'individual' ? 'selected' : ''}>Slots Separados</option>
-                    <option value="unified" ${data.titleStyle === 'unified' ? 'selected' : ''}>Bloco Único</option>
-                </select>
-            </div>
-
-            <div class="two-line-controls ${data.titleStyle === 'unified' ? '' : 'hidden'} space-y-3 pt-3 border-t border-gray-600">
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" class="line-two-line-toggle h-4 w-4 rounded" ${data.isTwoLineLayout ? 'checked' : ''}>
-                    <label class="text-sm font-medium">Ativar layout de 2 linhas</label>
-                </div>
-                <div class="second-line-options ${data.isTwoLineLayout ? '' : 'hidden'}">
-                    <label class="text-xs block">Produtos na 2ª Linha</label>
-                    <input type="number" class="line-second-line-products w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.secondLineProducts}" min="1">
-                </div>
-            </div>
-
             <input type="text" class="line-title-text w-full bg-gray-50 dark:bg-gray-700 border rounded p-1 text-sm" value="${data.titleText}" placeholder="Título da Oferta">
-            <div><label class="text-xs block">Tamanho da Fonte do Título</label><input type="number" class="line-title-font-size w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.titleFontSize}" min="10"></div>
-            <label class="block w-full text-center text-xs text-white bg-indigo-600 hover:bg-indigo-700 font-bold py-2 px-4 rounded-lg cursor-pointer">Adicionar Logo <input type="file" class="line-title-logo-input hidden" accept="image/*"></label>
-
-            <label class="line-bg-upload-label ${data.titleStyle === 'unified' ? '' : 'hidden'} block w-full text-center text-xs text-white bg-teal-600 hover:bg-teal-700 font-bold py-2 px-4 rounded-lg cursor-pointer">
-                Fundo do Bloco <input type="file" class="line-bg-image-input hidden" accept="image/*">
-            </label>
-
-            <div class="flex items-center gap-2"><input type="checkbox" class="line-title-bg-toggle h-4 w-4 rounded" ${data.titleBgEnabled ? 'checked' : ''}><label class="text-sm font-medium">Cor Fundo Título</label><input type="color" class="line-title-bg-color w-8 h-8 p-0" value="${data.titleBgColor}"></div>
+            <div class="grid grid-cols-2 gap-2">
+                 <div>
+                    <label class="text-xs block">Tamanho da Fonte</label>
+                    <input type="number" class="line-title-font-size w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.titleFontSize}" min="10">
+                 </div>
+                 <div>
+                    <label class="text-xs block">Posição Y (Vertical)</label>
+                    <input type="number" class="line-title-offset-y w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.titleOffsetY}">
+                 </div>
+            </div>
+            <div class="pt-2 mt-2 border-t border-gray-600 grid grid-cols-2 gap-2">
+                <div class="flex items-center gap-1">
+                    <input type="checkbox" class="line-title-bg-toggle h-4 w-4 rounded" ${data.titleBgEnabled ? 'checked' : ''}>
+                    <label class="text-xs">Ativar Fundo</label>
+                </div>
+                <div>
+                     <label class="text-xs block">Cor Fundo Título</label>
+                     <input type="color" class="line-title-bg-color w-full h-8 p-1 bg-white dark:bg-gray-700 border rounded-lg" value="${data.titleBgColor}">
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <label class="block w-full text-center text-xs text-white bg-indigo-600 hover:bg-indigo-700 font-bold py-2 px-3 rounded-lg cursor-pointer">Logo Título<input type="file" class="line-title-logo-input hidden" accept="image/*"></label>
+                <label class="block w-full text-center text-xs text-white bg-sky-600 hover:bg-sky-700 font-bold py-2 px-3 rounded-lg cursor-pointer">Logo Marca<input type="file" class="line-title-brand-logo-input hidden" accept="image/*"></label>
+                <label class="block w-full text-center text-xs text-white bg-teal-600 hover:bg-teal-700 font-bold py-2 px-3 rounded-lg cursor-pointer">Fundo da Linha<input type="file" class="line-title-bg-image-input hidden" accept="image/*"></label>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                 <div>
+                    <label class="text-xs block">Direção dos Logos</label>
+                    <select class="line-title-logo-layout-select w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm">
+                        <option value="horizontal" ${data.titleLogoLayout === 'horizontal' ? 'selected' : ''}>Lado a Lado</option>
+                        <option value="vertical" ${data.titleLogoLayout === 'vertical' ? 'selected' : ''}>Um Abaixo do Outro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs block">Espaçamento Logos (px)</label>
+                    <input type="number" class="line-title-logo-spacing-input w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm" value="${data.titleLogoSpacing}" min="0">
+                </div>
+            </div>
             <div><label class="text-xs block">Ajuste da Imagem do Título</label><select class="line-title-aspect-ratio w-full bg-gray-50 dark:bg-gray-700 border rounded-md p-1 text-sm"><option value="fill" ${data.titleAspectRatio === 'fill' ? 'selected' : ''}>Distorcer</option><option value="contain" ${data.titleAspectRatio === 'contain' ? 'selected' : ''}>Manter Proporção</option></select></div>
             <div><label class="text-xs block">Largura Título (%)</label><input type="range" class="line-title-width w-full" min="10" max="200" value="${data.titleWidthPercent}"></div>
             <div><label class="text-xs block">Altura Título (%)</label><input type="range" class="line-title-height w-full" min="10" max="200" value="${data.titleHeightPercent}"></div>
         </div>
     </div>`;
 
-            
-            lineLayoutContainer.appendChild(newLine);
-			
-			
-			
-			// ▼▼▼ COLE ESTE BLOCO DE CÓDIGO NO FINAL DA SUA FUNÇÃO addNewLine ▼▼▼
-
-// Pega a referência do checkbox que acabamos de criar dentro da nova linha
-const innerBorderToggle = newLine.querySelector('.line-inner-border-toggle');
-
-// Adiciona um "ouvinte" que será acionado toda vez que o checkbox for clicado
-innerBorderToggle.addEventListener('change', (e) => {
-    // Pega o estado atual do checkbox (marcado = true, desmarcado = false)
-    const isChecked = e.target.checked;
+    lineLayoutContainer.appendChild(newLine);
     
-    // Encontra o elemento da linha inteira para descobrir seu índice
-    const lineElement = e.target.closest('.line-definition');
-    const clickedLineIndex = parseInt(lineElement.dataset.lineIndex, 10);
+    flyerData.pages[flyerData.currentPageIndex].lineObjects[lineIndex] = { 
+        titleLogoImg: data.titleLogoImg, titleLogoSrc: data.titleLogoSrc,
+        titleBrandLogoImg: data.titleBrandLogoImg, titleBrandLogoSrc: data.titleBrandLogoSrc,
+        titleBgImg: data.titleBgImg, titleBgSrc: data.titleBgSrc, 
+        lineBgImg: data.lineBgImg, lineBgSrc: data.lineBgSrc
+    }; 
     
-    // Pega a estrutura atual do layout e a página atual
-    const currentLayout = getLayoutFromInputs();
-    const currentPage = flyerData.pages[flyerData.currentPageIndex];
-
-    // --- Lógica para descobrir quais produtos pertencem a esta linha ---
-    let productStartIndex = 0;
-    // Soma a quantidade de produtos das linhas anteriores para encontrar o início
-    for (let i = 0; i < clickedLineIndex; i++) {
-        productStartIndex += currentLayout[i].products;
-    }
-    // Pega a quantidade de produtos na linha que foi clicada
-    const productsOnThisLine = currentLayout[clickedLineIndex].products;
-    const productEndIndex = productStartIndex + productsOnThisLine;
-    // ----------------------------------------------------------------
-
-    // Itera apenas sobre os produtos que estão na linha clicada
-    for (let i = productStartIndex; i < productEndIndex; i++) {
-        // Verifica se o produto existe para evitar erros
-        if (currentPage.products[i]) {
-            // Define o estado da borda interna do produto para ser IGUAL ao do checkbox da linha
-            currentPage.products[i].innerBorderEnabled = isChecked;
+    newLine.querySelector('.line-title-bg-image-input').addEventListener('change', e => handleSingleImageUpload(e, img => { 
+        const idx = parseInt(e.target.closest('.line-definition').dataset.lineIndex); 
+        flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].titleBgImg = img; 
+        flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].titleBgSrc = img.src; 
+        redrawCanvas(); 
+    }));
+    
+    // O resto da função continua igual...
+    newLine.querySelector('.line-title-brand-logo-input').addEventListener('change', e => handleSingleImageUpload(e, img => { 
+        const idx = parseInt(e.target.closest('.line-definition').dataset.lineIndex); 
+        flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].titleBrandLogoImg = img; 
+        flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].titleBrandLogoSrc = img.src; 
+        redrawCanvas(); 
+    }));
+    const innerBorderToggle = newLine.querySelector('.line-inner-border-toggle');
+    innerBorderToggle.addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        const lineElement = e.target.closest('.line-definition');
+        const clickedLineIndex = parseInt(lineElement.dataset.lineIndex, 10);
+        const currentLayout = getLayoutFromInputs();
+        const currentPage = flyerData.pages[flyerData.currentPageIndex];
+        let productStartIndex = 0;
+        for (let i = 0; i < clickedLineIndex; i++) { productStartIndex += currentLayout[i].products; }
+        const productsOnThisLine = currentLayout[clickedLineIndex].products;
+        const productEndIndex = productStartIndex + productsOnThisLine;
+        for (let i = productStartIndex; i < productEndIndex; i++) {
+            if (currentPage.products[i]) { currentPage.products[i].innerBorderEnabled = isChecked; }
         }
-    }
-
-    // Atualiza o painel "No Encarte" para mostrar os checkboxes "B.I." marcados/desmarcados
-    updateProductListUI();
-    // Redesenha o encarte para mostrar o resultado visual
-    redrawCanvas();
-});
-
-// ▲▲▲ FIM DO BLOCO PARA COLAR ▲▲▲
-			
-			
-			
-			
-            
-            flyerData.pages[flyerData.currentPageIndex].lineObjects[lineIndex] = { 
-                titleLogoImg: data.titleLogoImg, titleLogoSrc: data.titleLogoSrc,
-                lineBgImg: data.lineBgImg, lineBgSrc: data.lineBgSrc
-            }; 
-            
-            const titleToggle = newLine.querySelector('.line-title-toggle'); 
-            const titleControls = newLine.querySelector('.line-title-controls');
-            const titleStyleSelect = newLine.querySelector('.line-title-style-select');
-            const bgUploadLabel = newLine.querySelector('.line-bg-upload-label');
-            const twoLineControls = newLine.querySelector('.two-line-controls');
-            const twoLineToggle = newLine.querySelector('.line-two-line-toggle');
-            const secondLineOptions = newLine.querySelector('.second-line-options');
-
-            titleToggle.addEventListener('change', () => titleControls.classList.toggle('hidden', !titleToggle.checked));
-            titleStyleSelect.addEventListener('change', () => {
-                bgUploadLabel.classList.toggle('hidden', titleStyleSelect.value !== 'unified');
-                twoLineControls.classList.toggle('hidden', titleStyleSelect.value !== 'unified');
-            });
-            twoLineToggle.addEventListener('change', () => secondLineOptions.classList.toggle('hidden', !twoLineToggle.checked));
-
-            newLine.querySelector('.line-title-logo-input').addEventListener('change', e => handleSingleImageUpload(e, img => { 
-                const idx = parseInt(e.target.closest('.line-definition').dataset.lineIndex); 
-                flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].titleLogoImg = img; 
-                flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].titleLogoSrc = img.src; 
-                redrawCanvas(); 
-            }));
-
-            newLine.querySelector('.line-bg-image-input').addEventListener('change', e => handleSingleImageUpload(e, img => {
-                const idx = parseInt(e.target.closest('.line-definition').dataset.lineIndex);
-                flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].lineBgImg = img;
-                flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].lineBgSrc = img.src;
-                redrawCanvas();
-            }));
-
-            newLine.querySelector('.remove-line-btn').addEventListener('click', e => { 
-                const lineToRemove = e.target.closest('.line-definition'); 
-                flyerData.pages[flyerData.currentPageIndex].lineObjects.splice(parseInt(lineToRemove.dataset.lineIndex), 1); 
-                lineToRemove.remove(); 
-                updateLineLabels(); 
-                redrawCanvas(); 
-            });
-        }
+        updateProductListUI();
+        redrawCanvas();
+    });
+    const titleToggle = newLine.querySelector('.line-title-toggle'); 
+    const titleControls = newLine.querySelector('.line-title-controls');
+    titleToggle.addEventListener('change', () => titleControls.classList.toggle('hidden', !titleToggle.checked));
+    newLine.querySelector('.line-title-logo-input').addEventListener('change', e => handleSingleImageUpload(e, img => { 
+        const idx = parseInt(e.target.closest('.line-definition').dataset.lineIndex); 
+        flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].titleLogoImg = img; 
+        flyerData.pages[flyerData.currentPageIndex].lineObjects[idx].titleLogoSrc = img.src; 
+        redrawCanvas(); 
+    }));
+    newLine.querySelector('.remove-line-btn').addEventListener('click', e => { 
+        const lineToRemove = e.target.closest('.line-definition'); 
+        flyerData.pages[flyerData.currentPageIndex].lineObjects.splice(parseInt(lineToRemove.dataset.lineIndex), 1); 
+        lineToRemove.remove(); 
+        updateLineLabels(); 
+        redrawCanvas(); 
+    });
+}
 		
 		
-        function getLayoutFromInputs() {
-            return Array.from(document.querySelectorAll('.line-definition')).map((def, index) => ({
-                products: parseInt(def.querySelector('.line-input').value, 10) || 1,
-                rowSpacing: parseInt(def.querySelector('.line-row-spacing-input').value, 10) || 0,
-                colSpacing: parseInt(def.querySelector('.line-col-spacing-input').value, 10) || 0,
-                borderStyle: def.querySelector('.line-border-style-input').value,
-                useFirstSlotAsTitle: def.querySelector('.line-title-toggle').checked,
-                titleText: def.querySelector('.line-title-text').value,
-                titleFontSize: parseInt(def.querySelector('.line-title-font-size').value, 10) || 40,
-                titleBgEnabled: def.querySelector('.line-title-bg-toggle').checked,
-                titleBgColor: def.querySelector('.line-title-bg-color').value,
-                titleAspectRatio: def.querySelector('.line-title-aspect-ratio')?.value || 'fill',
-                titleWidthPercent: parseInt(def.querySelector('.line-title-width')?.value, 10) || 100,
-                titleHeightPercent: parseInt(def.querySelector('.line-title-height')?.value, 10) || 100,
-                titleStyle: def.querySelector('.line-title-style-select')?.value || 'individual',
-                // Lendo e salvando as novas propriedades de 2 linhas
-                isTwoLineLayout: def.querySelector('.line-two-line-toggle')?.checked || false,
-                secondLineProducts: parseInt(def.querySelector('.line-second-line-products')?.value, 10) || 6,
-				       innerBorderEnabled: def.querySelector('.line-inner-border-toggle').checked,
- 
+        // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'getLayoutFromInputs' PELA VERSÃO ABAIXO ▼▼▼
 
-                // ---
-                titleLogoSrc: flyerData.pages[flyerData.currentPageIndex].lineObjects[index]?.titleLogoSrc || null,
-                titleLogoImg: flyerData.pages[flyerData.currentPageIndex].lineObjects[index]?.titleLogoImg || null,
-                lineBgSrc: flyerData.pages[flyerData.currentPageIndex].lineObjects[index]?.lineBgSrc || null,
-                lineBgImg: flyerData.pages[flyerData.currentPageIndex].lineObjects[index]?.lineBgImg || null
-            }));
-        }
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'getLayoutFromInputs' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'getLayoutFromInputs' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'getLayoutFromInputs' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'getLayoutFromInputs' PELA VERSÃO ABAIXO ▼▼▼
+function getLayoutFromInputs() {
+    return Array.from(document.querySelectorAll('.line-definition')).map((def, index) => {
+        const lineObjects = flyerData.pages[flyerData.currentPageIndex].lineObjects[index] || {};
+        return {
+            products: parseInt(def.querySelector('.line-input').value, 10) || 1,
+            rowSpacing: parseInt(def.querySelector('.line-row-spacing-input').value, 10) || 0,
+            colSpacing: parseInt(def.querySelector('.line-col-spacing-input').value, 10) || 0,
+            borderStyle: def.querySelector('.line-border-style-input').value,
+            useFirstSlotAsTitle: def.querySelector('.line-title-toggle').checked,
+            titleText: def.querySelector('.line-title-text').value,
+            titleFontSize: parseInt(def.querySelector('.line-title-font-size').value, 10) || 40,
+            titleBgEnabled: def.querySelector('.line-title-bg-toggle')?.checked || false,
+            titleBgColor: def.querySelector('.line-title-bg-color')?.value || '#FFFF00',
+            // ▼▼▼ NOVA PROPRIEDADE DE POSIÇÃO VERTICAL LIDA DA INTERFACE ▼▼▼
+            titleOffsetY: parseInt(def.querySelector('.line-title-offset-y')?.value, 10) || 0,
+            // ▲▲▲ FIM DA NOVA PROPRIEDADE ▲▲▲
+            titleAspectRatio: def.querySelector('.line-title-aspect-ratio')?.value || 'fill',
+            titleWidthPercent: parseInt(def.querySelector('.line-title-width')?.value, 10) || 100,
+            titleHeightPercent: parseInt(def.querySelector('.line-title-height')?.value, 10) || 100,
+            innerBorderEnabled: def.querySelector('.line-inner-border-toggle').checked,
+            titleLogoLayout: def.querySelector('.line-title-logo-layout-select')?.value || 'horizontal',
+            titleLogoSpacing: parseInt(def.querySelector('.line-title-logo-spacing-input')?.value, 10) || 10,
+            titleLogoSrc: lineObjects.titleLogoSrc || null,
+            titleLogoImg: lineObjects.titleLogoImg || null,
+            titleBrandLogoSrc: lineObjects.titleBrandLogoSrc || null,
+            titleBrandLogoImg: lineObjects.titleBrandLogoImg || null,
+            // ▼▼▼ NOVAS PROPRIEDADES DA IMAGEM DE FUNDO DO TÍTULO ▼▼▼
+            titleBgImg: lineObjects.titleBgImg || null,
+            titleBgSrc: lineObjects.titleBgSrc || null
+            // ▲▲▲ FIM DAS NOVAS PROPRIEDADES ▲▲▲
+        };
+    });
+}
         // --- General UI Event Listeners ---
         addLineBtn.addEventListener('click', () => { addNewLine(); redrawCanvas(); });
         highlightFirstLineCheckbox.addEventListener('change', () => { 
@@ -5621,6 +5617,7 @@ function calculateAndUpdateAutoRepetitions(product, w, h) {
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO drawProduct PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawProduct' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'drawProduct' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFirstRow, line, isPredefined = false, productIndex) {
     const repetitionsChanged = calculateAndUpdateAutoRepetitions(product, cellWidth, cellHeight);
     if (repetitionsChanged) {
@@ -5653,7 +5650,8 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
     const padding = 15;
     const isUnifiedHighlight = isFirstRow && pageSettings.highlight.enabled && pageSettings.highlight.style === 'unified';
 
-    if (!isUnifiedHighlight) {
+    // ▼▼▼ CONDIÇÃO MODIFICADA AQUI ▼▼▼
+    if (!isUnifiedHighlight && !line.titleBgImg) {
         const defaultSlotRgbaColor = pageSettings.slotBackground.enabled ? hexToRgba(pageSettings.slotBackground.color, pageSettings.slotBackground.opacity) : 'transparent';
         const finalBackgroundColor = product.backgroundColor || backgroundColor || defaultSlotRgbaColor;
         if (finalBackgroundColor && finalBackgroundColor !== "transparent") {
@@ -5666,6 +5664,7 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
             }
         }
     }
+    // ▲▲▲ FIM DA MODIFICAÇÃO ▲▲▲
 
     const innerBorderSettings = pageSettings.innerSlotBorder;
     const baseCondition = innerBorderSettings && innerBorderSettings.enabled && product.innerBorderEnabled;
@@ -5711,9 +5710,9 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         ctx.restore();
     }
     
+    // ... O restante da função 'drawProduct' continua exatamente igual ...
     const stylesWithOwnDescription = ['yellow-tag', 'desc-left-red-tag', 'desc-left-3d-tag', 'gigante-tag', 'text-outline', 'desc-left-custom-balloon'];
     let needsDefaultDescription = !stylesWithOwnDescription.includes(balloonStyle);
-
     if (balloonStyle.startsWith('custom_')) {
         const customName = balloonStyle.replace('custom_', '');
         const allCustomSettings = pageSettings.balloonStyles.customBalloons || {};
@@ -5722,26 +5721,15 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
             needsDefaultDescription = false;
         }
     }
-
     if (needsDefaultDescription) {
         const descriptionStartY = pageSettings.fonts.default.descriptionStartY || 15;
         const descY = y + descriptionStartY + descriptionOffsetY;
         let productNameFontFamily = pageSettings.fonts.default.productName.family;
         let productNameFontSize = pageSettings.fonts.default.productName.size;
-        
-        // ==========================================================
-        // --- INÍCIO DA CORREÇÃO ---
-        // ==========================================================
-        // Verifica se o produto está na primeira linha e se o destaque está ativo
         const isHighlighted = isFirstRow && pageSettings.highlight.enabled;
-        // Escolhe a cor correta com base na condição acima
         ctx.fillStyle = isHighlighted
-            ? pageSettings.highlight.descriptionColor || '#111827' // Cor do destaque (com fallback para preto)
-            : pageSettings.fonts.default.productName.color || '#111827'; // Cor padrão (com fallback para preto)
-        // ==========================================================
-        // --- FIM DA CORREÇÃO ---
-        // ==========================================================
-
+            ? pageSettings.highlight.descriptionColor || '#111827'
+            : pageSettings.fonts.default.productName.color || '#111827';
         ctx.font = `bold ${productNameFontSize}px '${productNameFontFamily}'`;
         const finalDescAlignment = line.descAlignment || 'center';
         let descX;
@@ -5752,14 +5740,12 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         }
         wrapText(ctx, product.name.toUpperCase(), descX, descY, cellWidth - 2 * padding, 1.2 * productNameFontSize, finalDescAlignment, descScaleX, descScaleY);
     }
-
     if ("none" !== balloonStyle) {
         ctx.save();
         const balloonHeight = (cellHeight * 0.25 * 0.9 * (pageSettings.balloons.balloonHeightPercent || 70) / 100);
         const globalOffsetY = pageSettings.balloons.globalOffsetY || 0;
         const highlightedOffsetY = isFirstRow && pageSettings.highlight.enabled ? (pageSettings.balloons.highlightedBalloonOffsetY || 0) : 0;
         const balloonY = y + cellHeight - balloonHeight - padding + highlightedOffsetY + globalOffsetY;
-
         switch (balloonStyle) {
             case 'default':
             case 'red-tag-3d':
@@ -5848,6 +5834,46 @@ function drawProduct(product, x, y, cellWidth, cellHeight, backgroundColor, isFi
         }
         ctx.restore();
     }
+}
+
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'drawPlaceholderSlot' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
+function drawPlaceholderSlot(x, y, w, h, lineStyle) {
+    ctx.save();
+    const pageSettings = flyerData.pages[flyerData.currentPageIndex].settings;
+    const borderStyle = lineStyle.borderStyle;
+    
+    const defaultSlotRgbaColor = pageSettings.slotBackground.enabled ? hexToRgba(pageSettings.slotBackground.color, pageSettings.slotBackground.opacity) : 'transparent';
+
+    // ▼▼▼ CONDIÇÃO MODIFICADA AQUI ▼▼▼
+    if ("transparent" !== defaultSlotRgbaColor && !lineStyle.titleBgImg) {
+        ctx.fillStyle = defaultSlotRgbaColor;
+        if (borderStyle === "rounded" || borderStyle === "dashed-rounded") {
+            pathRoundedRect(ctx, x, y, w, h, 20);
+            ctx.fill();
+        } else {
+            ctx.fillRect(x, y, w, h);
+        }
+    }
+    // ▲▲▲ FIM DA MODIFICAÇÃO ▲▲▲
+
+    if (borderStyle !== 'none') {
+        const borderColor = pageSettings.slotBorder.customColorEnabled ? pageSettings.slotBorder.color : '#007c11';
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1.5;
+
+        if (borderStyle === 'dashed' || borderStyle === 'dashed-rounded') {
+            ctx.setLineDash([6, 3]);
+        }
+
+        if (borderStyle === 'rounded' || borderStyle === 'dashed-rounded') {
+            pathRoundedRect(ctx, x, y, w, h, 20);
+            ctx.stroke();
+        } else {
+            ctx.strokeRect(x, y, w, h);
+        }
+    }
+
+    ctx.restore();
 }
 		
 		// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'drawPredefinedGrid' INTEIRA POR ESTA VERSÃO COMPLETA ▼▼▼
@@ -6203,7 +6229,83 @@ function drawPredefinedGrid(layoutName, productGridTopY, productGridBottomY) {
 	   
 	   
 	   
-        function drawTitleSlot(ctx, line, x, y, width, height) { ctx.save(); if (line.titleBgEnabled) { ctx.fillStyle = line.titleBgColor; ctx.fillRect(x, y, width, height); } if (line.titleLogoImg) { const img = line.titleLogoImg, aspectRatio = line.titleAspectRatio || 'fill', widthPercent = (line.titleWidthPercent || 100) / 100, heightPercent = (line.titleHeightPercent || 100) / 100; let imgW = width * widthPercent, imgH = height * heightPercent; if ("contain" === aspectRatio) { const imgAspectRatio = img.width / img.height, slotAspectRatio = width / height; imgAspectRatio > slotAspectRatio ? (imgW = width * widthPercent, imgH = imgW / imgAspectRatio) : (imgH = height * heightPercent, imgW = imgH * imgAspectRatio) } ctx.drawImage(img, x + (width - imgW) / 2, y + (height - imgH) / 2, imgW, imgH) } else if (line.titleText) { ctx.fillStyle = '#111827'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const fontSize = line.titleFontSize || 40; ctx.font = `bold ${fontSize}px Anton`; const { lines } = getWrappedLines(ctx, line.titleText.toUpperCase(), .95 * width); const lineHeight = 1.1 * fontSize, totalTextHeight = lines.length * lineHeight; let startY = y + (height - totalTextHeight) / 2 + lineHeight / 2 - .1 * lineHeight; for (let i=0; i<lines.length; i++)ctx.fillText(lines[i], x + width / 2, startY + i * lineHeight) } ctx.restore() }
+        // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawTitleSlot' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawTitleSlot' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawTitleSlot' PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawTitleSlot' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawTitleSlot' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawTitleSlot' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'drawTitleSlot' PELA VERSÃO ABAIXO ▼▼▼
+function drawTitleSlot(ctx, line, x, y, width, height) {
+    ctx.save();
+    
+    // A lógica de desenhar cor de fundo e imagem de fundo foi REMOVIDA daqui.
+    
+    const offsetY = line.titleOffsetY || 0;
+    const promoImg = line.titleLogoImg;
+    const brandImg = line.titleBrandLogoImg;
+
+    const drawImageWithOptions = (img, dx, dy, dw, dh) => {
+        if (!img) return;
+        const fit = line.titleAspectRatio || 'contain';
+        const widthPercent = (line.titleWidthPercent || 100) / 100;
+        const heightPercent = (line.titleHeightPercent || 100) / 100;
+        const viewBoxW = dw * widthPercent;
+        const viewBoxH = dh * heightPercent;
+        const viewBoxX = dx + (dw - viewBoxW) / 2;
+        const viewBoxY = dy + (dh - viewBoxH) / 2;
+        let finalW = viewBoxW, finalH = viewBoxH, finalX = viewBoxX, finalY = viewBoxY;
+
+        if (fit === 'contain') {
+            const imgAspectRatio = img.width / img.height;
+            const viewBoxAspectRatio = viewBoxW / viewBoxH;
+            if (imgAspectRatio > viewBoxAspectRatio) {
+                finalH = viewBoxW / imgAspectRatio;
+            } else {
+                finalW = viewBoxH * imgAspectRatio;
+            }
+            finalX = viewBoxX + (viewBoxW - finalW) / 2;
+            finalY = viewBoxY + (viewBoxH - finalH) / 2;
+        }
+        ctx.drawImage(img, finalX, finalY + offsetY, finalW, finalH);
+    };
+
+    const logoLayout = line.titleLogoLayout || 'horizontal';
+    const logoSpacing = line.titleLogoSpacing || 10;
+
+    if (promoImg && brandImg) {
+        if (logoLayout === 'vertical') {
+            const logoHeight = (height - logoSpacing) / 2;
+            drawImageWithOptions(promoImg, x, y, width, logoHeight);
+            drawImageWithOptions(brandImg, x, y + logoHeight + logoSpacing, width, logoHeight);
+        } else {
+            const logoWidth = (width - logoSpacing) / 2;
+            drawImageWithOptions(promoImg, x, y, logoWidth, height);
+            drawImageWithOptions(brandImg, x + logoWidth + logoSpacing, y, logoWidth, height);
+        }
+    } else if (promoImg || brandImg) {
+        const singleImg = promoImg || brandImg;
+        drawImageWithOptions(singleImg, x, y, width, height);
+    } else if (line.titleText) {
+        ctx.fillStyle = '#111827';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const fontSize = line.titleFontSize || 40;
+        ctx.font = `bold ${fontSize}px Anton`;
+        const { lines } = getWrappedLines(ctx, line.titleText.toUpperCase(), width * 0.95);
+        const lineHeight = fontSize * 1.1;
+        const totalTextHeight = lines.length * lineHeight;
+        let startY = y + (height - totalTextHeight) / 2 + (lineHeight / 2) - (lineHeight * 0.1) + offsetY;
+        lines.forEach((lineText, i) => {
+            ctx.fillText(lineText, x + width / 2, startY + (i * lineHeight));
+        });
+    }
+
+    ctx.restore();
+}
         
         // ===============================================================
         // ===== FIM DO BLOCO DE NOVAS FUNÇÕES DE DESENHO DO CANVAS ======
@@ -7106,6 +7208,8 @@ function drawPricePosterLayout(page) {
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'redrawCanvas' PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'redrawCanvas' PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'redrawCanvas' PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'redrawCanvas' PELA VERSÃO ABAIXO ▼▼▼
 function redrawCanvas() {
     if (!flyerData.pages[flyerData.currentPageIndex]) return;
 
@@ -7209,13 +7313,26 @@ function redrawCanvas() {
             let productIndex = 0;
             let yOffset = topMargin;
 
-            // ==========================================================
-            // --- INÍCIO DA CORREÇÃO ---
-            // ==========================================================
             for (let i = 0; i < layout.length; i++) {
                 const line = layout[i];
                 const isLineHighlighted = isHighlightEnabled && (i === 0);
                 const currentRowHeight = isLineHighlighted ? standardRowHeight * heightMultiplier : standardRowHeight;
+                const productsInRow = line.products;
+                const totalColSpacing = Math.max(0, productsInRow - 1) * line.colSpacing;
+                const colWidth = (contentWidth - totalColSpacing) / productsInRow;
+
+                // ▼▼▼ LÓGICA DE FUNDO ATUALIZADA AQUI ▼▼▼
+                // 1. Prioridade para a imagem de fundo da linha inteira
+                if (line.titleBgImg) {
+                    ctx.drawImage(line.titleBgImg, lateralMargin, yOffset, contentWidth, currentRowHeight);
+                } 
+                // 2. Se não houver imagem, verifica se a COR de fundo do TÍTULO está ativa
+                else if (line.titleBgEnabled && line.useFirstSlotAsTitle) {
+                    // Desenha a cor de fundo APENAS no primeiro slot (o do título)
+                    ctx.fillStyle = line.titleBgColor;
+                    ctx.fillRect(lateralMargin, yOffset, colWidth, currentRowHeight);
+                }
+                // ▲▲▲ FIM DA LÓGICA DE FUNDO ▲▲▲
 
                 if (isLineHighlighted && pageSettings.highlight.style === 'unified') {
                     ctx.fillStyle = pageSettings.highlight.color;
@@ -7223,16 +7340,10 @@ function redrawCanvas() {
                     ctx.fill();
                 }
 
-                const productsInRow = line.products;
-                const totalColSpacing = Math.max(0, productsInRow - 1) * line.colSpacing;
-                const colWidth = (contentWidth - totalColSpacing) / productsInRow;
-
-                // Lógica para linha que USA o primeiro slot como título
                 if (line.useFirstSlotAsTitle && productsInRow > 0) {
                     const titleX = lateralMargin;
                     drawTitleSlot(ctx, line, titleX, yOffset, colWidth, currentRowHeight);
 
-                    // Desenha os produtos restantes na linha, começando do segundo slot (j=1)
                     for (let j = 1; j < productsInRow; j++) {
                         const x = lateralMargin + j * (colWidth + line.colSpacing);
                         productSlots.push({ x, y: yOffset, width: colWidth, height: currentRowHeight, productIndex: productIndex });
@@ -7246,7 +7357,6 @@ function redrawCanvas() {
                         productIndex++;
                     }
                 } else {
-                    // Lógica original para linha normal (sem título)
                     for (let j = 0; j < productsInRow; j++) {
                         const x = lateralMargin + j * (colWidth + line.colSpacing);
                         productSlots.push({ x, y: yOffset, width: colWidth, height: currentRowHeight, productIndex: productIndex });
@@ -7262,9 +7372,6 @@ function redrawCanvas() {
                 }
                 yOffset += currentRowHeight + line.rowSpacing;
             }
-            // ==========================================================
-            // --- FIM DA CORREÇÃO ---
-            // ==========================================================
         }
     }
 
@@ -7282,8 +7389,7 @@ function redrawCanvas() {
     }
     
     ctx.restore();
-}
-		
+}	
 		
 		
 		
@@ -8603,6 +8709,7 @@ function getFlyerState() {
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'applyFlyerState' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA A SUA FUNÇÃO "applyFlyerState" INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 
+// ▼▼▼ SUBSTITUA A SUA FUNÇÃO 'applyFlyerState' INTEIRA PELA VERSÃO ABAIXO ▼▼▼
 async function applyFlyerState(state) {
     await loadCustomFontsFromStorage();
 
@@ -8612,7 +8719,6 @@ async function applyFlyerState(state) {
     try {
         flyerNameInput.value = state.flyerName || '';
 
-        // Carrega as logos (código existente, já está correto)
         flyerData.logos.promo.src = state.logos.promo.src;
         flyerData.logos.promo.img = await loadImageWithCors(state.logos.promo.src);
         flyerData.logos.store.src = state.logos.store.src;
@@ -8622,45 +8728,36 @@ async function applyFlyerState(state) {
 
         const pagePromises = state.pages.map(async (pageData) => {
             
-            // ==========================================================
-            // ===== INÍCIO DA CORREÇÃO PRINCIPAL =====
-            // ==========================================================
             const productPromises = pageData.products.map(async (productData) => {
                 let imagesToLoad = [];
-                // 1. Verifica se a nova estrutura de galeria (srcs) existe
                 if (Array.isArray(productData.srcs) && productData.srcs.length > 0) {
                     imagesToLoad = productData.srcs;
                 } 
-                // 2. Se não existir, usa a estrutura antiga (src) para compatibilidade
                 else if (productData.src) {
                     imagesToLoad = [productData.src];
                 }
-
-                // 3. Carrega todas as imagens encontradas usando a função de CORS
                 const loadedImages = await Promise.all(
                     imagesToLoad.map(src => loadImageWithCors(src))
                 );
-
-                // Filtra qualquer imagem que tenha falhado ao carregar
                 const validImages = loadedImages.filter(Boolean);
-                
-                // 4. Retorna o objeto do produto com a estrutura de imagem completa e correta
                 return {
                     ...productData,
-                    images: validImages, // Array de objetos de imagem
-                    srcs: validImages.map(img => img.src), // Array de URLs
-                    image: validImages[0] || null, // Mantém a compatibilidade
-                    src: validImages.length > 0 ? validImages[0].src : null, // Mantém a compatibilidade
+                    images: validImages,
+                    srcs: validImages.map(img => img.src),
+                    image: validImages[0] || null,
+                    src: validImages.length > 0 ? validImages[0].src : null,
                 };
             });
-            // ==========================================================
-            // ===== FIM DA CORREÇÃO PRINCIPAL =====
-            // ==========================================================
             
+            // ▼▼▼ A CORREÇÃO ESTÁ AQUI ▼▼▼
+            // Adicionamos o carregamento da 'titleBrandLogoImg' e 'titleBgImg'
             const layoutPromises = pageData.manualLayout.map(async (layoutData) => ({
                 ...layoutData,
-                titleLogoImg: await loadImageWithCors(layoutData.titleLogoSrc)
+                titleLogoImg: await loadImageWithCors(layoutData.titleLogoSrc),
+                titleBrandLogoImg: await loadImageWithCors(layoutData.titleBrandLogoSrc), // <-- LINHA ADICIONADA
+                titleBgImg: await loadImageWithCors(layoutData.titleBgSrc)             // <-- LINHA ADICIONADA
             }));
+            // ▲▲▲ FIM DA CORREÇÃO ▲▲▲
 
             return {
                 ...pageData,
@@ -12109,58 +12206,131 @@ saveProductsToDbBtn.addEventListener('click', async () => {
 // COLE ESTE BLOCO CORRIGIDO NO LUGAR DO ANTIGO
 // ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO ABAIXO ▼▼▼
 // ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO ABAIXO ▼▼▼
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA TODA A SUA FUNÇÃO 'searchDbBtn.addEventListener' PELA VERSÃO CORRETA ABAIXO ▼▼▼
+
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO 'searchDbBtn' INTEIRO PELA VERSÃO CORRIGIDA ABAIXO ▼▼▼
+
 searchDbBtn.addEventListener('click', async () => {
-    const queries = productSearchTextarea.value.trim().split('\n').filter(q => q.trim());
-    if (queries.length === 0) {
+    const text = productSearchTextarea.value; // Pega o texto completo, incluindo quebras de linha
+    if (!text.trim()) {
         showAlert('Digite os nomes dos produtos que deseja buscar.');
         return;
     }
 
     showSpinner(true);
+    showAlert("Sincronizando página atual... Buscando produtos."); // Adiciona um feedback inicial
 
-    const productPromises = queries.map(query => new Promise(async (resolve) => {
+    const queries = text.split('\n'); // Divide o texto por cada linha
+    let newLayoutStructure = [];
+    let allProductQueries = [];
+    let currentLineProducts = 0;
+
+    // ETAPA 1: Parsear a lista para entender a ESTRUTURA DAS LINHAS
+    for (const line of queries) {
+        const trimmedLine = line.trim();
+        
+        if (trimmedLine === '') { // Se a linha é um "espaçamento" (quebra de linha)
+            if (currentLineProducts > 0) {
+                // Fecha a linha anterior e salva o número de produtos nela
+                newLayoutStructure.push({ products: currentLineProducts });
+                currentLineProducts = 0; // Zera para a próxima linha
+            }
+        } else { // Se a linha é um produto
+            if (trimmedLine.includes(';') || findBestMatchInDb(trimmedLine.split(';')[0])) {
+                 currentLineProducts++; // Adiciona à contagem da linha atual
+                 allProductQueries.push(trimmedLine); // Adiciona à lista total de produtos a buscar
+            } else {
+                 console.warn("Linha ignorada (não parece ser um produto):", trimmedLine);
+            }
+        }
+    }
+    if (currentLineProducts > 0) {
+        newLayoutStructure.push({ products: currentLineProducts });
+    }
+
+    if (allProductQueries.length === 0) {
+        showSpinner(false);
+        showAlert('Nenhum produto válido encontrado na lista.');
+        return;
+    }
+
+    // ETAPA 2: Buscar todos os produtos no banco de dados (na ordem da lista)
+    const productPromises = allProductQueries.map(query => new Promise(async (resolve) => {
         let nameFromList = '';
         let pricePart = '0.00';
-
         if (query.includes(';')) {
             const parts = query.split(';');
             nameFromList = parts[0].trim();
             const priceText = parts[1] ? parts[1].trim() : '0';
             const parsedPrice = parseFloat(priceText.replace(',', '.'));
-            if (!isNaN(parsedPrice)) {
-                pricePart = parsedPrice.toFixed(2);
-            }
+            if (!isNaN(parsedPrice)) pricePart = parsedPrice.toFixed(2);
         } else {
             nameFromList = query.trim();
         }
-
         const bestMatchName = findBestMatchInDb(nameFromList);
-
         if (bestMatchName) {
             const productData = productDatabase[bestMatchName];
             const priceForFlyer = pricePart !== '0.00' ? pricePart : (productData.price || '0.00');
-            
-            const img = await loadImageWithCors(productData.src); // Usa a nova função
+            const img = await loadImageWithCors(productData.src);
             resolve({ name: nameFromList, price: priceForFlyer, src: productData.src, image: img });
         } else {
             resolve({ name: nameFromList, price: pricePart, src: null, image: null });
         }
     }));
 
-    const productsToAdd = await Promise.all(productPromises);
+    const productsToAdd = (await Promise.all(productPromises)).filter(Boolean);
+    const newProductCount = productsToAdd.length;
 
-    if (productsToAdd.length > 0) {
-        productsToAdd.forEach(p => addProductWithDefaults(p));
-        productSearchTextarea.value = '';
-        updateProductListUI();
-        redrawCanvas();
-        showAlert(`${productsToAdd.length} produto(s) adicionado(s) ao encarte!`);
-    } else {
-        showAlert('Não foi possível processar nenhum produto da lista.');
-    }
+    // ETAPA 3: Aplicar o novo layout e produtos na página atual
+    const pageToUpdate = flyerData.pages[flyerData.currentPageIndex];
+    const existingLayout = pageToUpdate.manualLayout || [];
+
+    // Substitui a lista de produtos
+    pageToUpdate.products = productsToAdd.map(p => ({ ...p, ...calculateSmartImageDefaults(p.image) }));
+
+    // Cria o novo layout, preservando os estilos do layout antigo
+    const newManualLayout = newLayoutStructure.map((newLineConfig, index) => {
+        const templateLine = existingLayout[index] || existingLayout[existingLayout.length - 1] || {};
+
+        return {
+            products: newLineConfig.products, 
+            rowSpacing: typeof templateLine.rowSpacing === 'number' ? templateLine.rowSpacing : 0,
+            colSpacing: typeof templateLine.colSpacing === 'number' ? templateLine.colSpacing : 0,
+            borderStyle: templateLine.borderStyle || 'straight',
+            innerBorderEnabled: templateLine.innerBorderEnabled !== undefined ? templateLine.innerBorderEnabled : false
+        };
+    });
+
+    pageToUpdate.manualLayout = newManualLayout;
+    pageToUpdate.settings.predefinedLayout = 'manual';
+
+    // ==========================================================
+    // --- INÍCIO DA CORREÇÃO ---
+    // ==========================================================
+    // Esta linha força a atualização do painel de "Layout" com
+    // a nova estrutura que acabamos de criar.
+    applyPageSettingsToUI(pageToUpdate);
+    // ==========================================================
+    // --- FIM DA CORREÇÃO ---
+    // ==========================================================
+
+    // ETAPA 4: Limpa e atualiza a interface
+    productSearchTextarea.value = '';
+    updateProductListUI();
+    redrawCanvas();
+    showAlert(`${newProductCount} produto(s) foram sincronizados com a página atual! O layout foi recriado.`);
     showSpinner(false);
 });
-
 
 
 // =======================================================
@@ -13576,6 +13746,12 @@ controlPanelContainer.addEventListener('click', (e) => {
 	
 
 
+
+
+
+
+
+
 // ▼▼▼ COLE TODO ESTE BLOCO DE CÓDIGO NO FINAL DO SEU SCRIPT ▼▼▼
 
 // --- LÓGICA PARA SINCRONIZAR O ENCARTE COM UMA NOVA LISTA ---
@@ -13583,7 +13759,34 @@ controlPanelContainer.addEventListener('click', (e) => {
 const syncFlyerBtn = document.getElementById('syncFlyerBtn');
 const syncFlyerTextarea = document.getElementById('syncFlyerTextarea');
 
+
+
+// ▼▼▼ ADICIONE ESTA NOVA FUNÇÃO AUXILIAR ▼▼▼
+function countSlotsInLayout(manualLayout) {
+    if (!manualLayout || !Array.isArray(manualLayout)) return 0;
+    return manualLayout.reduce((acc, line) => {
+        let lineSlots = line.products || 0;
+        // Se a linha usa o 1º slot como título, ele não conta como um slot de produto
+        if (line.useFirstSlotAsTitle && lineSlots > 0) {
+            lineSlots -= 1;
+        }
+        return acc + lineSlots;
+    }, 0);
+}
+// ▲▲▲ FIM DA NOVA FUNÇÃO ▲▲▲
+
+
+
+
+
+
 // ▼▼▼ SUBSTITUA O EVENT LISTENER DO BOTÃO 'syncFlyerBtn' POR ESTE BLOCO COMPLETO ▼▼▼
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO BOTÃO 'syncFlyerBtn' POR ESTE BLOCO CORRIGIDO ▼▼▼
+
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO BOTÃO 'syncFlyerBtn' POR ESTE BLOCO CORRIGIDO ▼▼▼
+
+// ▼▼▼ SUBSTITUA O EVENT LISTENER DO BOTÃO 'syncFlyerBtn' POR ESTA VERSÃO DEFINITIVA ▼▼▼
+
 syncFlyerBtn.addEventListener('click', async () => {
     const text = syncFlyerTextarea.value.trim();
     if (!text) {
@@ -13599,7 +13802,6 @@ syncFlyerBtn.addEventListener('click', async () => {
 
     const confirmationMessage = `Isso irá substituir TODOS os produtos do encarte atual pela nova lista. O layout será recalculado e páginas extras serão adicionadas ou removidas conforme necessário. As configurações de fundo, logos e data de cada página serão mantidas. Deseja continuar?`;
 
-    // Salva o índice da página atual ANTES de qualquer alteração
     const originalPageIndex = flyerData.currentPageIndex;
 
     showConfirm(confirmationMessage, async (confirmed) => {
@@ -13609,7 +13811,6 @@ syncFlyerBtn.addEventListener('click', async () => {
         showAlert("Sincronizando encarte...");
 
         try {
-            // ETAPA 1: Processar a nova lista
             const lines = text.split('\n').filter(line => line.trim());
             const pagesFromFile = [];
             let currentPageLines = [];
@@ -13624,7 +13825,6 @@ syncFlyerBtn.addEventListener('click', async () => {
             }
             if (currentPageLines.length > 0) pagesFromFile.push(currentPageLines);
 
-            // ETAPA 2: Buscar todos os produtos e suas imagens
             const allProductPromises = pagesFromFile.flat().map(line => new Promise(async (resolve) => {
                 const parts = line.split(';');
                 const nameFromList = parts[0].trim();
@@ -13650,55 +13850,72 @@ syncFlyerBtn.addEventListener('click', async () => {
             let productReadIndex = 0;
             const newPageCount = pagesFromFile.length;
 
-            // ETAPA 3: Atualizar páginas existentes e criar novas
             for (let i = 0; i < newPageCount; i++) {
                 const productsForThisPage = allResolvedProducts.slice(productReadIndex, productReadIndex + pagesFromFile[i].length);
                 productReadIndex += pagesFromFile[i].length;
+                const newProductCount = productsForThisPage.length;
 
                 if (i < originalPageCount) {
                     // ATUALIZA UMA PÁGINA EXISTENTE
                     const pageToUpdate = flyerData.pages[i];
+                    const existingLayout = pageToUpdate.manualLayout || [];
+                    const existingSlotCount = countSlotsInLayout(existingLayout);
+
                     pageToUpdate.products = productsForThisPage.map(p => ({ ...p, ...calculateSmartImageDefaults(p.image) }));
-                    pageToUpdate.manualLayout = generateAutoLayout(pageToUpdate.products.length);
-                    pageToUpdate.settings.predefinedLayout = 'manual';
+
+                    // Se o número de produtos mudou, regenera o layout, mas preserva os estilos linha a linha
+                    if (newProductCount !== existingSlotCount) {
+                        const newAutoLayout = generateAutoLayout(newProductCount);
+
+                        // ==========================================================
+                        // --- INÍCIO DA CORREÇÃO INTELIGENTE DE ESTILO ---
+                        // ==========================================================
+                        const newStyledLayout = newAutoLayout.map((newLine, index) => {
+                            // Tenta pegar a linha correspondente do layout antigo.
+                            // Se não existir (ex: nova lista tem mais linhas), usa a ÚLTIMA linha válida como modelo.
+                            // Isso evita que o estilo da linha 1 (ex: destaque) seja aplicado nas novas linhas 4, 5, etc.
+                            const templateLine = existingLayout[index] || existingLayout[existingLayout.length - 1] || {};
+
+                            return {
+                                ...newLine, // Mantém o número de produtos calculado automaticamente
+                                // Copia os estilos da linha modelo
+                                rowSpacing: typeof templateLine.rowSpacing === 'number' ? templateLine.rowSpacing : 0,
+                                colSpacing: typeof templateLine.colSpacing === 'number' ? templateLine.colSpacing : 0,
+                                borderStyle: templateLine.borderStyle || 'straight',
+                                innerBorderEnabled: templateLine.innerBorderEnabled !== undefined ? templateLine.innerBorderEnabled : false
+                            };
+                        });
+                        // ==========================================================
+                        // --- FIM DA CORREÇÃO INTELIGENTE ---
+                        // ==========================================================
+
+                        pageToUpdate.manualLayout = newStyledLayout;
+                        pageToUpdate.settings.predefinedLayout = 'manual';
+                    }
+                    
                 } else {
-                    // CRIA UMA NOVA PÁGINA
+                    // CRIA UMA NOVA PÁGINA (usa o modelo da última página existente)
                     const templatePage = flyerData.pages[originalPageCount - 1];
                     const newPage = createDefaultPage();
                     newPage.settings = JSON.parse(JSON.stringify(templatePage.settings));
-
                     newPage.backgroundImage = templatePage.backgroundImage;
                     newPage.backgroundImageSrc = templatePage.backgroundImageSrc;
-
                     newPage.products = productsForThisPage.map(p => ({ ...p, ...calculateSmartImageDefaults(p.image) }));
                     newPage.manualLayout = generateAutoLayout(newPage.products.length);
                     newPage.settings.predefinedLayout = 'manual';
-
                     flyerData.pages.push(newPage);
                 }
             }
 
-            // ETAPA 4: Remove páginas extras
             if (newPageCount < originalPageCount) {
                 flyerData.pages.splice(newPageCount);
             }
 
-            // ETAPA 5: Finaliza e atualiza a interface
-            // ==========================================================
-            // ===== INÍCIO DA CORREÇÃO APLICADA AQUI =====
-            // ==========================================================
             let targetPageIndex = originalPageIndex;
-
-            // Se a página original foi deletada (porque a nova lista é mais curta)...
             if (targetPageIndex >= flyerData.pages.length) {
-                targetPageIndex = Math.max(0, flyerData.pages.length - 1); // ...vá para a nova última página.
+                targetPageIndex = Math.max(0, flyerData.pages.length - 1);
             }
-
-            // Atualiza a visualização para a página correta, forçando o redraw do canvas.
             switchPage(targetPageIndex, false); 
-            // ========================================================
-            // ===== FIM DA CORREÇÃO =====
-            // ========================================================
 
             showAlert(`Encarte sincronizado! O projeto agora tem ${flyerData.pages.length} página(s).`);
 
