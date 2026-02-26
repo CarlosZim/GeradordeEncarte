@@ -117,7 +117,7 @@
     .bg-concluido { background: var(--success); } 
     .bg-cancelado { background: var(--danger); }
 
-    /* TOAST NOTIFICATIONS */
+    /* TOASTS E BADGES */
     #toastContainer { position: fixed; top: 20px; right: 20px; z-index: 11000; display: flex; flex-direction: column; gap: 10px; }
     .toast { min-width: 250px; padding: 15px 20px; background: var(--success); color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-weight: bold; display: flex; align-items: center; gap: 12px; animation: slideInRight 0.3s ease forwards; font-size: 14px;}
     .toast.error { background: var(--danger); }
@@ -193,8 +193,13 @@
 
         .main { padding: 15px; padding-bottom: 75px; }
 
-        /* Quebra de grids em mobile */
+        /* Dashboard em 2 colunas e MAIS COMPACTO na altura */
         .dash-cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; } 
+        .dash-card { padding: 12px 10px !important; } /* Padding reduzido no mobile */
+        .dash-card h4 { font-size: 11px !important; margin-bottom: 2px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dash-card h2 { font-size: 22px !important; margin: 0 !important; line-height: 1 !important; }
+
+        /* Quebra de grids em mobile (Forms e Telas) */
         .responsive-grid { grid-template-columns: 1fr !important; align-items: stretch !important; gap: 10px !important; }
         .agenda-layout { grid-template-columns: 1fr !important; gap: 15px !important; }
         .stack-mobile { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
@@ -1252,6 +1257,7 @@
             tbody.appendChild(tr);
         }
 
+        // FORÇA O BLOCO A TER SEMPRE 10 LINHAS
         function initNotepad() {
             currentEditOrcId = null;
             document.getElementById('noteDate').valueAsDate = new Date();
@@ -1291,6 +1297,7 @@
             initNotepad();
         }
 
+        // FORÇA O BLOCO A TER 10 LINHAS AO EDITAR
         function editarOrcamento(id) {
             const orc = orcamentosList.find(o => o.id === id);
             if(!orc) return;
@@ -1664,6 +1671,7 @@
             }
         }
 
+        // --- AGENDA: SALVAR, EDITAR E STATUS ---
         async function saveAge(btnElement) {
             const date = document.getElementById('ageDate').value;
             const time = document.getElementById('ageTime').value;
