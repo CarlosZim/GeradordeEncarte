@@ -281,9 +281,9 @@
         .orc-client-data .form-group { width: 100% !important; margin-bottom: 0 !important;}
         
         /* Tabela do orçamento comprimida para caber na tela sem deslize horizontal */
-        #noteItemsTable { width: 100% !important; font-size: 10px !important; table-layout: fixed; }
-        #noteItemsTable th { padding: 4px 2px !important; font-size: 9px !important; white-space: normal; }
-        #noteItemsTable td { padding: 2px !important; border-bottom: none !important; }
+        #noteItemsTable { width: 100% !important; font-size: 11px !important; table-layout: auto !important; margin-bottom: 5px !important; }
+        #noteItemsTable th, #noteItemsTable td { padding: 4px !important; } /* Padding menor para economizar espaço */
+        #noteItemsTable input { font-size: 11px !important; padding: 2px !important; }
         #noteItemsTable input { font-size: 10px !important; padding: 4px 2px !important; width: 100% !important; box-sizing: border-box; }
         
         #noteItemsTable th:nth-child(1), #noteItemsTable td:nth-child(1) { width: 15% !important; } /* Qtd */
@@ -304,8 +304,9 @@
     }
 
     /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF (MANTÉM O PADRÃO ORIGINAL SEMPRE) */
+   /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF (AJUSTE FINO - 15 LINHAS) */
     @media print {
-        @page { margin: 10mm; }
+        @page { margin: 10mm; } /* Margem padrão e elegante */
         body { background: #fff !important; margin: 0; padding: 0; display: block; }
         .sidebar, #mobileHeader, #toastContainer, .modal-overlay, #btnBackOrc, #btnClearOrc { display: none !important; }
         .main { padding: 0 !important; margin: 0 !important; overflow: visible !important; }
@@ -314,21 +315,36 @@
         
         #notepad-container { box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; min-width: 100% !important; margin: 0 !important; }
         
-        /* BLINDAGEM DO CABEÇALHO NA IMPRESSÃO */
-        .orc-header { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: space-between !important; align-items: flex-start !important; padding-bottom: 15px !important; margin-bottom: 20px !important; width: 100% !important; } 
-        #printLeftSection { flex: 0 0 calc(100% - 210px) !important; width: calc(100% - 210px) !important; max-width: calc(100% - 210px) !important; height: 115px !important; display: flex !important; align-items: center !important; justify-content: flex-start !important; margin-bottom: 0 !important; overflow: hidden !important; }
-        #printBannerImg { width: auto !important; max-width: 100% !important; max-height: 115px !important; object-fit: contain !important; object-position: left center !important; }
-        #printRightSection { flex: 0 0 190px !important; width: 190px !important; max-width: 190px !important; height: 115px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; padding: 10px !important;}
-        #printRightSection h3 { font-size: 18px !important; }
-        #printRightSection p { font-size: 12px !important; }
-        #noteDate { font-size: 14px !important; }
+        /* CABEÇALHO - Um pouco mais de presença */
+        .orc-header { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: space-between !important; align-items: flex-start !important; padding-bottom: 12px !important; margin-bottom: 15px !important; width: 100% !important; border-bottom: 2px solid #000 !important; } 
+        #printLeftSection { flex: 0 0 calc(100% - 190px) !important; width: calc(100% - 190px) !important; max-width: calc(100% - 190px) !important; height: 100px !important; display: flex !important; align-items: center !important; justify-content: flex-start !important; margin-bottom: 0 !important; overflow: hidden !important; }
+        #printBannerImg { width: auto !important; max-width: 100% !important; max-height: 100px !important; object-fit: contain !important; object-position: left center !important; }
+        #printRightSection { flex: 0 0 180px !important; width: 180px !important; max-width: 180px !important; height: 100px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; padding: 10px !important;}
+        #printRightSection h3 { font-size: 16px !important; margin: 0 !important; }
+        #printRightSection p { font-size: 11px !important; margin: 4px 0 !important; }
+        #noteDate { font-size: 13px !important; }
         
-        .orc-client-data { display: grid !important; grid-template-columns: 1fr 1fr !important; }
-        .orc-footer { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: flex-end !important; }
-        
-        #noteItemsTable { width: 100% !important; font-size: 13px !important; table-layout: auto !important; }
-        #noteItemsTable th, #noteItemsTable td { padding: 8px !important; }
-        #noteItemsTable input { font-size: 13px !important; padding: 5px !important; }
+        /* DADOS DO CLIENTE */
+        div[style*="border: 1px solid #000; border-radius: 6px; padding: 15px; margin-bottom: 20px;"] { padding: 12px !important; margin-bottom: 15px !important; border-width: 1px !important; }
+        div[style*="border: 1px solid #000; border-radius: 6px; padding: 15px; margin-bottom: 20px;"] h4 { margin: 0 0 8px 0 !important; padding-bottom: 4px !important; font-size: 14px !important; }
+        .orc-client-data { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+        .orc-client-data .form-group { margin-bottom: 4px !important; }
+        .orc-client-data label { font-size: 13px !important; margin-right: 5px !important; }
+        .orc-client-data input { font-size: 13px !important; padding: 0 !important; }
+
+        /* TABELA - Linhas um pouco mais altas e fonte 13px */
+        #noteItemsTable { width: 100% !important; font-size: 13px !important; table-layout: auto !important; margin-bottom: 15px !important; }
+        #noteItemsTable th { padding: 8px 5px !important; font-size: 13px !important; }
+        #noteItemsTable td { padding: 7px 5px !important; } 
+        #noteItemsTable input { font-size: 13px !important; padding: 0 !important; margin: 0 !important; }
+
+        /* RODAPÉ E TOTAIS */
+        .orc-footer { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: flex-end !important; margin-top: 5px !important; }
+        .orc-footer label { font-size: 13px !important; margin-bottom: 4px !important;}
+        #noteObs { font-size: 13px !important; padding: 10px !important; height: 60px !important; }
+        .totals-box .total-line { margin-bottom: 8px !important; font-size: 14px !important; }
+        .totals-box .total-line.final-total { font-size: 18px !important; padding-top: 8px !important; border-top-width: 2px !important; }
+        .totals-box input { font-size: 14px !important; padding: 0 !important; }
 
         #noteActions, #btnAddRow { display: none !important; }
         input, textarea { border: none !important; background: transparent !important; resize: none !important; -webkit-appearance: none; }
@@ -1302,11 +1318,11 @@
             tbody.appendChild(tr);
         }
 
-        function initNotepad() {
+       function initNotepad() {
             currentEditOrcId = null;
             document.getElementById('noteDate').valueAsDate = new Date();
             document.getElementById('noteItemsBody').innerHTML = '';
-            for(let i=0; i<10; i++) addNoteItemRow();
+            for(let i=0; i<14; i++) addNoteItemRow(); // <-- Troque 10 por 15 aqui
             calculateNoteTotal();
         }
 
@@ -1363,7 +1379,7 @@
                 count++;
             }
             
-            while(count < 10) { addNoteItemRow(); count++; }
+            while(count < 14) { addNoteItemRow(); count++; } // <-- Troque 10 por 15 aqui
             
             calculateNoteTotal();
             nav('novo-orcamento'); 
