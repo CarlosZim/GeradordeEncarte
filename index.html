@@ -264,15 +264,15 @@
         #novo-orcamento { padding: 5px !important; overflow-x: hidden !important; }
         #notepad-container { width: 100% !important; min-width: 0 !important; max-width: 100% !important; padding: 15px 10px !important; box-sizing: border-box !important; }
         
-        .orc-header { flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; gap: 8px !important; padding-bottom: 10px !important; margin-bottom: 15px !important; justify-content: space-between; }
-        #printLeftSection { height: auto !important; width: auto !important; justify-content: flex-start !important; margin-bottom: 0; flex: 1; min-width: 0; }
-        #printTextFallback { gap: 8px !important; }
+        .orc-header { flex-direction: column !important; align-items: center !important; gap: 15px !important; padding-bottom: 15px !important; margin-bottom: 15px !important; justify-content: center; }
+        #printLeftSection { height: auto !important; width: 100% !important; justify-content: center !important; margin-bottom: 0; flex: none; min-width: 0; }
+        #printTextFallback { gap: 8px !important; justify-content: center !important; }
         #printTextFallback > div:first-child { width: 35px !important; height: 35px !important; font-size: 18px !important; flex-shrink: 0; }
-        #printName { font-size: 14px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #printSub { font-size: 9px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #printBannerImg { max-height: 50px !important; width: 100% !important; max-width: 100% !important; object-fit: contain !important; object-position: left center !important; }
+        #printName { font-size: 14px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+        #printSub { font-size: 9px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+        #printBannerImg { max-height: 90px !important; width: 100% !important; max-width: 100% !important; object-fit: contain !important; object-position: center !important; }
         
-        #printRightSection { flex: 0 0 120px !important; width: 120px !important; min-width: 120px !important; height: auto !important; padding: 5px !important; flex-shrink: 0; }
+        #printRightSection { flex: none !important; width: 220px !important; min-width: 220px !important; height: auto !important; padding: 10px !important; flex-shrink: 0; margin: 0 auto; }
         #printRightSection h3 { font-size: 12px !important; line-height: 1 !important;}
         #printRightSection p { font-size: 9px !important; margin-top: 4px !important; line-height: 1 !important;}
         #noteDate { font-size: 11px !important; margin-top: 4px !important; }
