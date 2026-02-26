@@ -38,7 +38,6 @@
         99% { opacity: 1; visibility: visible; pointer-events: all; }
         100% { opacity: 0; visibility: hidden; pointer-events: none; z-index: -1; }
     }
-    
     .loader { border: 5px solid #e2e8f0; border-top: 5px solid var(--primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
@@ -190,8 +189,13 @@
 
         .main { padding: 15px; padding-bottom: 75px; }
 
+        /* Dashboard Mais Compacto */
+        .dash-cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; } 
+        .dash-card { padding: 12px 15px !important; margin-bottom: 0 !important; }
+        .dash-card h4 { font-size: 11px !important; margin-bottom: 4px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dash-card h2 { font-size: 22px !important; margin: 0 !important; }
+
         /* Quebra de grids em mobile */
-        .dash-cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; } 
         .responsive-grid { grid-template-columns: 1fr !important; align-items: stretch !important; gap: 10px !important; }
         .agenda-layout { grid-template-columns: 1fr !important; gap: 15px !important; }
         .stack-mobile { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
@@ -599,7 +603,7 @@
                                 </div>
                             </div>
                             
-                            <div class="responsive-grid-2 stack-mobile" style="margin-top: 15px;">
+                            <div class="stack-mobile" style="margin-top: 15px;">
                                 <div>
                                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Cliente</label>
                                     <input type="text" id="ageCli" placeholder="Nome do Cliente" style="margin-bottom:0">
@@ -610,13 +614,13 @@
                                 </div>
                             </div>
                             
-                            <div style="margin-bottom: 15px; margin-top: 15px;">
+                            <div style="margin-bottom: 15px;">
                                 <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Endereço</label>
                                 <input type="text" id="ageAddress" placeholder="Rua, Número, Bairro, Cidade" style="margin-bottom:0">
                             </div>
 
-                            <div class="responsive-grid-2 stack-mobile">
-                                <div>
+                            <div class="stack-mobile">
+                                <div style="flex:2;">
                                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Serviço</label>
                                     <select id="ageServ" style="margin-bottom:0">
                                         <option>Instalação</option>
@@ -625,7 +629,7 @@
                                         <option>Reparo/Concerto</option>
                                     </select>
                                 </div>
-                                <div>
+                                <div style="flex:1;">
                                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Valor (R$)</label>
                                     <input type="text" id="agePrice" placeholder="0,00" oninput="maskCurrency(this)" style="margin-bottom:0">
                                 </div>
@@ -689,7 +693,7 @@
                 </div>
             </div>
             
-            <div class="responsive-grid-2 stack-mobile" style="margin-top: 15px; margin-bottom: 15px;">
+            <div class="stack-mobile" style="margin-top: 15px; margin-bottom: 15px;">
                 <div>
                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Cliente</label>
                     <input type="text" id="editAgeCli" placeholder="Nome do Cliente" style="margin-bottom:0;">
@@ -703,7 +707,7 @@
             <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Endereço</label>
             <input type="text" id="editAgeAddress" placeholder="Endereço Completo">
 
-            <div class="responsive-grid-2 stack-mobile" style="margin-bottom: 15px;">
+            <div class="stack-mobile" style="margin-bottom: 15px;">
                 <div>
                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Serviço</label>
                     <select id="editAgeServ" style="margin-bottom:0">
@@ -819,18 +823,6 @@
         </div>
     </div>
 
-    <div id="modalDashList" class="modal-overlay">
-        <div class="modal-card" style="width: 700px; max-width: 95%;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
-                <h3 id="dashModalTitle" style="color: var(--primary);">Detalhes</h3>
-                <button class="btn btn-danger" style="padding: 5px 12px;" onclick="closeModal('modalDashList')"><i class="fa-solid fa-xmark"></i> Fechar</button>
-            </div>
-            <div class="table-responsive" style="max-height: 60vh;">
-                <table><thead id="dashModalHead"></thead><tbody id="dashModalBody"></tbody></table>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Fechar modais ao clicar fora
         window.addEventListener('click', function(e) {
@@ -908,7 +900,7 @@
         // ==========================================
         // COLE AQUI AS CHAVES DO SEU NOVO FIREBASE
         // ==========================================
-        const firebaseConfig = {
+         const firebaseConfig = {
   apiKey: "AIzaSyBJzhoUYdzwN1LkKBr-nxgqnULxWs0h3lM",
   authDomain: "climagestor-oficial.firebaseapp.com",
   projectId: "climagestor-oficial",
