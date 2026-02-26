@@ -47,16 +47,19 @@
     
     .login-box { background: var(--bg-card); padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 400px; max-width: 90%; text-align: center; border: 1px solid var(--border-color); }
 
-    /* LAYOUT COMPUTADOR (DESKTOP) */
-    #mobileHeader { display: none; } /* Oculto no PC */
-    
+    /* REGRAS EXCLUSIVAS DE COMPUTADOR (DESKTOP) */
+    #mobileHeader { display: none !important; }
+    .dash-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .agenda-layout { display: grid; grid-template-columns: 2fr 1.2fr; gap: 20px; margin-top: 20px; }
+    .stack-mobile { display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end; }
+    .stack-mobile > div { flex: 1; margin-bottom: 0 !important; }
+
     .sidebar { width: 260px; background: var(--bg-sidebar); padding: 20px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10;}
     .logo { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
     .menu-btn { padding: 12px; margin-bottom: 5px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; color: var(--text-muted); font-weight: 500; border: none; background: transparent; width: 100%; text-align: left; transition: 0.2s;}
     .menu-btn:hover, .menu-btn.active { background: var(--hover-bg); color: var(--primary); }
     .menu-btn.active { background: var(--primary); color: white; }
     .menu-btn i { margin-right: 12px; width: 20px; text-align: center; }
-    
     #sidebarBottom { margin-top: auto; display: flex; flex-direction: column; width: 100%; gap: 5px; }
 
     .main { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
@@ -64,9 +67,9 @@
     .hidden { display: none !important; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* COMPONENTES GERAIS */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
     .modal-card { background: var(--bg-card); padding: 30px; border-radius: 12px; width: 550px; box-shadow: 0 20px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+
     .card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px; }
     .dash-card { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 2px solid transparent; }
     .dash-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); border-color: var(--primary); }
@@ -77,6 +80,7 @@
     .btn-danger { background: var(--danger); }
     .btn-dark { background: var(--dark); }
     .btn-warning { background: var(--warning); color: #fff;}
+    .btn-whatsapp { background: #25D366; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     
     input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); margin-bottom: 15px; outline: none; font-size: 15px; }
@@ -97,18 +101,18 @@
     
     .banner-preview-container img { width: 100%; height: 140px; object-fit: contain; object-position: left center; border: 2px dashed var(--border-color); padding: 5px; border-radius: 12px; background: white; }
 
-    /* ESTILOS DA AGENDA */
+    /* ESTILOS DA AGENDA E BADGES DE STATUS */
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
     .cal-day { aspect-ratio: 1; border: 1px solid var(--border-color); padding: 5px; cursor: pointer; font-size: 14px; position: relative; background: var(--bg-card); transition: 0.2s; display: flex; flex-direction: column; align-items: center; font-weight: 500;}
     .cal-day:hover { background: var(--hover-bg); }
     .cal-day.selected-day { background: var(--hover-bg); border: 2px solid var(--primary); font-weight: bold; }
     .event-icons-row { position: absolute; bottom: 8px; left: 0; width: 100%; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; padding: 0 2px; }
+    
     .badge-agenda { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; color: white; margin-left: 8px; text-transform: uppercase;}
     .bg-pendente { background: var(--warning); } 
     .bg-concluido { background: var(--success); } 
     .bg-cancelado { background: var(--danger); }
 
-    /* TOAST NOTIFICATIONS */
     #toastContainer { position: fixed; top: 20px; right: 20px; z-index: 11000; display: flex; flex-direction: column; gap: 10px; }
     .toast { min-width: 250px; padding: 15px 20px; background: var(--success); color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-weight: bold; display: flex; align-items: center; gap: 12px; animation: slideInRight 0.3s ease forwards; font-size: 14px;}
     .toast.error { background: var(--danger); }
@@ -119,7 +123,7 @@
     .status-congelado { background: var(--danger); }
     .status-vitalicio { background: var(--primary); }
 
-    /* --- NOTEPAD (EDITOR DE ORÇAMENTOS - DESKTOP) --- */
+    /* --- NOTEPAD (EDITOR DE ORÇAMENTOS - PADRÃO A4) --- */
     #notepad-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 15px solid var(--primary); border-radius: 8px; position: relative; color: #000; }
     body.dark-mode #notepad-container, body.dark-mode #notepad-container * { color: #000 !important; }
     body.dark-mode #notepad-container { background: #fff !important; }
@@ -138,7 +142,7 @@
     .totals-box .total-line.final-total { font-size: 20px; font-weight: bold; border-top: 2px solid #000; padding-top: 10px; }
 
     /* ==========================================
-       RESPONSIVIDADE MOBILE APP STYLE 
+       RESPONSIVIDADE MOBILE CIRÚRGICA 
        ========================================== */
     @media (max-width: 768px) {
         body { flex-direction: column; }
@@ -150,7 +154,7 @@
             font-size: 20px; font-weight: 800; color: var(--primary); z-index: 10; width: 100%;
         }
 
-        /* Menu Inferior: Botões do mesmo tamanho com deslize horizontal */
+        /* Menu Inferior: Botões Iguais e Compactos (Estilo App) */
         .sidebar {
             position: fixed; bottom: 0; left: 0; right: 0; width: 100%; height: 75px;
             flex-direction: row; padding: 0 5px; border-right: none;
@@ -162,9 +166,8 @@
         .sidebar::-webkit-scrollbar { display: none; }
         .sidebar { -ms-overflow-style: none; scrollbar-width: none; }
         .sidebar .logo { display: none; }
-        #sidebarBottom { display: flex; flex-direction: row; margin: 0 !important; gap: 5px; width: auto; }
+        #sidebarBottom { display: flex; flex-direction: row; margin: 0 !important; gap: 5px; width: auto !important; }
 
-        /* Todos os botões exatamente iguais */
         .menu-btn {
             flex: 0 0 75px !important; width: 75px !important; min-width: 75px !important; height: 60px;
             flex-direction: column; justify-content: center; align-items: center;
@@ -179,52 +182,28 @@
         /* Dashboard em 2 colunas */
         .dash-cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; } 
 
-        /* Formulários gerais alinhados */
-        .form-grid { display: flex !important; flex-direction: column !important; gap: 10px !important; }
-        .form-grid > div { width: 100%; margin-bottom: 0; }
+        /* Formulários gerais empilhados */
+        .agenda-layout { grid-template-columns: 1fr !important; }
+        .stack-mobile { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+        .stack-mobile > div { width: 100%; }
         
-        /* Tabelas Deslizáveis */
+        /* Tabelas Deslizáveis (Evita quebra de tela) */
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 15px; }
         th, td { white-space: nowrap; font-size: 13px; padding: 12px 10px; }
         .modal-card { width: 95%; padding: 20px; max-height: 85vh; overflow-y: auto; }
         
-        /* CALENDÁRIO: Força as 7 colunas (Proteção contra sobreposição) */
+        /* CALENDÁRIO: Protegido para não quebrar a grelha de 7 dias */
         .calendar-grid { grid-template-columns: repeat(7, 1fr) !important; gap: 2px !important; display: grid !important; }
         .cal-day { font-size: 11px !important; min-height: 45px !important; padding: 2px !important; justify-content: flex-start; aspect-ratio: auto !important;}
         .event-icons-row { position: relative; bottom: auto; left: auto; margin-top: 4px; display:flex; flex-wrap:wrap; justify-content:center; gap:2px; }
         .event-icons-row i { font-size: 10px !important; margin: 1px; }
 
-        /* BLOCO DE NOTAS / ORÇAMENTO (Ajuste Responsivo sem cortar tela) */
-        #novo-orcamento { padding: 10px; overflow-x: hidden; }
-        #notepad-container { width: 100% !important; min-width: 0 !important; padding: 15px 10px !important; box-sizing: border-box !important; }
-        
-        .orc-header { flex-direction: column !important; align-items: center !important; text-align: center; gap: 15px !important; border-bottom: 1px solid #ccc; padding-bottom: 15px !important; margin-bottom: 15px !important; }
-        #printLeftSection { height: auto !important; width: 100% !important; justify-content: center !important; flex-direction: column; margin-bottom: 0; }
-        #printBannerImg { height: auto !important; max-height: 100px; }
-        #printRightSection { width: 100% !important; height: auto !important; padding: 15px 10px !important; }
-
-        .orc-client-data { display: flex !important; flex-direction: column !important; gap: 8px !important; }
-        
-        /* Tabela do orçamento comprimida para caber */
-        #noteItemsTable { width: 100% !important; font-size: 11px !important; table-layout: fixed; }
-        #noteItemsTable th { padding: 5px 2px !important; font-size: 10px !important; white-space: normal; }
-        #noteItemsTable td { padding: 4px 2px !important; }
-        #noteItemsTable input { font-size: 11px !important; padding: 4px 2px !important; width: 100% !important; box-sizing: border-box; }
-        
-        #noteItemsTable th:nth-child(1), #noteItemsTable td:nth-child(1) { width: 12% !important; }
-        #noteItemsTable th:nth-child(2), #noteItemsTable td:nth-child(2) { width: 44% !important; }
-        #noteItemsTable th:nth-child(3), #noteItemsTable td:nth-child(3) { width: 22% !important; }
-        #noteItemsTable th:nth-child(4), #noteItemsTable td:nth-child(4) { width: 22% !important; }
-        
-        .orc-footer { flex-direction: column !important; align-items: stretch !important; gap: 15px !important; }
-        .orc-footer > div { width: 100% !important; max-width: 100% !important; }
-        .totals-box { width: 100% !important; justify-content: flex-end !important; margin-top: 10px !important; }
-        
-        #noteActions { flex-direction: column !important; gap: 10px !important; }
-        #noteActions button { width: 100% !important; justify-content: center; }
+        /* BLOCO DE NOTAS / ORÇAMENTO (MANTÉM FORMATO DE PAPEL A4 E DESLIZA) */
+        #novo-orcamento { padding: 0 !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+        #notepad-container { width: 800px !important; min-width: 800px !important; padding: 20px !important; margin: 0 auto !important; transform-origin: top left; }
     }
 
-    /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF (MANTÉM O PADRÃO ORIGINAL SEMPRE) */
+    /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF */
     @media print {
         @page { margin: 10mm; }
         body { background: #fff !important; margin: 0; padding: 0; display: block; }
@@ -233,14 +212,6 @@
         .section { display: none !important; }
         #novo-orcamento { display: block !important; overflow: visible !important; }
         #notepad-container { box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; min-width: 100% !important; margin: 0 !important; }
-        
-        /* Força a manter o alinhamento da impressão (desktop) */
-        .orc-header { flex-direction: row !important; align-items: center !important; } 
-        #printLeftSection { height: 115px !important; flex-direction: row !important; }
-        #printRightSection { width: 190px !important; }
-        .orc-client-data { display: grid !important; grid-template-columns: 1fr 1fr !important; flex-direction: row !important;}
-        .orc-footer { flex-direction: row !important; align-items: flex-end !important; }
-
         #noteActions, #btnAddRow { display: none !important; }
         input, textarea { border: none !important; background: transparent !important; resize: none !important; -webkit-appearance: none; }
         input::placeholder, textarea::placeholder { color: transparent !important; }
@@ -341,8 +312,8 @@
                     </div>
                     
                     <label style="font-weight:bold; margin-top:10px; display:block;">Banner da Empresa (Cabeçalho do PDF):</label>
-                    <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center;">
-                        <input type="file" id="confLogoFile" onchange="previewConfLogo(this)" style="margin-bottom:0;">
+                    <div class="stack-mobile" style="flex-direction: row !important; align-items:center;">
+                        <input type="file" id="confLogoFile" onchange="previewConfLogo(this)" style="margin-bottom:0; flex: 1;">
                         <button class="btn btn-danger" onclick="removeConfLogo()" title="Remover Banner" style="padding: 10px 15px;"><i class="fa-solid fa-trash"></i></button>
                     </div>
 
@@ -395,22 +366,24 @@
                 <div class="card" style="background: var(--hover-bg); border: 1px solid var(--primary);">
                     <h3 style="margin-bottom: 15px; color: var(--primary);"><i class="fa-solid fa-cart-arrow-down"></i> Registrar Nova Venda</h3>
                     
-                    <div class="form-grid" style="display:grid; grid-template-columns: 2fr 0.8fr 1fr 1.5fr; gap:10px; align-items: end;">
-                        <div>
+                    <div class="stack-mobile" style="display:flex;">
+                        <div style="flex:2;">
                             <label style="font-size:12px; font-weight:bold;">Selecione o Produto</label>
                             <select id="vendaProduto" onchange="onProdutoChange()" style="margin-bottom:0;">
                                 <option value="">Carregando estoque...</option>
                             </select>
                         </div>
-                        <div>
+                        <div style="flex:1;">
                             <label style="font-size:12px; font-weight:bold;">Quantidade</label>
                             <input type="number" id="vendaQtd" min="1" value="1" style="margin-bottom:0;" oninput="calculaTotalVenda()">
                         </div>
-                        <div>
+                    </div>
+                    <div class="stack-mobile" style="display:flex;">
+                        <div style="flex:1;">
                             <label style="font-size:12px; font-weight:bold;">Valor Unit. (R$)</label>
                             <input type="text" id="vendaPreco" placeholder="0,00" style="margin-bottom:0;" oninput="maskCurrency(this); calculaTotalVenda()">
                         </div>
-                        <div>
+                        <div style="flex:2;">
                             <label style="font-size:12px; font-weight:bold;">Cliente (Opcional)</label>
                             <input type="text" id="vendaCliente" placeholder="Consumidor Final" style="margin-bottom:0;">
                         </div>
@@ -456,10 +429,12 @@
 
                 <div id="notepad-container">
                     
-                    <div class="orc-header" style="display:flex; gap: 20px; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 15px;">
+                    <div style="display:flex; gap: 20px; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 15px;">
                         
                         <div id="printLeftSection" style="flex: 1; height: 115px; display: flex; align-items: center; overflow:hidden;">
+                            
                             <img id="printBannerImg" style="display:none; width:100%; height:100%; object-fit:contain; object-position:left center;">
+
                             <div id="printTextFallback" style="display:flex; align-items:center; gap:15px;">
                                 <div style="width: 70px; height: 70px; background: var(--primary); border-radius: 8px; display:flex; justify-content:center; align-items:center; color:white; font-size:35px;">
                                     <i class="fa-solid fa-snowflake"></i>
@@ -471,7 +446,7 @@
                             </div>
                         </div>
 
-                        <div id="printRightSection" style="width: 190px; height: 115px; border: 2px solid #000; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 10px; flex-shrink: 0;">
+                        <div style="width: 190px; height: 115px; border: 2px solid #000; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 10px; flex-shrink: 0;">
                             <h3 style="margin:0; font-size: 18px; line-height: 1.2;">ORÇAMENTO</h3>
                             <p style="margin:4px 0 0 0; font-size: 12px; color: #d93025; font-weight:bold; line-height: 1.2;">Proposta Comercial</p>
                             <div style="border-top:1px solid #ccc; margin: 8px 0;"></div>
@@ -482,11 +457,11 @@
 
                     <div style="border: 1px solid #000; border-radius: 6px; padding: 15px; margin-bottom: 20px;">
                         <h4 style="margin: 0 0 10px 0; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Dados do Cliente</h4>
-                        <div class="orc-client-data" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                            <div class="form-group"><label>Nome:</label><input type="text" id="noteCliName" placeholder="Nome completo"></div>
-                            <div class="form-group"><label>Telefone:</label><input type="text" id="noteCliPhone" placeholder="(00) 00000-0000" oninput="maskPhone(this)" maxlength="15"></div>
-                            <div class="form-group" style="grid-column: 1 / -1;"><label>Endereço:</label><input type="text" id="noteCliAddress" placeholder="Rua, Número, Bairro"></div>
+                        <div style="display:flex; gap:10px;">
+                            <div class="form-group" style="flex:1;"><label>Nome:</label><input type="text" id="noteCliName" placeholder="Nome completo"></div>
+                            <div class="form-group" style="flex:1;"><label>Telefone:</label><input type="text" id="noteCliPhone" placeholder="(00) 00000-0000" oninput="maskPhone(this)" maxlength="15"></div>
                         </div>
+                        <div class="form-group"><label>Endereço:</label><input type="text" id="noteCliAddress" placeholder="Rua, Número, Bairro"></div>
                     </div>
 
                     <table id="noteItemsTable">
@@ -502,7 +477,7 @@
                     </table>
                     <button id="btnAddRow" onclick="addNoteItemRow()" style="background:transparent; border:none; color:var(--primary); font-weight:bold; cursor:pointer; margin-top:5px; font-size:14px;"><i class="fa-solid fa-plus"></i> Adicionar Linha</button>
 
-                    <div class="orc-footer" style="display:flex; justify-content:space-between; margin-top: 20px; align-items:flex-end; flex-wrap:wrap;">
+                    <div style="display:flex; justify-content:space-between; margin-top: 20px; align-items:flex-end; flex-wrap:wrap;">
                         <div style="width: 100%; max-width: 50%;">
                             <label style="font-weight:bold; display:block; margin-bottom:5px; font-size:14px;">Condições de Pagamento / Observações:</label>
                             <textarea id="noteObs" rows="4" style="border:1px solid #000; border-radius:4px; padding:10px; resize:none;" placeholder="Ex: Pagamento em 3x no cartão. Garantia de 90 dias."></textarea>
@@ -530,7 +505,7 @@
                         </div>
                     </div>
 
-                    <div id="noteActions" style="margin-top:30px; border-top: 1px dashed #ccc; padding-top:20px; display:flex; justify-content:flex-end; gap:15px;">
+                    <div style="margin-top:30px; border-top: 1px dashed #ccc; padding-top:20px; display:flex; justify-content:flex-end; gap:15px;" id="noteActions">
                         <button class="btn btn-primary" onclick="handlePDFAction()" style="padding:12px 25px; font-size:16px;"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
                         <button id="btnSaveNotepadMain" class="btn btn-success" onclick="saveNotepad(this)" style="padding:12px 25px; font-size:16px;"><i class="fa-solid fa-floppy-disk"></i> Salvar no Sistema</button>
                     </div>
@@ -539,14 +514,14 @@
 
             <section id="agenda" class="section hidden">
                 <h2>Agenda de Instalações e Serviços</h2>
-                <div class="form-grid" style="display:grid; grid-template-columns: 2fr 1.2fr; gap:20px; margin-top:20px">
+                <div class="agenda-layout">
                     <div class="card">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
                             <button class="btn btn-primary" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
                             <h3 id="calMonth">Mês Ano</h3>
                             <button class="btn btn-primary" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
                         </div>
-                        <div class="calendar-grid" id="calGridHeader" style="text-align:center; font-weight:bold; color:var(--text-muted); margin-bottom:5px; font-size:12px;">
+                        <div class="calendar-grid" style="text-align:center; font-weight:bold; color:var(--text-muted); margin-bottom:5px; font-size:12px;">
                             <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div>
                         </div>
                         <div class="calendar-grid" id="calGrid"></div>
@@ -555,23 +530,23 @@
                     <div style="display:flex; flex-direction:column; gap:20px;">
                         <div class="card" style="margin-bottom:0;">
                             <h4>Agendar Novo Serviço</h4>
-                            <div class="form-grid" style="display:flex; gap:10px; margin-bottom: 15px;">
-                                <div style="flex:1;">
+                            <div class="stack-mobile" style="display:flex;">
+                                <div>
                                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Data</label>
                                     <input type="date" id="ageDate" onchange="selectDate(this.value)" style="margin-bottom:0">
                                 </div>
-                                <div style="flex:1;">
+                                <div>
                                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Hora</label>
                                     <input type="time" id="ageTime" style="margin-bottom:0">
                                 </div>
                             </div>
                             
-                            <div class="form-grid" style="display:flex; gap:10px; margin-bottom: 15px;">
-                                <div style="flex:1;">
+                            <div class="stack-mobile" style="display:flex;">
+                                <div>
                                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Cliente</label>
                                     <input type="text" id="ageCli" placeholder="Nome do Cliente" style="margin-bottom:0">
                                 </div>
-                                <div style="flex:1;">
+                                <div>
                                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Telefone</label>
                                     <input type="text" id="agePhone" placeholder="(00) 00000-0000" oninput="maskPhone(this)" maxlength="15" style="margin-bottom:0">
                                 </div>
@@ -582,7 +557,7 @@
                                 <input type="text" id="ageAddress" placeholder="Rua, Número, Bairro, Cidade" style="margin-bottom:0">
                             </div>
 
-                            <div class="form-grid" style="display:flex; gap:10px; margin-bottom: 15px;">
+                            <div class="stack-mobile" style="display:flex;">
                                 <div style="flex:2;">
                                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Serviço</label>
                                     <select id="ageServ" style="margin-bottom:0">
@@ -598,7 +573,7 @@
                                 </div>
                             </div>
                             
-                            <button class="btn btn-success" onclick="saveAge(this)" style="width:100%; margin-top:5px; padding: 12px;"><i class="fa-solid fa-calendar-check"></i> Salvar Agendamento</button>
+                            <button class="btn btn-success" onclick="saveAge(this)" style="width:100%; margin-top:15px; padding: 12px;"><i class="fa-solid fa-calendar-check"></i> Salvar Agendamento</button>
                         </div>
 
                         <div class="card" style="flex:1; margin-bottom:0;">
@@ -637,7 +612,7 @@
                 </div>
             
             <p style="font-size:12px; font-weight:bold; color:var(--text-muted); margin-top: 25px; margin-bottom: 10px; border-top: 1px dashed var(--border-color); padding-top: 15px;">Gerenciar Serviço (Baixa e Opções):</p>
-            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;" id="detAgendaActions">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;" id="detAgendaActions">
                 </div>
         </div>
     </div>
@@ -647,23 +622,23 @@
             <h3><i class="fa-solid fa-pen-to-square"></i> Editar Agendamento</h3>
             <input type="hidden" id="editAgeId">
             
-            <div class="form-grid" style="display:flex; gap:10px; margin-bottom: 15px; margin-top: 15px;">
-                <div style="flex:1;">
+            <div class="stack-mobile" style="display:flex; margin-top: 15px;">
+                <div>
                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Data</label>
                     <input type="date" id="editAgeDate" style="margin-bottom:0;">
                 </div>
-                <div style="flex:1;">
+                <div>
                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Hora</label>
                     <input type="time" id="editAgeTime" style="margin-bottom:0;">
                 </div>
             </div>
             
-            <div class="form-grid" style="display:flex; gap:10px; margin-bottom: 15px;">
-                <div style="flex:1;">
+            <div class="stack-mobile" style="display:flex;">
+                <div>
                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Cliente</label>
                     <input type="text" id="editAgeCli" placeholder="Nome do Cliente" style="margin-bottom:0;">
                 </div>
-                <div style="flex:1;">
+                <div>
                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Telefone</label>
                     <input type="text" id="editAgePhone" placeholder="(00) 00000-0000" oninput="maskPhone(this)" maxlength="15" style="margin-bottom:0;">
                 </div>
@@ -672,7 +647,7 @@
             <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Endereço</label>
             <input type="text" id="editAgeAddress" placeholder="Endereço Completo">
 
-            <div class="form-grid" style="display:flex; gap:10px; margin-bottom: 15px;">
+            <div class="stack-mobile" style="display:flex;">
                 <div style="flex:2;">
                     <label style="font-size:12px; color:var(--text-muted); font-weight:bold;">Serviço</label>
                     <select id="editAgeServ" style="margin-bottom:0">
@@ -688,9 +663,9 @@
                 </div>
             </div>
             
-            <div class="form-grid" style="display:flex; gap:10px; margin-top:15px">
-                <button class="btn btn-danger" style="flex:1; justify-content:center; padding:12px;" onclick="closeModal('modalEditAgenda')">Cancelar</button>
-                <button class="btn btn-success" style="flex:2; justify-content:center; padding:12px;" onclick="saveEditAgenda(this)">Salvar Alterações</button>
+            <div class="stack-mobile" style="display:flex; margin-top:15px">
+                <button class="btn btn-danger" style="justify-content:center; padding:12px;" onclick="closeModal('modalEditAgenda')">Cancelar</button>
+                <button class="btn btn-success" style="justify-content:center; padding:12px;" onclick="saveEditAgenda(this)">Salvar Alterações</button>
             </div>
         </div>
     </div>
@@ -700,7 +675,7 @@
             <i class="fa-solid fa-file-pdf" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
             <h3>Gerar Orçamento (PDF)</h3>
             <p style="color: var(--text-muted); margin-bottom: 25px;">Deseja salvar este orçamento no sistema antes de gerar o PDF?</p>
-            <div class="form-grid" style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
                 <button class="btn btn-danger" onclick="closeModal('modalPrintConfirm')">Cancelar</button>
                 <button class="btn btn-dark" onclick="justPrint()">Só Imprimir PDF</button>
                 <button class="btn btn-success" onclick="saveAndPrint()">Salvar e Imprimir</button>
@@ -724,9 +699,9 @@
                 <option value="1200">Plano Vitalício ♾️</option>
             </select>
 
-            <div class="form-grid" style="display:flex; gap:10px; margin-top: 10px;">
-                <button class="btn btn-danger" style="flex:1" onclick="closeModal('modalNewUser')">Cancelar</button>
-                <button class="btn btn-dark" style="flex:2" onclick="createSubAccount(this)">Criar Conta</button>
+            <div class="stack-mobile" style="display:flex; margin-top: 10px;">
+                <button class="btn btn-danger" onclick="closeModal('modalNewUser')">Cancelar</button>
+                <button class="btn btn-dark" onclick="createSubAccount(this)">Criar Conta</button>
             </div>
         </div>
     </div>
@@ -742,7 +717,7 @@
             </div>
 
             <p style="font-size:13px; font-weight:bold; color:var(--text-muted); margin-bottom: 10px; text-align: left;">Adicionar Tempo (Renovação):</p>
-            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 20px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 20px;">
                 <button class="btn btn-success" onclick="renewSubscription(1)" style="justify-content:center; padding: 10px;">+1 Mês</button>
                 <button class="btn btn-success" onclick="renewSubscription(3)" style="justify-content:center; padding: 10px;">+3 Meses</button>
                 <button class="btn btn-success" onclick="renewSubscription(12)" style="justify-content:center; padding: 10px;">Anual (+12m)</button>
@@ -750,9 +725,9 @@
             </div>
 
             <p style="font-size:13px; font-weight:bold; color:var(--text-muted); margin-bottom: 10px; text-align: left;">Ações Manuais:</p>
-            <div class="form-grid" style="display:flex; gap:10px;">
-                <button class="btn btn-danger" style="flex:1; justify-content:center;" onclick="closeModal('modalManageSub')">Cancelar</button>
-                <button id="btnToggleFreeze" class="btn btn-warning" style="flex:1; justify-content:center;" onclick="toggleFreezeSub()">Congelar Acesso</button>
+            <div class="stack-mobile" style="display:flex;">
+                <button class="btn btn-danger" style="justify-content:center;" onclick="closeModal('modalManageSub')">Cancelar</button>
+                <button id="btnToggleFreeze" class="btn btn-warning" style="justify-content:center;" onclick="toggleFreezeSub()">Congelar Acesso</button>
             </div>
         </div>
     </div>
@@ -766,7 +741,7 @@
                 <input type="text" id="eItem" placeholder="Digite: Samsung, LG, Midea, Gree..." oninput="searchCatalog(this)" autocomplete="off">
                 <div id="catalogResults" class="search-results"></div>
             </div>
-            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+            <div class="stack-mobile" style="display:flex;">
                 <div><label>Qtd</label><input type="number" id="eQtd" value="1"></div>
                 <div><label>Valor Unit.</label><input type="text" id="ePrice" placeholder="0,00" oninput="maskCurrency(this)"></div>
                 <div><label>Categoria</label>
@@ -780,9 +755,9 @@
             </div>
             <label style="margin-top: 10px; display: block;">Ou faça upload de uma foto:</label>
             <input type="file" id="eFile" onchange="previewFile(this)">
-            <div class="form-grid" style="display:flex; gap:10px; margin-top:15px">
-                <button class="btn btn-danger" style="flex:1" onclick="closeModal('modalEstoque')">Cancelar</button>
-                <button class="btn btn-success" style="flex:2" onclick="saveEstoque(this)">Salvar no Estoque</button>
+            <div class="stack-mobile" style="display:flex; margin-top:15px">
+                <button class="btn btn-danger" onclick="closeModal('modalEstoque')">Cancelar</button>
+                <button class="btn btn-success" onclick="saveEstoque(this)">Salvar no Estoque</button>
             </div>
         </div>
     </div>
@@ -870,7 +845,7 @@
         // ==========================================
         // COLE AQUI AS CHAVES DO SEU NOVO FIREBASE
         // ==========================================
-        const firebaseConfig = {
+         const firebaseConfig = {
   apiKey: "AIzaSyBJzhoUYdzwN1LkKBr-nxgqnULxWs0h3lM",
   authDomain: "climagestor-oficial.firebaseapp.com",
   projectId: "climagestor-oficial",
