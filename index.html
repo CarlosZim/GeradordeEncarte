@@ -102,7 +102,6 @@
     
     .img-preview-container { text-align: center; margin-bottom: 15px; }
     .img-preview-container img { width: 150px; height: 150px; object-fit: contain; border: 2px dashed var(--border-color); padding: 5px; border-radius: 12px; background: white; }
-    
     .banner-preview-container img { width: 100%; height: 140px; object-fit: contain; object-position: left center; border: 2px dashed var(--border-color); padding: 5px; border-radius: 12px; background: white; }
 
     /* ESTILOS DA AGENDA */
@@ -111,7 +110,6 @@
     .cal-day:hover { background: var(--hover-bg); }
     .cal-day.selected-day { background: var(--hover-bg); border: 2px solid var(--primary); font-weight: bold; }
     .event-icons-row { position: absolute; bottom: 8px; left: 0; width: 100%; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; padding: 0 2px; }
-    
     .badge-agenda { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; color: white; margin-left: 8px; text-transform: uppercase;}
     .bg-pendente { background: var(--warning); } 
     .bg-concluido { background: var(--success); } 
@@ -121,10 +119,8 @@
     #toastContainer { position: fixed; top: 20px; right: 20px; z-index: 11000; display: flex; flex-direction: column; gap: 10px; }
     .toast { min-width: 250px; padding: 15px 20px; background: var(--success); color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-weight: bold; display: flex; align-items: center; gap: 12px; animation: slideInRight 0.3s ease forwards; font-size: 14px;}
     .toast.error { background: var(--danger); }
-    .toast i { font-size: 18px; }
     @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     @keyframes fadeOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
-    
     .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; display: inline-block;}
     .status-ativo { background: var(--success); }
     .status-congelado { background: var(--danger); }
@@ -143,7 +139,7 @@
     #notepad-container td { border: 1px solid #000 !important; padding: 5px; }
     #notepad-container .item-row input { border: none; text-align: center; }
     #notepad-container .item-row input.desc-input { text-align: left; }
-    .totals-box { display: flex; justify-content: flex-end; margin-top: 0; } /* Alinhado com as Observações */
+    .totals-box { display: flex; justify-content: flex-end; margin-top: 20px; }
     .totals-box .totals-content { width: 300px; text-align: right; }
     .totals-box .total-line { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px; align-items: center; color: #000;}
     .totals-box .total-line.final-total { font-size: 20px; font-weight: bold; border-top: 2px solid #000; padding-top: 10px; }
@@ -169,7 +165,7 @@
 
         /* Menu Inferior Ultra Compacto (Estilo App Nativo) */
         .sidebar {
-            position: fixed; bottom: 0; left: 0; right: 0; width: 100%; height: 55px; /* Altura Reduzida */
+            position: fixed; bottom: 0; left: 0; right: 0; width: 100%; height: 55px;
             flex-direction: row; padding: 0 5px; border-right: none;
             border-top: 1px solid var(--border-color); overflow-x: auto;
             z-index: 1000; background: var(--bg-sidebar); gap: 5px; align-items: center;
@@ -183,30 +179,79 @@
 
         /* Todos os botões compactos e IDÊNTICOS */
         .menu-btn {
-            flex: 0 0 65px !important; width: 65px !important; min-width: 65px !important; height: 48px; /* Mais finos */
+            flex: 0 0 65px !important; width: 65px !important; min-width: 65px !important; height: 48px;
             flex-direction: column; justify-content: center; align-items: center;
             padding: 4px 2px; font-size: 8.5px; margin-bottom: 0; border-radius: 6px;
             text-align: center; background: transparent; scroll-snap-align: start;
         }
-        .menu-btn i { margin-right: 0; margin-bottom: 2px; font-size: 18px; } /* Icones ajustados */
+        .menu-btn i { margin-right: 0; margin-bottom: 2px; font-size: 18px; }
         .menu-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; font-size: 8.5px; }
 
         .main { padding: 15px; padding-bottom: 75px; }
 
-        /* Dashboard em 2 colunas e MAIS COMPACTO na altura */
+        /* Quebra de grids em mobile */
         .dash-cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; } 
-        .dash-card { padding: 12px 10px !important; } /* Padding reduzido no mobile */
-        .dash-card h4 { font-size: 11px !important; margin-bottom: 2px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .dash-card h2 { font-size: 22px !important; margin: 0 !important; line-height: 1 !important; }
-
-        /* Quebra de grids em mobile (Forms e Telas) */
         .responsive-grid { grid-template-columns: 1fr !important; align-items: stretch !important; gap: 10px !important; }
         .agenda-layout { grid-template-columns: 1fr !important; gap: 15px !important; }
         .stack-mobile { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
         .stack-mobile > div { width: 100% !important; margin-bottom: 0 !important; }
         
-        /* Tabelas Deslizáveis no telemóvel */
-        th, td { white-space: nowrap; font-size: 12px; padding: 10px 8px; }
+        /* ========================================================
+           TABELAS EM FORMA DE CARDS (FIM DA BARRA DE ROLAGEM) 
+           ======================================================== */
+        .table-responsive.no-scroll { overflow: visible !important; margin-bottom: 15px; }
+        
+        .mobile-stack-table, .mobile-stack-table tbody, .mobile-stack-table tr, .mobile-stack-table td {
+            display: block; width: 100%; box-sizing: border-box;
+        }
+        .mobile-stack-table thead { display: none; } /* Oculta o cabeçalho original da tabela */
+        
+        .mobile-stack-table tr {
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-card);
+            overflow: hidden; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        
+        .mobile-stack-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: right;
+            border-bottom: 1px dashed var(--border-color);
+            padding: 12px 15px;
+            font-size: 13px;
+            white-space: normal !important;
+        }
+        
+        /* Formatação das Ações no fim do Card */
+        .mobile-stack-table td:last-child {
+            border-bottom: none;
+            background: var(--hover-bg);
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+        }
+        
+        /* Títulos de cada campo injetados dinamicamente via data-label */
+        .mobile-stack-table td::before {
+            content: attr(data-label);
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 10px;
+            text-align: left;
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .mobile-stack-table td > * { flex: 2; text-align: right; }
+        .mobile-stack-table td > div, .mobile-stack-table td > span, .mobile-stack-table td > strong { white-space: normal; }
+        .mobile-stack-table td:last-child::before { display: none; } /* Remove o texto "Ações" */
+        .mobile-stack-table td:last-child > * { flex: none; }
+
         .modal-card { width: 95%; padding: 20px; max-height: 85vh; overflow-y: auto; }
         
         /* CALENDÁRIO PROTEGIDO (Força as 7 colunas) */
@@ -258,7 +303,7 @@
         #noteActions button { width: 100% !important; justify-content: center; }
     }
 
-    /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF (GARANTE O LAYOUT ORIGINAL E O CABEÇALHO CERTO) */
+    /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF (MANTÉM O PADRÃO ORIGINAL SEMPRE) */
     @media print {
         @page { margin: 10mm; }
         body { background: #fff !important; margin: 0; padding: 0; display: block; }
@@ -279,7 +324,7 @@
         #noteDate { font-size: 14px !important; }
         
         .orc-client-data { display: grid !important; grid-template-columns: 1fr 1fr !important; }
-        .orc-footer { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: flex-start !important; }
+        .orc-footer { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: flex-end !important; }
         
         #noteItemsTable { width: 100% !important; font-size: 13px !important; table-layout: auto !important; }
         #noteItemsTable th, #noteItemsTable td { padding: 8px !important; }
@@ -364,8 +409,8 @@
                     <button class="btn btn-primary" onclick="openModal('modalNewUser')"><i class="fa-solid fa-user-plus"></i> Novo Usuário</button>
                 </div>
                 <div class="card">
-                    <div class="table-responsive">
-                        <table>
+                    <div class="table-responsive no-scroll">
+                        <table class="mobile-stack-table">
                             <thead><tr><th>Nome / Unidade</th><th>E-mail</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr></thead>
                             <tbody id="admTableBody"></tbody>
                         </table>
@@ -468,8 +513,8 @@
 
                 <div class="card">
                     <h3 style="margin-bottom: 15px;">Histórico de Vendas</h3>
-                    <div class="table-responsive">
-                        <table>
+                    <div class="table-responsive no-scroll">
+                        <table class="mobile-stack-table">
                             <thead><tr><th>Data</th><th>Cliente</th><th>Produto Vendido</th><th>Qtd</th><th>Total</th><th>Ações</th></tr></thead>
                             <tbody id="vendasBody"></tbody>
                         </table>
@@ -483,8 +528,8 @@
                     <button class="btn btn-primary" onclick="nav('novo-orcamento')"><i class="fa-solid fa-plus"></i> Novo Orçamento</button>
                 </div>
                 <div class="card">
-                    <div class="table-responsive">
-                        <table>
+                    <div class="table-responsive no-scroll">
+                        <table class="mobile-stack-table">
                             <thead><tr><th>Cliente</th><th>Resumo</th><th>Valor Final</th><th>Ações</th></tr></thead>
                             <tbody id="orcBody"></tbody>
                         </table>
@@ -543,7 +588,7 @@
                     </table>
                     <button id="btnAddRow" onclick="addNoteItemRow()" style="background:transparent; border:none; color:var(--primary); font-weight:bold; cursor:pointer; margin-top:5px; font-size:14px;"><i class="fa-solid fa-plus"></i> Adicionar Linha</button>
 
-                    <div class="orc-footer" style="display:flex; justify-content:space-between; margin-top: 20px; align-items:flex-start; flex-wrap:wrap;">
+                    <div class="orc-footer">
                         <div style="width: 100%; max-width: 50%;">
                             <label style="font-weight:bold; display:block; margin-bottom:5px; font-size:14px;">Condições de Pagamento / Observações:</label>
                             <textarea id="noteObs" rows="4" style="border:1px solid #000; border-radius:4px; padding:10px; resize:none;" placeholder="Ex: Pagamento em 3x no cartão. Garantia de 90 dias."></textarea>
@@ -656,8 +701,8 @@
                     <button class="btn btn-primary" onclick="openModal('modalEstoque')"><i class="fa-solid fa-plus"></i> Novo Item / Catálogo</button>
                 </div>
                 <div class="card">
-                    <div class="table-responsive">
-                        <table>
+                    <div class="table-responsive no-scroll">
+                        <table class="mobile-stack-table">
                             <thead><tr><th>Foto</th><th>Aparelho / Item</th><th>Qtd</th><th>Valor Unit.</th><th>Categoria</th><th>Ações</th></tr></thead>
                             <tbody id="estBody"></tbody>
                         </table>
@@ -833,8 +878,8 @@
                 <h3 id="dashModalTitle" style="color: var(--primary);">Detalhes</h3>
                 <button class="btn btn-danger" style="padding: 5px 12px;" onclick="closeModal('modalDashList')"><i class="fa-solid fa-xmark"></i> Fechar</button>
             </div>
-            <div class="table-responsive" style="max-height: 60vh;">
-                <table><thead id="dashModalHead"></thead><tbody id="dashModalBody"></tbody></table>
+            <div class="table-responsive no-scroll" style="max-height: 60vh;">
+                <table class="mobile-stack-table"><thead id="dashModalHead"></thead><tbody id="dashModalBody"></tbody></table>
             </div>
         </div>
     </div>
@@ -916,7 +961,7 @@
         // ==========================================
         // COLE AQUI AS CHAVES DO SEU NOVO FIREBASE
         // ==========================================
-         const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyBJzhoUYdzwN1LkKBr-nxgqnULxWs0h3lM",
   authDomain: "climagestor-oficial.firebaseapp.com",
   projectId: "climagestor-oficial",
@@ -1068,11 +1113,11 @@
                     }
 
                     b.innerHTML += `<tr>
-                        <td><strong>${d.nome}</strong></td>
-                        <td>${d.email}</td>
-                        <td style="font-weight:bold;">${dataFormatada}</td>
-                        <td><span class="status-badge ${statusClass}">${statusName}</span></td>
-                        <td>
+                        <td data-label="Nome / Unidade"><strong>${d.nome}</strong></td>
+                        <td data-label="E-mail">${d.email}</td>
+                        <td data-label="Vencimento" style="font-weight:bold;">${dataFormatada}</td>
+                        <td data-label="Status"><span class="status-badge ${statusClass}">${statusName}</span></td>
+                        <td data-label="Ações">
                             <button class="btn btn-primary" style="padding: 6px 12px; font-size:12px;" onclick="openManageSub('${d.id}')"><i class="fa-solid fa-calendar-check"></i> Gerenciar</button>
                         </td>
                     </tr>`;
@@ -1257,7 +1302,6 @@
             tbody.appendChild(tr);
         }
 
-        // FORÇA O BLOCO A TER SEMPRE 10 LINHAS
         function initNotepad() {
             currentEditOrcId = null;
             document.getElementById('noteDate').valueAsDate = new Date();
@@ -1297,7 +1341,6 @@
             initNotepad();
         }
 
-        // FORÇA O BLOCO A TER 10 LINHAS AO EDITAR
         function editarOrcamento(id) {
             const orc = orcamentosList.find(o => o.id === id);
             if(!orc) return;
@@ -1356,14 +1399,14 @@
                 orcamentosList.forEach(o => {
                     let desc = o.desc || '';
                     if(o.items && o.items.length > 0) desc = o.items.map(i => `${i.qty}x ${i.desc}`).join(', ');
-                    body.innerHTML += `<tr><td><strong>${o.cliente}</strong></td><td>${desc}</td><td style="color:var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(o.valor)}</td></tr>`;
+                    body.innerHTML += `<tr><td data-label="Cliente"><strong>${o.cliente}</strong></td><td data-label="Resumo">${desc}</td><td data-label="Valor" style="color:var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(o.valor)}</td></tr>`;
                 });
             } else if(type === 'estoque') {
                 title.innerHTML = '<i class="fa-solid fa-box"></i> Inventário do Estoque';
                 head.innerHTML = '<tr><th>Foto</th><th>Item / Aparelho</th><th>Qtd</th><th>Preço</th></tr>';
                 if(estoqueList.length === 0) body.innerHTML = '<tr><td colspan="4" style="text-align:center;">O estoque está vazio.</td></tr>';
                 estoqueList.forEach(e => {
-                    body.innerHTML += `<tr><td><img src="${e.img}" style="width:40px; height:40px; object-fit:contain;"></td><td><strong>${e.item}</strong></td><td>${e.qtd} un</td><td style="color:var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(e.preco)}</td></tr>`;
+                    body.innerHTML += `<tr><td data-label="Foto"><img src="${e.img}" style="width:40px; height:40px; object-fit:contain;"></td><td data-label="Item / Aparelho"><strong>${e.item}</strong></td><td data-label="Qtd">${e.qtd} un</td><td data-label="Preço" style="color:var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(e.preco)}</td></tr>`;
                 });
             } else if(type === 'agenda') {
                 title.innerHTML = '<i class="fa-solid fa-calendar-days"></i> Todos os Agendamentos';
@@ -1373,7 +1416,7 @@
                 agendamentosOrdenados.forEach(a => {
                     const parts = a.date.split('-');
                     const dataBr = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                    body.innerHTML += `<tr><td>${dataBr}</td><td><strong>${a.client}</strong></td><td><div style="display:flex; align-items:center; gap:8px;">${getServiceIcon(a.service)} ${a.service}</div></td></tr>`;
+                    body.innerHTML += `<tr><td data-label="Data">${dataBr}</td><td data-label="Cliente"><strong>${a.client}</strong></td><td data-label="Serviço"><div style="display:flex; align-items:center; gap:8px;">${getServiceIcon(a.service)} ${a.service}</div></td></tr>`;
                 });
             } else if(type === 'vendas') {
                 title.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Vendas Concluídas';
@@ -1381,7 +1424,7 @@
                 if(vendasList.length === 0) body.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhuma venda registrada.</td></tr>';
                 vendasList.forEach(v => {
                     let dateStr = v.createdAt ? new Date(v.createdAt.toDate()).toLocaleDateString('pt-BR') : 'Hoje';
-                    body.innerHTML += `<tr><td>${dateStr}</td><td><strong>${v.cliente}</strong></td><td>${v.qtd}x ${v.produtoNome}</td><td style="color:var(--success); font-weight:bold;">R$ ${formatCurrencyStr(v.total)}</td></tr>`;
+                    body.innerHTML += `<tr><td data-label="Data">${dateStr}</td><td data-label="Cliente"><strong>${v.cliente}</strong></td><td data-label="Produto">${v.qtd}x ${v.produtoNome}</td><td data-label="Total" style="color:var(--success); font-weight:bold;">R$ ${formatCurrencyStr(v.total)}</td></tr>`;
                 });
             }
             openModal('modalDashList');
@@ -1498,12 +1541,12 @@
                     d.id = doc.id;
                     estoqueList.push(d);
                     b.innerHTML += `<tr>
-                        <td><img src="${d.img}" class="img-thumb"></td>
-                        <td><strong>${d.item}</strong></td>
-                        <td>${d.qtd} un</td>
-                        <td style="color: var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(d.preco)}</td>
-                        <td>${d.cat}</td>
-                        <td><button class="btn btn-danger" onclick="deleteDoc('estoque','${doc.id}')"><i class="fa-solid fa-trash"></i></button></td>
+                        <td data-label="Foto"><img src="${d.img}" class="img-thumb"></td>
+                        <td data-label="Aparelho / Item"><strong>${d.item}</strong></td>
+                        <td data-label="Qtd">${d.qtd} un</td>
+                        <td data-label="Valor Unit." style="color: var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(d.preco)}</td>
+                        <td data-label="Categoria">${d.cat}</td>
+                        <td data-label="Ações"><button class="btn btn-danger" onclick="deleteDoc('estoque','${doc.id}')"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
                 });
                 updateVendasSelect();
@@ -1520,11 +1563,11 @@
                     vendasList.push(v);
                     let dateStr = v.createdAt ? new Date(v.createdAt.toDate()).toLocaleDateString('pt-BR') : 'Hoje';
                     b.innerHTML += `<tr>
-                        <td>${dateStr}</td>
-                        <td><strong>${v.cliente}</strong></td>
-                        <td>${v.qtd}x ${v.produtoNome}</td>
-                        <td style="color:var(--success); font-weight:bold;">R$ ${formatCurrencyStr(v.total)}</td>
-                        <td><button class="btn btn-danger" onclick="deleteDoc('vendas','${doc.id}')"><i class="fa-solid fa-trash"></i></button></td>
+                        <td data-label="Data">${dateStr}</td>
+                        <td data-label="Cliente"><strong>${v.cliente}</strong></td>
+                        <td data-label="Produto Vendido">${v.qtd}x ${v.produtoNome}</td>
+                        <td data-label="Total" style="color:var(--success); font-weight:bold;">R$ ${formatCurrencyStr(v.total)}</td>
+                        <td data-label="Ações"><button class="btn btn-danger" onclick="deleteDoc('vendas','${doc.id}')"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
                 });
             });
@@ -1542,10 +1585,10 @@
                     if(d.items && d.items.length > 0) descResumo = d.items.map(i => `${i.qty}x ${i.desc}`).join(', ');
 
                     b.innerHTML += `<tr>
-                        <td><strong>${d.cliente}</strong><br><span style="font-size:11px; color:var(--text-muted)">${d.telefone || ''}</span></td>
-                        <td style="font-size:13px;">${descResumo}</td>
-                        <td style="color: var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(d.valor)}</td>
-                        <td>
+                        <td data-label="Cliente"><strong>${d.cliente}</strong><br><span style="font-size:11px; color:var(--text-muted)">${d.telefone || ''}</span></td>
+                        <td data-label="Resumo" style="font-size:13px;">${descResumo}</td>
+                        <td data-label="Valor Final" style="color: var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(d.valor)}</td>
+                        <td data-label="Ações" style="display:flex; justify-content:flex-end; gap:5px;">
                             <button class="btn btn-primary" style="padding:6px 10px; background:var(--primary);" onclick="editarOrcamento('${doc.id}')" title="Abrir para Gerar PDF ou Editar"><i class="fa-solid fa-file-pdf"></i></button>
                             <button class="btn btn-whatsapp" style="padding:6px 10px;" onclick="window.shareOrcZap('${doc.id}')" title="Enviar WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
                             <button class="btn btn-danger" style="padding:6px 10px;" onclick="deleteDoc('orcamentos','${doc.id}')"><i class="fa-solid fa-trash"></i></button>
@@ -1671,7 +1714,6 @@
             }
         }
 
-        // --- AGENDA: SALVAR, EDITAR E STATUS ---
         async function saveAge(btnElement) {
             const date = document.getElementById('ageDate').value;
             const time = document.getElementById('ageTime').value;
