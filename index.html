@@ -305,15 +305,36 @@
 
     /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF (MANTÉM O PADRÃO ORIGINAL SEMPRE) */
    /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF (AJUSTE FINO - 15 LINHAS) */
+    /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF */
     @media print {
-        @page { margin: 0; } /* Zera a margem nativa para ocultar os textos do navegador (data, link, etc) */
-        body { background: #fff !important; margin: 10mm !important; padding: 0; display: block; } /* Devolve a margem de 10mm direto no corpo do documento */
-        .sidebar, #mobileHeader, #toastContainer, .modal-overlay, #btnBackOrc, #btnClearOrc { display: none !important; }
-        .main { padding: 0 !important; margin: 0 !important; overflow: visible !important; }
-        .section { display: none !important; }
-        #novo-orcamento { display: block !important; overflow: visible !important; padding: 0 !important; }
+        @page { margin: 0; } /* Zera a margem do navegador (esconde data e link) */
         
-        #notepad-container { box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; min-width: 100% !important; margin: 0 !important; }
+        /* Remove alturas fixas que forçam a segunda página em branco */
+        html, body, #appContainer { 
+            background: #fff !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            height: auto !important; 
+            min-height: auto !important; 
+            display: block !important; 
+            overflow: visible !important;
+        }
+        
+        .sidebar, #mobileHeader, #toastContainer, .modal-overlay, #btnBackOrc, #btnClearOrc { display: none !important; }
+        .main { padding: 0 !important; margin: 0 !important; height: auto !important; overflow: visible !important; }
+        #novo-orcamento { display: block !important; overflow: visible !important; padding: 0 !important; height: auto !important; }
+        
+        /* A margem de 10mm é aplicada por dentro do orçamento agora, sem empurrar a página */
+        #notepad-container { 
+            box-shadow: none !important; 
+            border: none !important; 
+            padding: 10mm !important; 
+            width: 100% !important; 
+            max-width: 100% !important; 
+            min-width: 100% !important; 
+            margin: 0 !important; 
+            box-sizing: border-box !important; 
+        }
         
         /* CABEÇALHO - Maior na horizontal e colado no quadro */
         .orc-header { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: space-between !important; align-items: flex-start !important; padding-bottom: 12px !important; margin-bottom: 15px !important; width: 100% !important; border-bottom: 2px solid #000 !important; gap: 10px !important; } 
