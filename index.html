@@ -306,8 +306,8 @@
     /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF (MANTÉM O PADRÃO ORIGINAL SEMPRE) */
    /* CSS ESPECIAL PARA IMPRESSÃO / GERAR PDF (AJUSTE FINO - 15 LINHAS) */
     @media print {
-        @page { margin: 10mm; } /* Margem padrão e elegante */
-        body { background: #fff !important; margin: 0; padding: 0; display: block; }
+        @page { margin: 0; } /* Zera a margem nativa para ocultar os textos do navegador (data, link, etc) */
+        body { background: #fff !important; margin: 10mm !important; padding: 0; display: block; } /* Devolve a margem de 10mm direto no corpo do documento */
         .sidebar, #mobileHeader, #toastContainer, .modal-overlay, #btnBackOrc, #btnClearOrc { display: none !important; }
         .main { padding: 0 !important; margin: 0 !important; overflow: visible !important; }
         .section { display: none !important; }
