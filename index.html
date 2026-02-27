@@ -777,7 +777,7 @@
             <section id="estoque" class="section hidden">
                 <div style="display:flex; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                     <h2>Controle de Estoque</h2>
-                    <button class="btn btn-primary" onclick="openModal('modalEstoque')"><i class="fa-solid fa-plus"></i> Novo Item / Catálogo</button>
+                    <button class="btn btn-primary" onclick="resetEstoqueModal(); openModal('modalEstoque')"><i class="fa-solid fa-plus"></i> Novo Item / Catálogo</button>
                 </div>
                 <div class="card">
                     <div class="table-responsive no-scroll">
@@ -1065,15 +1065,21 @@
 
         let curDate = new Date();
         let appointments = [];
-        let orcamentosList = [];
+		        let orcamentosList = [];
+				
         let estoqueList = [];
         let vendasList = [];
         let contasAdminList = []; 
-        
+        let lastSelectedDate = getTodayDateStr(); // Armazena a data que está sendo visualizada
+let currentDayFilter = 'agendados'; // Armazena a aba ativa na tela de Agenda
+		
         let selectedImg = acBase64;
         let confLogoBase64 = null; 
         let currentEditOrcId = null; 
+		
+		let currentEditEstId = null;
         let activeManageUserId = null; 
+		
 
         document.addEventListener('DOMContentLoaded', () => {
             const previewEl = document.getElementById('ePreview');
@@ -1081,25 +1087,46 @@
         });
 
         function nav(id, btn) {
+            // Esconde todas as seções
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            
+            // Gerencia o estado visual dos botões do menu lateral/inferior
             if(btn) {
                 document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             }
+            
+            // Mostra a seção desejada
             document.getElementById(id).classList.remove('hidden');
-            if(id === 'agenda') renderCal();
-            if(id === 'adminPanel') loadAdminData();
-            if(id === 'vendas') updateVendasSelect(); 
+            
+            // --- Lógicas específicas para cada tela ao carregar ---
+            
+            if(id === 'agenda') {
+                renderCal();
+                // Chamada vital: Força o carregamento do sub-menu e da lista da data atual
+                selectDate(lastSelectedDate); 
+            }
+            
+            if(id === 'adminPanel') {
+                loadAdminData();
+            }
+            
+            if(id === 'vendas') {
+                updateVendasSelect(); 
+            }
+            
             if(id === 'novo-orcamento') {
                 const tbody = document.getElementById('noteItemsBody');
-                if(tbody.children.length === 0 && !currentEditOrcId) initNotepad();
+                // Inicializa o bloco de notas apenas se estiver vazio e não for uma edição
+                if(tbody.children.length === 0 && !currentEditOrcId) {
+                    initNotepad();
+                }
             }
         }
 
         function openModal(id) { 
-            document.getElementById(id).style.display = 'flex'; 
-            if(id === 'modalEstoque') resetEstoqueModal();
-        }
+    document.getElementById(id).style.display = 'flex'; 
+}
         
         function closeModal(id) { 
             document.getElementById(id).style.display = 'none'; 
@@ -1157,52 +1184,40 @@
         }
 
         function loadAdminData() {
-            db.collection("accounts").get().then(snap => {
-                const b = document.getElementById('admTableBody');
-                b.innerHTML = '';
-                contasAdminList = [];
-                
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    d.id = doc.id;
-                    contasAdminList.push(d);
-                    
-                    let dataFormatada = "Sem Data";
-                    let isVitalicio = false;
+    db.collection("accounts").get().then(snap => {
+        const b = document.getElementById('admTableBody');
+        b.innerHTML = '';
+        contasAdminList = [];
+        
+        snap.forEach(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            contasAdminList.push(data);
 
-                    if(d.expiresAt) {
-                        const pts = d.expiresAt.split('-');
-                        if(parseInt(pts[0]) > 2100) {
-                            dataFormatada = "Vitalício ♾️";
-                            isVitalicio = true;
-                        } else {
-                            dataFormatada = `${pts[2]}/${pts[1]}/${pts[0]}`;
-                        }
-                    }
+            let expStr = "Não definida";
+            if(data.expiresAt) {
+                const pts = data.expiresAt.split('-');
+                if(parseInt(pts[0]) > 2100) expStr = "Vitalício ♾️";
+                else expStr = `${pts[2]}/${pts[1]}/${pts[0]}`;
+            }
 
-                    let statusClass = 'status-ativo';
-                    let statusName = 'Ativo';
-                    
-                    if(d.status === 'congelado') {
-                        statusClass = 'status-congelado';
-                        statusName = 'Congelado';
-                    } else if (isVitalicio) {
-                        statusClass = 'status-vitalicio';
-                        statusName = 'Vitalício';
-                    }
+            const statusClass = data.status === 'congelado' ? 'status-congelado' : (expStr.includes('Vitalício') ? 'status-vitalicio' : 'status-ativo');
+            const statusTxt = data.status === 'congelado' ? 'Congelado' : 'Ativo';
 
-                    b.innerHTML += `<tr>
-                        <td data-label="Nome / Unidade"><strong>${d.nome}</strong></td>
-                        <td data-label="E-mail">${d.email}</td>
-                        <td data-label="Vencimento" style="font-weight:bold;">${dataFormatada}</td>
-                        <td data-label="Status"><span class="status-badge ${statusClass}">${statusName}</span></td>
-                        <td data-label="Ações">
-                            <button class="btn btn-primary" style="padding: 6px 12px; font-size:12px;" onclick="openManageSub('${d.id}')"><i class="fa-solid fa-calendar-check"></i> Gerenciar</button>
-                        </td>
-                    </tr>`;
-                });
-            });
-        }
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td data-label="Nome / Unidade"><strong>${data.nome}</strong></td>
+                <td data-label="E-mail">${data.email}</td>
+                <td data-label="Vencimento">${expStr}</td>
+                <td data-label="Status"><span class="status-badge ${statusClass}">${statusTxt}</span></td>
+                <td data-label="Ações">
+                    <button class="btn btn-primary" onclick="openManageSub('${doc.id}')"><i class="fa-solid fa-gear"></i> Gerenciar</button>
+                </td>
+            `;
+            b.appendChild(tr);
+        });
+    });
+}
 
         function openManageSub(uid) {
             const user = contasAdminList.find(u => u.id === uid);
@@ -1467,49 +1482,135 @@
             window.open(link, '_blank');
         };
 
-        function openDashModal(type) {
-            const title = document.getElementById('dashModalTitle');
-            const head = document.getElementById('dashModalHead');
-            const body = document.getElementById('dashModalBody');
-            body.innerHTML = '';
+  function openDashModal(type) {
+    const title = document.getElementById('dashModalTitle');
+    const head = document.getElementById('dashModalHead');
+    const body = document.getElementById('dashModalBody');
+    
+    // Limpeza inicial de conteúdos anteriores
+    body.innerHTML = '';
+    head.innerHTML = '';
+    
+    // Remove abas de agenda caso existam de uma abertura anterior para não duplicar
+    const oldTabs = document.getElementById('agendaModalTabs');
+    if(oldTabs) oldTabs.remove();
 
-            if(type === 'orcamentos') {
-                title.innerHTML = '<i class="fa-solid fa-file-signature"></i> Orçamentos Salvos';
-                head.innerHTML = '<tr><th>Cliente</th><th>Resumo</th><th>Valor</th></tr>';
-                if(orcamentosList.length === 0) body.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum orçamento.</td></tr>';
-                orcamentosList.forEach(o => {
-                    let desc = o.desc || '';
-                    if(o.items && o.items.length > 0) desc = o.items.map(i => `${i.qty}x ${i.desc}`).join(', ');
-                    body.innerHTML += `<tr><td data-label="Cliente"><strong>${o.cliente}</strong></td><td data-label="Resumo">${desc}</td><td data-label="Valor" style="color:var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(o.valor)}</td></tr>`;
-                });
-            } else if(type === 'estoque') {
-                title.innerHTML = '<i class="fa-solid fa-box"></i> Inventário do Estoque';
-                head.innerHTML = '<tr><th>Foto</th><th>Item / Aparelho</th><th>Qtd</th><th>Preço</th></tr>';
-                if(estoqueList.length === 0) body.innerHTML = '<tr><td colspan="4" style="text-align:center;">O estoque está vazio.</td></tr>';
-                estoqueList.forEach(e => {
-                    body.innerHTML += `<tr><td data-label="Foto"><img src="${e.img}" style="width:40px; height:40px; object-fit:contain;"></td><td data-label="Item / Aparelho"><strong>${e.item}</strong></td><td data-label="Qtd">${e.qtd} un</td><td data-label="Preço" style="color:var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(e.preco)}</td></tr>`;
-                });
-            } else if(type === 'agenda') {
-                title.innerHTML = '<i class="fa-solid fa-calendar-days"></i> Todos os Agendamentos';
-                head.innerHTML = '<tr><th>Data</th><th>Cliente</th><th>Serviço</th></tr>';
-                if(appointments.length === 0) body.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum serviço na agenda.</td></tr>';
-                let agendamentosOrdenados = [...appointments].sort((a,b) => new Date(a.date) - new Date(b.date));
-                agendamentosOrdenados.forEach(a => {
-                    const parts = a.date.split('-');
-                    const dataBr = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                    body.innerHTML += `<tr><td data-label="Data">${dataBr}</td><td data-label="Cliente"><strong>${a.client}</strong></td><td data-label="Serviço"><div style="display:flex; align-items:center; gap:8px;">${getServiceIcon(a.service)} ${a.service}</div></td></tr>`;
-                });
-            } else if(type === 'vendas') {
-                title.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Vendas Concluídas';
-                head.innerHTML = '<tr><th>Data</th><th>Cliente</th><th>Produto</th><th>Total</th></tr>';
-                if(vendasList.length === 0) body.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhuma venda registrada.</td></tr>';
-                vendasList.forEach(v => {
-                    let dateStr = v.createdAt ? new Date(v.createdAt.toDate()).toLocaleDateString('pt-BR') : 'Hoje';
-                    body.innerHTML += `<tr><td data-label="Data">${dateStr}</td><td data-label="Cliente"><strong>${v.cliente}</strong></td><td data-label="Produto">${v.qtd}x ${v.produtoNome}</td><td data-label="Total" style="color:var(--success); font-weight:bold;">R$ ${formatCurrencyStr(v.total)}</td></tr>`;
-                });
-            }
-            openModal('modalDashList');
+    if(type === 'orcamentos') {
+        title.innerHTML = '<i class="fa-solid fa-file-signature"></i> Orçamentos Salvos';
+        head.innerHTML = '<tr><th>Cliente</th><th>Resumo</th><th>Valor</th></tr>';
+        
+        if(orcamentosList.length === 0) {
+            body.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Nenhum orçamento encontrado.</td></tr>';
         }
+        
+        orcamentosList.forEach(o => {
+            let desc = o.desc || '';
+            if(o.items && o.items.length > 0) desc = o.items.map(i => `${i.qty}x ${i.desc}`).join(', ');
+            body.innerHTML += `
+                <tr>
+                    <td data-label="Cliente"><strong>${o.cliente}</strong></td>
+                    <td data-label="Resumo">${desc}</td>
+                    <td data-label="Valor" style="color:var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(o.valor)}</td>
+                </tr>`;
+        });
+
+    } else if(type === 'estoque') {
+        title.innerHTML = '<i class="fa-solid fa-box"></i> Inventário do Estoque';
+        head.innerHTML = '<tr><th>Foto</th><th>Item / Aparelho</th><th>Qtd</th><th>Preço</th></tr>';
+        
+        if(estoqueList.length === 0) {
+            body.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">O estoque está vazio.</td></tr>';
+        }
+        
+        estoqueList.forEach(e => {
+            body.innerHTML += `
+                <tr>
+                    <td data-label="Foto"><img src="${e.img}" style="width:40px; height:40px; object-fit:contain; border-radius:4px; border:1px solid var(--border-color);"></td>
+                    <td data-label="Item / Aparelho"><strong>${e.item}</strong></td>
+                    <td data-label="Qtd">${e.qtd} un</td>
+                    <td data-label="Preço" style="color:var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(e.preco)}</td>
+                </tr>`;
+        });
+
+    } else if(type === 'vendas') {
+        title.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Vendas Concluídas';
+        head.innerHTML = '<tr><th>Data</th><th>Cliente</th><th>Produto</th><th>Total</th></tr>';
+        
+        if(vendasList.length === 0) {
+            body.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Nenhuma venda registrada.</td></tr>';
+        }
+        
+        vendasList.forEach(v => {
+            let dateStr = v.createdAt ? new Date(v.createdAt.toDate()).toLocaleDateString('pt-BR') : 'Hoje';
+            body.innerHTML += `
+                <tr>
+                    <td data-label="Data">${dateStr}</td>
+                    <td data-label="Cliente"><strong>${v.cliente}</strong></td>
+                    <td data-label="Produto">${v.qtd}x ${v.produtoNome}</td>
+                    <td data-label="Total" style="color:var(--success); font-weight:bold;">R$ ${formatCurrencyStr(v.total)}</td>
+                </tr>`;
+        });
+
+    } else if(type === 'agenda') {
+        title.innerHTML = '<i class="fa-solid fa-calendar-days"></i> Gestão da Agenda';
+        
+        // Inserção do Sub-Menu com as 3 abas: Agendados, Concluídos e Cancelados
+        head.parentElement.insertAdjacentHTML('beforebegin', `
+            <div id="agendaModalTabs" style="display:flex; gap:5px; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+                <button id="tabAgePend" class="btn btn-primary" onclick="filterAgendaModal('agendados')" style="flex:1; font-size:10px; padding: 8px 2px;">AGENDADOS</button>
+                <button id="tabAgeConc" class="btn btn-dark" onclick="filterAgendaModal('concluidos')" style="flex:1; font-size:10px; padding: 8px 2px;">CONCLUÍDOS</button>
+                <button id="tabAgeCanc" class="btn btn-dark" onclick="filterAgendaModal('cancelados')" style="flex:1; font-size:10px; padding: 8px 2px;">CANCELADOS</button>
+            </div>
+        `);
+
+        window.filterAgendaModal = (filterType) => {
+            body.innerHTML = '';
+            head.innerHTML = '<tr><th>Data</th><th>Cliente</th><th>Serviço</th></tr>';
+            
+            // Reset das cores dos botões para o estado inativo
+            document.getElementById('tabAgePend').className = 'btn btn-dark';
+            document.getElementById('tabAgeConc').className = 'btn btn-dark';
+            document.getElementById('tabAgeCanc').className = 'btn btn-dark';
+
+            // Ativa a cor do botão selecionado
+            if(filterType === 'agendados') document.getElementById('tabAgePend').className = 'btn btn-primary';
+            else if(filterType === 'concluidos') document.getElementById('tabAgeConc').className = 'btn btn-success';
+            else if(filterType === 'cancelados') document.getElementById('tabAgeCanc').className = 'btn btn-danger';
+
+            let listaFiltrada = appointments.filter(a => {
+                if(filterType === 'agendados') return a.status === 'pendente' || !a.status;
+                if(filterType === 'concluidos') return a.status === 'concluido';
+                if(filterType === 'cancelados') return a.status === 'cancelado';
+                return false;
+            });
+
+            if(listaFiltrada.length === 0) {
+                body.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-muted);">Nenhum registro encontrado nesta categoria.</td></tr>`;
+                return;
+            }
+
+            listaFiltrada.sort((a,b) => new Date(a.date) - new Date(b.date));
+            
+            listaFiltrada.forEach(a => {
+                const parts = a.date.split('-');
+                const dataBr = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                body.innerHTML += `
+                    <tr>
+                        <td data-label="Data">${dataBr}</td>
+                        <td data-label="Cliente"><strong>${a.client}</strong></td>
+                        <td data-label="Serviço">
+                            <div style="display:flex; align-items:center; gap:8px;">${getServiceIcon(a.service)} ${a.service}</div>
+                        </td>
+                    </tr>`;
+            });
+        };
+
+        // Inicia automaticamente na aba de Agendados
+        filterAgendaModal('agendados');
+    }
+
+    openModal('modalDashList');
+}
 
         function updateVendasSelect() {
             const sel = document.getElementById('vendaProduto');
@@ -1621,14 +1722,23 @@
                     const d = doc.data();
                     d.id = doc.id;
                     estoqueList.push(d);
-                    b.innerHTML += `<tr>
+
+                    // Criamos a linha para garantir o clique correto
+                    const tr = document.createElement('tr');
+                    tr.style.cursor = 'pointer';
+                    tr.onclick = () => openEditEstoque(d.id);
+
+                    tr.innerHTML = `
                         <td data-label="Foto"><img src="${d.img}" class="img-thumb"></td>
                         <td data-label="Aparelho / Item"><strong>${d.item}</strong></td>
                         <td data-label="Qtd">${d.qtd} un</td>
                         <td data-label="Valor Unit." style="color: var(--primary); font-weight:bold;">R$ ${formatCurrencyStr(d.preco)}</td>
                         <td data-label="Categoria">${d.cat}</td>
-                        <td data-label="Ações"><button class="btn btn-danger" onclick="deleteDoc('estoque','${doc.id}')"><i class="fa-solid fa-trash"></i></button></td>
-                    </tr>`;
+                        <td data-label="Ações" onclick="event.stopPropagation();">
+                            <button class="btn btn-danger" onclick="deleteDoc('estoque','${doc.id}')"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    `;
+                    b.appendChild(tr);
                 });
                 updateVendasSelect();
             });
@@ -1680,14 +1790,25 @@
 
             db.collection("users").doc(uid).collection("agenda").onSnapshot(snap => {
                 appointments = [];
-                document.getElementById('dashAge').innerText = snap.size;
+                let contagemPendentes = 0; // Criamos um contador específico
+
                 snap.forEach(doc => {
                     let data = doc.data();
                     data.id = doc.id;
                     appointments.push(data);
+
+                    // Só conta se o status for 'pendente' ou se estiver vazio (padrão)
+                    if(data.status === 'pendente' || !data.status) {
+                        contagemPendentes++;
+                    }
                 });
+
+                // Atualiza o número no Dashboard apenas com os pendentes
+                document.getElementById('dashAge').innerText = contagemPendentes;
+                
                 renderCal();
                 renderTodayEvents(); 
+				selectDate(lastSelectedDate);
                 const dataSelecionada = document.getElementById('ageDate').value;
                 if(dataSelecionada) selectDate(dataSelecionada);
             });
@@ -1712,31 +1833,73 @@
             }
         }
 
+        
+		
+		
+		function openEditEstoque(id) {
+            const item = estoqueList.find(e => e.id === id);
+            if(!item) return;
+
+            currentEditEstId = id; // Trava o ID para edição
+            
+            document.getElementById('eItem').value = item.item;
+            document.getElementById('eQtd').value = item.qtd;
+            document.getElementById('ePrice').value = formatCurrencyStr(item.preco);
+            document.getElementById('eCat').value = item.cat;
+            document.getElementById('ePreview').src = item.img;
+            selectedImg = item.img;
+
+            // Muda visual do Modal para "Atualizar"
+            const modal = document.getElementById('modalEstoque');
+            modal.querySelector('h3').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar Produto';
+            modal.querySelector('.btn-success').innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Atualizar Estoque';
+
+            openModal('modalEstoque');
+        }
+
         async function saveEstoque(btnElement) {
             const name = document.getElementById('eItem').value;
-            const qty = document.getElementById('eQtd').value;
-            const price = parseCurrency(document.getElementById('ePrice').value);
+            const qty = parseInt(document.getElementById('eQtd').value) || 0;
+            const price = parseCurrency(document.getElementById('ePrice').value) || 0;
             const cat = document.getElementById('eCat').value;
 
-            if(!name || !qty) return showToast("Preencha o nome e a quantidade!", true);
-            if(!auth.currentUser) return showToast("Usuário não autenticado!", true);
-
-            btnElement.innerText = "Salvando...";
+            if(!name) return showToast("Nome obrigatório!", true);
             btnElement.disabled = true;
+            btnElement.innerText = "Processando...";
+
+            const data = { item: name, qtd: qty, preco: price, cat: cat, img: selectedImg };
 
             try {
-                await db.collection("users").doc(auth.currentUser.uid).collection("estoque").add({
-                    item: name, qtd: parseInt(qty), preco: price, cat: cat, img: selectedImg
-                });
+                const colRef = db.collection("users").doc(auth.currentUser.uid).collection("estoque");
+                if (currentEditEstId) {
+                    await colRef.doc(currentEditEstId).update(data);
+                    showToast("Produto atualizado!");
+                } else {
+                    await colRef.add(data);
+                    showToast("Novo produto adicionado!");
+                }
                 closeModal('modalEstoque');
-                showToast("Adicionado ao estoque com sucesso!");
+                resetEstoqueModal();
             } catch (err) {
-                showToast("Erro de permissão no Firebase.", true);
+                showToast("Erro ao salvar dados.", true);
             } finally {
-                btnElement.innerText = "Salvar no Estoque"; 
                 btnElement.disabled = false;
             }
         }
+
+        function resetEstoqueModal() {
+            currentEditEstId = null; // Reseta ID para não sobrescrever
+            document.getElementById('eItem').value = '';
+            document.getElementById('eQtd').value = '1';
+            document.getElementById('ePrice').value = ''; 
+            document.getElementById('ePreview').src = acBase64;
+            selectedImg = acBase64;
+            
+            const modal = document.getElementById('modalEstoque');
+            modal.querySelector('h3').innerHTML = '<i class="fa-solid fa-plus"></i> Adicionar ao Estoque';
+            modal.querySelector('.btn-success').innerHTML = '<i class="fa-solid fa-check"></i> Salvar no Estoque';
+        }
+		
 
         async function saveNotepad(btnElement, printAfter = false) {
             const cliente = document.getElementById('noteCliName').value;
@@ -1827,6 +1990,17 @@
                 btnElement.disabled = false;
             }
         }
+
+
+
+
+
+
+
+
+
+
+
 
         function openAgendaDetails(id) {
             const a = appointments.find(x => x.id === id);
@@ -1959,42 +2133,62 @@
         }
 
         function selectDate(dateStr) {
-            document.getElementById('ageDate').value = dateStr;
-            const parts = dateStr.split('-');
-            const dataFormatada = `${parts[2]}/${parts[1]}/${parts[0]}`;
-            const listContainer = document.getElementById('dayEventsList');
-            const eventosDoDia = appointments.filter(a => a.date === dateStr);
-            
-            if(eventosDoDia.length === 0) {
-                listContainer.innerHTML = `<p style="color:var(--text-muted); font-size:13px; text-align:center;">Nenhum serviço agendado para ${dataFormatada}.</p>`;
-            } else {
-                const pendentes = eventosDoDia.filter(a => a.status !== 'concluido');
-                const concluidos = eventosDoDia.filter(a => a.status === 'concluido');
-                
-                let html = '';
-                
-                if (pendentes.length > 0) {
-                    html += `<h5 style="color:var(--primary); margin-bottom:10px; font-size: 14px;">Pendentes / Agendados</h5>`;
-                    html += pendentes.map(a => renderAgendaCard(a)).join('');
-                }
-                
-                if (concluidos.length > 0) {
-                    let totalVal = concluidos.reduce((sum, item) => sum + (item.price || 0), 0);
-                    html += `<div style="margin-top:20px; margin-bottom:10px; border-top:1px dashed var(--border-color); padding-top:15px; display:flex; justify-content:space-between; align-items:center;">
-                                <h5 style="color:var(--success); margin:0; font-size: 14px;">Concluídos</h5>
-                                <span style="font-weight:bold; color:var(--success); font-size:14px; background: #dcfce7; padding: 4px 8px; border-radius: 4px;">Total: R$ ${formatCurrencyStr(totalVal)}</span>
-                             </div>`;
-                    html += concluidos.map(a => renderAgendaCard(a)).join('');
-                }
-                
-                listContainer.innerHTML = html;
-            }
-            
-            document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected-day'));
-            const clickedDay = [...document.querySelectorAll('.cal-day')].find(el => el.getAttribute('data-date') === dateStr);
-            if(clickedDay) clickedDay.classList.add('selected-day');
-        }
+    lastSelectedDate = dateStr; // Atualiza a data globalmente
+    document.getElementById('ageDate').value = dateStr;
+    
+    const parts = dateStr.split('-');
+    const dataFormatada = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    const listContainer = document.getElementById('dayEventsList');
+    
+    // 1. Criar o HTML das Abas (Sub-menu)
+    let tabsHtml = `
+        <div style="display:flex; gap:5px; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+            <button onclick="changeDayFilter('agendados')" class="btn ${currentDayFilter === 'agendados' ? 'btn-primary' : 'btn-dark'}" style="flex:1; font-size:10px; padding:8px 2px;">AGENDADOS</button>
+            <button onclick="changeDayFilter('concluidos')" class="btn ${currentDayFilter === 'concluidos' ? 'btn-success' : 'btn-dark'}" style="flex:1; font-size:10px; padding:8px 2px;">CONCLUÍDOS</button>
+            <button onclick="changeDayFilter('cancelados')" class="btn ${currentDayFilter === 'cancelados' ? 'btn-danger' : 'btn-dark'}" style="flex:1; font-size:10px; padding:8px 2px;">CANCELADOS</button>
+        </div>
+    `;
 
+    // 2. Filtrar os eventos do dia baseados na aba ativa
+    const eventosDoDia = appointments.filter(a => {
+        const mesmaData = a.date === dateStr;
+        if (!mesmaData) return false;
+        
+        if (currentDayFilter === 'agendados') return a.status === 'pendente' || !a.status;
+        if (currentDayFilter === 'concluidos') return a.status === 'concluido';
+        if (currentDayFilter === 'cancelados') return a.status === 'cancelado';
+        return false;
+    });
+
+    // 3. Gerar o conteúdo da lista
+    let listHtml = '';
+    if (eventosDoDia.length === 0) {
+        listHtml = `<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px;">Nenhum serviço ${currentDayFilter} para ${dataFormatada}.</p>`;
+    } else {
+        // Se for a aba de concluídos, mostra o faturamento do dia no topo
+        if (currentDayFilter === 'concluidos') {
+            let totalVal = eventosDoDia.reduce((sum, item) => sum + (item.price || 0), 0);
+            listHtml += `<div style="margin-bottom:10px; text-align:right;">
+                            <span style="font-weight:bold; color:var(--success); font-size:12px; background: #dcfce7; padding: 4px 8px; border-radius: 4px;">Faturado no dia: R$ ${formatCurrencyStr(totalVal)}</span>
+                         </div>`;
+        }
+        listHtml += eventosDoDia.map(a => renderAgendaCard(a)).join('');
+    }
+
+    // 4. Injetar no container
+    listContainer.innerHTML = tabsHtml + listHtml;
+
+    // 5. Ajuste visual no calendário
+    document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected-day'));
+    const clickedDay = [...document.querySelectorAll('.cal-day')].find(el => el.getAttribute('data-date') === dateStr);
+    if (clickedDay) clickedDay.classList.add('selected-day');
+}
+
+// Função auxiliar para trocar o filtro e atualizar a tela
+function changeDayFilter(filterType) {
+    currentDayFilter = filterType;
+    selectDate(lastSelectedDate);
+}
         function renderTodayEvents() {
             const container = document.getElementById('dashTodayEvents');
             const agora = new Date();
@@ -2091,13 +2285,18 @@
         }
 
         function resetEstoqueModal() {
-            document.getElementById('eItem').value = '';
-            document.getElementById('eQtd').value = '1';
-            document.getElementById('ePrice').value = ''; 
-            document.getElementById('ePreview').src = acBase64;
-            selectedImg = acBase64;
-            document.getElementById('catalogResults').style.display = 'none';
-        }
+    currentEditEstId = null; // Reseta o controle de edição
+    document.getElementById('eItem').value = '';
+    document.getElementById('eQtd').value = '1';
+    document.getElementById('ePrice').value = ''; 
+    document.getElementById('ePreview').src = acBase64;
+    selectedImg = acBase64;
+    
+    // Restaura os textos originais do modal
+    const modal = document.getElementById('modalEstoque');
+    modal.querySelector('h3').innerHTML = '<i class="fa-solid fa-plus"></i> Adicionar ao Estoque';
+    modal.querySelector('.btn-success').innerHTML = '<i class="fa-solid fa-check"></i> Salvar no Estoque';
+}
 
         function renderCal() {
             const grid = document.getElementById('calGrid');
@@ -2127,12 +2326,11 @@
         }
 
         function changeMonth(s) { 
-            curDate.setMonth(curDate.getMonth() + s); 
-            renderCal(); 
-            document.getElementById('ageDate').value = '';
-            document.getElementById('ageTime').value = '';
-            document.getElementById('dayEventsList').innerHTML = `<p style="color:var(--text-muted); font-size:13px; text-align:center;">Selecione uma data no calendário.</p>`;
-        }
+    curDate.setMonth(curDate.getMonth() + s); 
+    renderCal(); 
+    // Em vez de limpar com texto, chamamos a selectDate para manter as abas vivas
+    selectDate(lastSelectedDate); 
+}
 
         try {
             if(localStorage.getItem('clima_theme') === 'dark') document.body.classList.add('dark-mode');
