@@ -2213,50 +2213,7 @@ function changeDayFilter(filterType) {
 
 
 
-// ==========================================
-// NOTIFICAÇÕES NATIVAS DO SISTEMA
-// ==========================================
-function checkAndSendDailyNotification(pendentes) {
-    try {
-        // 1. Verifica suporte e permissão
-        if (!("Notification" in window)) return;
-        if (Notification.permission !== "granted") return;
 
-        // 2. Se a lista zerou (todos concluídos), limpa a memória e não notifica
-        if (pendentes.length === 0) {
-            sessionStorage.removeItem('clima_notified_status');
-            return;
-        }
-
-        const hoje = getTodayDateStr(); 
-        
-        // 3. Cria uma "assinatura" do momento atual (Ex: "2026-03-14_2_pendentes")
-        const statusAtual = `${hoje}_${pendentes.length}_pendentes`;
-        const lastNotified = sessionStorage.getItem('clima_notified_status');
-
-        // 4. Se a quantidade de pendentes for EXATAMENTE a mesma e você não fechou a aba, ele não faz spam
-        if (lastNotified === statusAtual) return;
-
-        // 5. Dispara a notificação!
-        const titulo = `ClimaGestor: ${pendentes.length} serviço(s) pendentes! ❄️`;
-        const notif = new Notification(titulo, {
-            body: "Você ainda tem agendamentos aguardando conclusão hoje. Clique para ver.",
-            icon: "https://cdn-icons-png.flaticon.com/512/2916/2916315.png",
-            requireInteraction: true // No PC, força a notificação a ficar na tela até ser fechada
-        });
-        
-        notif.onclick = () => {
-            window.focus();
-            nav('dashboard', document.querySelector('.menu-btn')); 
-        };
-        
-        // 6. Grava na memória temporária da aba atual
-        sessionStorage.setItem('clima_notified_status', statusAtual);
-
-    } catch (error) {
-        console.error("Erro na notificação:", error);
-    }
-}
 
 
 
@@ -2453,7 +2410,44 @@ function requestNotificationPermission() {
 
 
 
+// ==========================================
+// NOTIFICAÇÕES NATIVAS (A CADA 5 MINUTOS)
+// ==========================================
+function dispararNotificacaoRecorrente() {
+    // Verifica se o navegador suporta e se a permissão foi dada
+    if (!("Notification" in window) || Notification.permission !== "granted") {
+        return;
+    }
 
+    // Pega a data de hoje e procura os serviços pendentes na memória
+    const hoje = getTodayDateStr();
+    
+    // O array 'appointments' já armazena todos os eventos baixados do Firebase
+    const pendentes = appointments.filter(a => a.date === hoje && a.status !== 'concluido' && a.status !== 'cancelado');
+
+    // Se tiver serviços pendentes, dispara o aviso
+    if (pendentes.length > 0) {
+        const titulo = `Lembrete: ${pendentes.length} serviço(s) pendentes! ❄️`;
+        const notif = new Notification(titulo, {
+            body: "Você tem agendamentos para hoje aguardando conclusão. Clique para ver.",
+            icon: "https://cdn-icons-png.flaticon.com/512/2916/2916315.png",
+            vibrate: [200, 100, 200, 100, 200], // Faz o celular vibrar para chamar atenção
+            requireInteraction: true 
+        });
+
+        // Se o usuário clicar na notificação, abre a aba da Agenda
+        notif.onclick = () => {
+            window.focus();
+            nav('agenda', document.querySelectorAll('.menu-btn')[3]); 
+        };
+    }
+}
+
+// Configura o sistema para rodar essa função a cada 5 minutos (300.000 milissegundos)
+setInterval(dispararNotificacaoRecorrente, 300000);
+
+// Dispara uma vez logo 5 segundos após o sistema carregar (para você não ter que esperar 5 minutos para testar)
+setTimeout(dispararNotificacaoRecorrente, 5000);
 
 
 
