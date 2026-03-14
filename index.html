@@ -2408,51 +2408,80 @@ function requestNotificationPermission() {
 
 
 
+// ==========================================
+// NOTIFICAÇÕES NATIVAS (EMBUTIDO VIA BLOB - SEM ARQUIVO EXTRA)
+// ==========================================
 
-// ==========================================
-// NOTIFICAÇÕES NATIVAS (A CADA 5 MINUTOS)
-// ==========================================
-function dispararNotificacaoRecorrente() {
-    // Verifica se o navegador suporta e se a permissão foi dada
-    if (!("Notification" in window) || Notification.permission !== "granted") {
-        return;
+try {
+    if ('serviceWorker' in navigator) {
+        // 1. Criamos o código do Service Worker como um texto puro
+        const swCode = `
+            self.addEventListener('install', (event) => { self.skipWaiting(); });
+            self.addEventListener('activate', (event) => { event.waitUntil(self.clients.claim()); });
+            self.addEventListener('notificationclick', (event) => {
+                event.notification.close();
+                event.waitUntil(
+                    clients.matchAll({ type: 'window' }).then((clientList) => {
+                        for (const client of clientList) {
+                            if ('focus' in client) return client.focus();
+                        }
+                        if (clients.openWindow) return clients.openWindow('/');
+                    })
+                );
+            });
+        `;
+
+        // 2. Transformamos o texto em um "Arquivo Virtual" (Blob) na memória do celular
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+
+        // 3. Registramos o arquivo virtual no navegador
+        navigator.serviceWorker.register(swUrl)
+            .then(reg => console.log('Service Worker Virtual Registrado com sucesso!'))
+            .catch(err => console.log('Erro ao registrar SW Virtual:', err));
     }
+} catch (e) {
+    console.log("Erro ao tentar criar o arquivo virtual:", e);
+}
 
-    // Pega a data de hoje e procura os serviços pendentes na memória
+// 4. A função que dispara a notificação
+function dispararNotificacaoRecorrente() {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+
     const hoje = getTodayDateStr();
-    
-    // O array 'appointments' já armazena todos os eventos baixados do Firebase
+    // Filtra agendamentos pendentes para a data de hoje
     const pendentes = appointments.filter(a => a.date === hoje && a.status !== 'concluido' && a.status !== 'cancelado');
 
-    // Se tiver serviços pendentes, dispara o aviso
     if (pendentes.length > 0) {
         const titulo = `Lembrete: ${pendentes.length} serviço(s) pendentes! ❄️`;
-        const notif = new Notification(titulo, {
-            body: "Você tem agendamentos para hoje aguardando conclusão. Clique para ver.",
+        const opcoes = {
+            body: "Você tem agendamentos para hoje aguardando conclusão.",
             icon: "https://cdn-icons-png.flaticon.com/512/2916/2916315.png",
-            vibrate: [200, 100, 200, 100, 200], // Faz o celular vibrar para chamar atenção
-            requireInteraction: true 
-        });
-
-        // Se o usuário clicar na notificação, abre a aba da Agenda
-        notif.onclick = () => {
-            window.focus();
-            nav('agenda', document.querySelectorAll('.menu-btn')[3]); 
+            vibrate: [200, 100, 200, 100, 200], // Vibração para celular
+            tag: 'lembrete-clima', // Evita acumular várias notificações iguais
+            requireInteraction: true
         };
+
+        // Se o Service Worker já estiver pronto (Celular), usa ele. Se não, usa o padrão (PC).
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification(titulo, opcoes);
+            });
+        } else {
+             const notif = new Notification(titulo, opcoes);
+             notif.onclick = () => { 
+                 window.focus(); 
+                 nav('agenda', document.querySelectorAll('.menu-btn')[3]); 
+             };
+        }
     }
 }
 
-// Configura o sistema para rodar essa função a cada 5 minutos (300.000 milissegundos)
+// 5. Configura o temporizador (5 minutos = 300.000 ms)
 setInterval(dispararNotificacaoRecorrente, 300000);
 
-// Dispara uma vez logo 5 segundos após o sistema carregar (para você não ter que esperar 5 minutos para testar)
+// Dispara a primeira vez 5 segundos após o sistema carregar
 setTimeout(dispararNotificacaoRecorrente, 5000);
-
-
-
-
-
-
 
 
 
