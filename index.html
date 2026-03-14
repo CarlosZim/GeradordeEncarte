@@ -2213,42 +2213,36 @@ function changeDayFilter(filterType) {
 
 
 
-
 // ==========================================
 // NOTIFICAÇÕES NATIVAS DO SISTEMA
 // ==========================================
 function checkAndSendDailyNotification(pendentes) {
     try {
-        if (!("Notification" in window)) {
-            console.log("Notificação: Navegador não suporta.");
-            return;
-        }
+        // 1. Verifica suporte e permissão
+        if (!("Notification" in window)) return;
+        if (Notification.permission !== "granted") return;
 
-        if (Notification.permission !== "granted") {
-            console.log("Notificação: Bloqueada ou permissão não foi dada no botão de Configurações.");
-            return;
-        }
-
+        // 2. Se a lista zerou (todos concluídos), limpa a memória e não notifica
         if (pendentes.length === 0) {
-            console.log("Notificação: Nenhum serviço pendente para hoje.");
+            sessionStorage.removeItem('clima_notified_status');
             return;
         }
 
         const hoje = getTodayDateStr(); 
-        const lastNotified = localStorage.getItem('clima_notified_date');
+        
+        // 3. Cria uma "assinatura" do momento atual (Ex: "2026-03-14_2_pendentes")
+        const statusAtual = `${hoje}_${pendentes.length}_pendentes`;
+        const lastNotified = sessionStorage.getItem('clima_notified_status');
 
-        // Se o sistema lembrar que já enviou hoje, ele para aqui.
-        if (lastNotified === hoje) {
-            console.log("Notificação: O aviso já foi disparado hoje (Trava de repetição ativada).");
-            return;
-        }
+        // 4. Se a quantidade de pendentes for EXATAMENTE a mesma e você não fechou a aba, ele não faz spam
+        if (lastNotified === statusAtual) return;
 
-        console.log("Notificação: Disparando agora!");
-        const titulo = `ClimaGestor: ${pendentes.length} serviço(s) hoje! ❄️`;
+        // 5. Dispara a notificação!
+        const titulo = `ClimaGestor: ${pendentes.length} serviço(s) pendentes! ❄️`;
         const notif = new Notification(titulo, {
-            body: "Você tem agendamentos pendentes para hoje. Clique para ver.",
+            body: "Você ainda tem agendamentos aguardando conclusão hoje. Clique para ver.",
             icon: "https://cdn-icons-png.flaticon.com/512/2916/2916315.png",
-            requireInteraction: true // Faz a notificação não sumir sozinha da tela (só no PC)
+            requireInteraction: true // No PC, força a notificação a ficar na tela até ser fechada
         });
         
         notif.onclick = () => {
@@ -2256,8 +2250,8 @@ function checkAndSendDailyNotification(pendentes) {
             nav('dashboard', document.querySelector('.menu-btn')); 
         };
         
-        // Grava que já avisou hoje
-        localStorage.setItem('clima_notified_date', hoje);
+        // 6. Grava na memória temporária da aba atual
+        sessionStorage.setItem('clima_notified_status', statusAtual);
 
     } catch (error) {
         console.error("Erro na notificação:", error);
