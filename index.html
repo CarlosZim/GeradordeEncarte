@@ -523,6 +523,15 @@
                         <input type="text" id="confSub" placeholder="Ex: Soluções em Climatização | (11) 99999-9999">
                     </div>
 
+
+
+<div style="border-top: 1px solid var(--border-color); margin: 20px 0; padding-top: 15px;">
+                        <label style="font-weight:bold; display:block; margin-bottom:10px;">Notificações de Agenda:</label>
+                        <button class="btn btn-primary" onclick="requestNotificationPermission()" style="width:100%; padding: 15px;">
+                            <i class="fa-regular fa-bell"></i> Ativar Notificações neste Aparelho
+                        </button>
+                    </div>
+
                     <button class="btn btn-success" onclick="saveSettings(this)" style="width:100%; margin-top:10px; padding: 15px;">
                         <i class="fa-solid fa-floppy-disk"></i> Salvar Personalização
                     </button>
@@ -1132,7 +1141,13 @@ let currentDayFilter = 'agendados'; // Armazena a aba ativa na tela de Agenda
             document.getElementById(id).style.display = 'none'; 
         }
 
-        function getTodayDateStr() { return new Date().toISOString().split('T')[0]; }
+        function getTodayDateStr() { 
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const dia = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${dia}`;
+        }
 
         if (window.auth) {
             auth.onAuthStateChanged(user => {
@@ -2204,45 +2219,33 @@ function changeDayFilter(filterType) {
 // NOTIFICAÇÕES NATIVAS DO SISTEMA
 // ==========================================
 function checkAndSendDailyNotification(pendentes) {
-    // 1. Verifica se o navegador suporta notificações
-    if (!("Notification" in window)) {
-        console.log("Este navegador não suporta notificações de sistema.");
-        return;
-    }
+    try {
+        // Se o navegador não suporta, encerra silenciosamente
+        if (!("Notification" in window)) return;
 
-    const hoje = getTodayDateStr(); 
-    const lastNotified = localStorage.getItem('clima_notified_date');
+        const hoje = getTodayDateStr(); 
+        const lastNotified = localStorage.getItem('clima_notified_date');
 
-    // 2. Se já notificou hoje OU se não há serviços pendentes, encerra a função
-    if (lastNotified === hoje || pendentes.length === 0) return;
+        // Se já notificou hoje ou não há pendências, encerra
+        if (lastNotified === hoje || pendentes.length === 0) return;
 
-    // 3. Função que constrói e dispara o aviso
-    const dispararNotificacao = () => {
-        const titulo = `ClimaGestor: ${pendentes.length} serviço(s) hoje! ❄️`;
-        const opcoes = {
-            body: "Você tem agendamentos pendentes para hoje. Clique aqui para abrir a agenda.",
-            icon: "https://cdn-icons-png.flaticon.com/512/2916/2916315.png" // Ícone de floco de neve
-        };
-        
-        const notif = new Notification(titulo, opcoes);
-        
-        // Se clicar na notificação, foca na aba e abre o dashboard
-        notif.onclick = () => {
-            window.focus();
-            nav('dashboard', document.querySelector('.menu-btn')); 
-        };
-        
-        // Grava no navegador que já avisamos hoje
-        localStorage.setItem('clima_notified_date', hoje);
-    };
-
-    // 4. Pede permissão ou dispara direto se já tiver permissão
-    if (Notification.permission === "granted") {
-        dispararNotificacao();
-    } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") dispararNotificacao();
-        });
+        // IMPORTANTE: Só dispara no automático se a permissão JÁ FOI DADA pelo usuário
+        if (Notification.permission === "granted") {
+            const titulo = `ClimaGestor: ${pendentes.length} serviço(s) hoje! ❄️`;
+            const notif = new Notification(titulo, {
+                body: "Você tem agendamentos pendentes para hoje. Clique para ver.",
+                icon: "https://cdn-icons-png.flaticon.com/512/2916/2916315.png"
+            });
+            
+            notif.onclick = () => {
+                window.focus();
+                nav('dashboard', document.querySelector('.menu-btn')); 
+            };
+            
+            localStorage.setItem('clima_notified_date', hoje);
+        }
+    } catch (error) {
+        console.log("Alerta de notificação evitado pelo celular:", error);
     }
 }
 
@@ -2416,6 +2419,44 @@ checkAndSendDailyNotification(pendentes);
                 localStorage.setItem('clima_theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
             } catch(e) {}
         }
-    </script>
+   
+
+
+
+
+
+
+
+
+function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                showToast("Este navegador (ou iPhone) não suporta notificações nativas.", true);
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    showToast("Notificações ativadas com sucesso!");
+                    new Notification("Pronto! ❄️", { body: "O ClimaGestor avisará sobre serviços aqui." });
+                } else {
+                    showToast("Permissão negada pelo celular.", true);
+                }
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   </script>
 </body>
 </html>
